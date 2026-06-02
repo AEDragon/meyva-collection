@@ -179,6 +179,35 @@ const PRODUCTS = [
     long: 'Certificat A5 imprimé sur papier épais avec ton texte personnalisé : dédicace, remerciement, déclaration. Dépose ton texte ou ton visuel ci-dessous, ou envoie-le par message Instagram.',
     swatch: 'certificat',
   },
+  // ── Offres (bundles avec remise) — ouvertes depuis la section promotions ──
+  {
+    id: 'promo-stickers-pack',
+    name: 'Offre stickers — 5 + 3 offerts',
+    cat: 'Stickers',
+    price: 5,
+    badge: '5 + 3 offerts',
+    promoOnly: true,
+    image: 'assets/products/stickers.jpg',
+    gallery: G.stickers,
+    upload: true,
+    slots: 8,
+    desc: '8 stickers pour le prix de 5 ! (5 + 3 offerts) — 5 DT le lot.',
+    long: 'Profite de l’offre : achète 5 stickers et reçois-en 3 gratuitement — soit 8 stickers pour seulement 5 DT. Dépose tes 8 designs ci-dessous (PNG, JPG…). Imprimés sur vinyle résistant à l’eau.',
+    swatch: 'stickers-pink',
+  },
+  {
+    id: 'promo-posters-pack',
+    name: 'Offre posters — 3 pour 10 DT',
+    cat: 'Posters',
+    price: 10,
+    badge: '−2 DT',
+    promoOnly: true,
+    image: 'assets/products/poster-vintage.jpg',
+    gallery: G.posterV,
+    desc: '3 posters au choix pour 10 DT (au lieu de 12 DT).',
+    long: 'Compose ton trio : 3 posters A4 au choix pour 10 DT au lieu de 12 DT. Indique-nous tes 3 modèles préférés par message Instagram après la commande.',
+    swatch: 'poster-vintage',
+  },
 ];
 
 const CATEGORIES = ['Tout', 'Packs', 'Photos', 'Stickers', 'Posters', 'Bougies', 'Cadeaux'];
@@ -257,22 +286,24 @@ const GOUVERNORATS = [
 const PROMOS = [
   {
     id: 'promo-stickers',
+    productId: 'promo-stickers-pack',
     title: 'Offre stickers',
     badge: '5 + 3 offerts',
     highlight: 'Achète 5 stickers, reçois-en 3 gratuitement',
     sub: 'Fais ton propre pack !',
     swatch: 'stickers-pink',
-    cta: 'Voir les stickers',
+    cta: 'J’en profite',
     goCat: 'Stickers',
   },
   {
     id: 'promo-posters',
+    productId: 'promo-posters-pack',
     title: 'Offre posters',
     badge: '−2 DT',
     highlight: 'Les 3 posters à 10 DT',
     sub: 'Au lieu de 12 DT',
     swatch: 'poster-vintage',
-    cta: 'Voir les posters',
+    cta: 'J’en profite',
     goCat: 'Posters',
   },
 ];
@@ -469,6 +500,8 @@ const PRODUCT_I18N = {
   'poster-aura': { name: 'Poster — Aura print', secondary: '3 for 10 DT', desc: 'Colorful aura, soft gradients. A4 format.', long: 'A4 poster printed on 200g matte paper. Aura gradients inspired by aura tests. 3 posters of your choice for 10 DT.' },
   'bougie-rose': { name: 'Scented candle — Rose', desc: 'Soy wax candle, rose scent. 100g glass jar.', long: 'Handmade soy wax candle, powdery rose scent. Clear glass jar, cotton wick, about 25 hours burn time.' },
   'certificat': { name: 'Custom certificate', desc: 'Printed certificate with your text. To gift with love.', long: 'A5 certificate printed on thick paper with your custom text: dedication, thank-you, declaration. Send us the text by Instagram message.' },
+  'promo-stickers-pack': { name: 'Stickers deal — 5 + 3 free', desc: '8 stickers for the price of 5! (5 + 3 free) — 5 DT the set.', long: 'Grab the deal: buy 5 stickers and get 3 free — that’s 8 stickers for only 5 DT. Drop your 8 designs below (PNG, JPG…). Printed on water-resistant vinyl.' },
+  'promo-posters-pack': { name: 'Posters deal — 3 for 10 DT', desc: '3 posters of your choice for 10 DT (instead of 12 DT).', long: 'Build your trio: 3 A4 posters of your choice for 10 DT instead of 12 DT. Tell us your 3 favorite designs by Instagram message after ordering.' },
 };
 const PROMO_I18N = {
   'promo-stickers': { title: 'Stickers offer', badge: '5 + 3 free', highlight: 'Buy 5 stickers, get 3 free', sub: 'Build your own pack!', cta: 'See stickers' },
@@ -859,7 +892,7 @@ Object.assign(window, { Nav, Footer, ProductCard, UtilityBar, Icon, Logo });
 function Home({ products, setPage, openProduct }) {
   const lang = useLang();
   const featured = products.filter(p => ['pack-polaroid-kit', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id));
-  const more = products.filter(p => !['pack-polaroid-kit', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id)).slice(0, 4);
+  const more = products.filter(p => !p.promoOnly && !['pack-polaroid-kit', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id)).slice(0, 4);
 
   return React.createElement(React.Fragment, null,
     React.createElement('section', { className: 'hero' },
@@ -905,7 +938,7 @@ function Home({ products, setPage, openProduct }) {
       )
     ),
 
-    React.createElement(Promos, { setPage: setPage }),
+    React.createElement(Promos, { setPage: setPage, products: products, openProduct: openProduct }),
 
     React.createElement('section', { className: 'section' },
       React.createElement('div', { className: 'section-head' },
@@ -977,7 +1010,7 @@ function Shop({ products, categories, openProduct }) {
   const lang = useLang();
   const [cat, setCat] = React.useState('Tout');
   const [sort, setSort] = React.useState('featured');
-  let list = cat === 'Tout' ? products : products.filter(p => p.cat === cat);
+  let list = (cat === 'Tout' ? products : products.filter(p => p.cat === cat)).filter(p => !p.promoOnly);
   if (sort === 'price-asc') list = [...list].sort((a, b) => (a.fromPrice || a.price) - (b.fromPrice || b.price));
   if (sort === 'price-desc') list = [...list].sort((a, b) => (b.fromPrice || b.price) - (a.fromPrice || a.price));
 
@@ -1026,10 +1059,10 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const activeTier = tiers.find(t => t.qty === tier);
   const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
   const total = unitPrice * qty;
-  const related = products.filter(p => p.id !== product.id && p.cat === product.cat).slice(0, 4);
+  const related = products.filter(p => p.id !== product.id && p.cat === product.cat && !p.promoOnly).slice(0, 4);
 
-  // Une case d'import par unité (max 30 affichées)
-  const slotCount = product.upload ? Math.min(qty, 30) : 0;
+  // Une case d'import par unité (max 30) — ou un nombre fixe pour les lots (product.slots)
+  const slotCount = product.slots ? product.slots : (product.upload ? Math.min(qty, 30) : 0);
   const setSlot = (i, fl) => setFiles(prev => { const n = prev.slice(); n[i] = fl || undefined; return n; });
 
   const onAdd = () => {
@@ -1310,22 +1343,26 @@ function ComingSoon() {
 window.ComingSoon = ComingSoon;
 
 // ── promos.jsx ────────────────────────────────────────────────────────────────
-function PromoCard({ promo, setPage }) {
+function PromoCard({ promo, setPage, products, openProduct }) {
   const lang = useLang();
   const g = (f) => tf(window.PROMO_I18N, promo.id, f, lang, promo[f]);
+  const prod = (products || []).find(p => p.id === promo.productId);
+  const go = () => { if (prod && openProduct) openProduct(prod); else if (setPage) setPage('shop'); };
   return React.createElement('article', { className: 'promo-card' },
     React.createElement('span', { className: 'promo-badge' }, g('badge')),
     React.createElement('div', { className: 'promo-art' },
-      React.createElement(ProductSwatch, { name: promo.swatch })
+      (prod && prod.image)
+        ? React.createElement('img', { src: prod.image, alt: g('title'), className: 'promo-art-img' })
+        : React.createElement(ProductSwatch, { name: promo.swatch })
     ),
     React.createElement('div', { className: 'promo-eyebrow' }, g('title')),
     React.createElement('h3', { className: 'promo-highlight' }, g('highlight')),
     React.createElement('p', { className: 'promo-sub' }, g('sub')),
-    React.createElement('button', { className: 'btn btn-pink', style: { marginTop: 4 }, onClick: () => setPage && setPage('shop') }, g('cta') || t(lang, 'promo_cta'))
+    React.createElement('button', { className: 'btn btn-pink', style: { marginTop: 4 }, onClick: go }, g('cta') || t(lang, 'promo_cta'))
   );
 }
 
-function Promos({ setPage }) {
+function Promos({ setPage, products, openProduct }) {
   const lang = useLang();
   const items = (window.MEYVA_DATA && window.MEYVA_DATA.PROMOS) || [];
   if (!items.length) return null;
@@ -1337,7 +1374,7 @@ function Promos({ setPage }) {
         t(lang, 'promo_t1'), React.createElement('em', null, t(lang, 'promo_em')), t(lang, 'promo_t2'))
     ),
     React.createElement('div', { className: 'promo-grid' },
-      items.map(p => React.createElement(PromoCard, { key: p.id, promo: p, setPage: setPage }))
+      items.map(p => React.createElement(PromoCard, { key: p.id, promo: p, setPage: setPage, products: products, openProduct: openProduct }))
     ),
     React.createElement('p', { className: 'promos-foot' }, t(lang, 'promo_foot'))
   );
