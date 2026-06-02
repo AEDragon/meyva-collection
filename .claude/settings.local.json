@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(gh auth *)",
-      "Bash(git --version)",
-      "mcp__Claude_in_Chrome__list_connected_browsers"
-    ]
-  }
-}
