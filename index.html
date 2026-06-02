@@ -78,6 +78,10 @@ const ANIME_MODELS = [
   { img: 'assets/products/poster-10.jpg', label: 'Demon Slayer — Inosuke' },
   { img: 'assets/products/poster-11.jpg', label: 'Death Note — Ryuk' },
 ];
+const CERT_MODELS = [
+  { img: 'assets/products/cert-boyfriend.jpg', label: 'Best Boyfriend' },
+  { img: 'assets/products/cert-girlfriend.jpg', label: 'Best Girlfriend' },
+];
 
 const PRODUCTS = [
   {
@@ -204,11 +208,11 @@ const PRODUCTS = [
     cat: 'Cadeaux',
     price: 8,
     badge: 'Custom',
-    image: 'assets/products/certificat.jpg',
-    gallery: G.cert,
-    upload: true,
-    desc: 'Certificat imprimé avec ton texte. Pour offrir avec tendresse.',
-    long: 'Certificat A5 imprimé sur papier épais avec ton texte personnalisé : dédicace, remerciement, déclaration. Dépose ton texte ou ton visuel ci-dessous, ou envoie-le par message Instagram.',
+    image: 'assets/products/cert-boyfriend.jpg',
+    gallery: ['assets/products/cert-boyfriend.jpg', 'assets/products/cert-girlfriend.jpg'],
+    models: CERT_MODELS,
+    desc: 'Diplôme imprimé à offrir. Choisis ton modèle.',
+    long: 'Diplôme A5 imprimé sur papier épais, à offrir avec tendresse. Choisis ton modèle ci-dessous. Tu peux nous envoyer un prénom à ajouter par message Instagram.',
     swatch: 'certificat',
   },
   // ── Offres (bundles avec remise) — ouvertes depuis la section promotions ──
@@ -543,7 +547,7 @@ const PRODUCT_I18N = {
   'poster-vintage': { name: 'A4 Poster — your own', secondary: '3 for 10 DT', desc: 'A4 poster on matte paper. Upload your own image / design.', long: 'A4 poster (21 × 29.7 cm) printed on 200g matte paper. Drop your own image below — one per poster depending on quantity. 3 posters for 10 DT.' },
   'poster-aura': { name: 'A4 Poster — celebs edition', secondary: '3 for 10 DT', desc: 'A4 poster on matte paper. Pick your design below.', long: 'A4 poster (21 × 29.7 cm) printed on 200g matte paper. Pick your design from our models (music, anime, movies, vintage…). 3 posters of your choice for 10 DT.' },
   'bougie-rose': { name: 'Scented flower candle', desc: 'Flower-shaped scented soy wax candle. Several colors available.', long: 'Handmade flower-shaped soy wax candle, softly scented. Available in several colors (cream, pink, blue, lilac…). Cotton wick, about 25 hours burn time.' },
-  'certificat': { name: 'Custom certificate', desc: 'Printed certificate with your text. To gift with love.', long: 'A5 certificate printed on thick paper with your custom text: dedication, thank-you, declaration. Send us the text by Instagram message.' },
+  'certificat': { name: 'Custom diploma', desc: 'Printed diploma to gift. Choose your design.', long: 'A5 diploma printed on thick paper, to gift with love. Choose your design below. You can send us a name to add by Instagram message.' },
   'promo-stickers-pack': { name: 'Stickers deal — 5 + 3 free', desc: '8 stickers for the price of 5! (5 + 3 free) — 5 DT the set.', long: 'Grab the deal: buy 5 stickers and get 3 free — that’s 8 stickers for only 5 DT. Drop your 8 designs below (PNG, JPG…). Printed on water-resistant vinyl.' },
   'promo-posters-pack': { name: 'Posters deal — 3 for 10 DT', desc: '3 posters of your choice for 10 DT (instead of 12 DT).', long: 'Build your trio: 3 A4 posters of your choice for 10 DT instead of 12 DT. Tell us your 3 favorite designs by Instagram message after ordering.' },
 };
