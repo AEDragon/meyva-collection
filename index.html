@@ -44,25 +44,31 @@
 // ── data.jsx ──────────────────────────────────────────────────────────────────
 const PRODUCTS = [
   {
-    id: 'pack-polaroid-led',
-    name: 'Pack Polaroid + LED',
+    id: 'pack-polaroid-kit',
+    name: 'Pack Polaroïd + pinces & ficelle',
     cat: 'Packs',
-    fromPrice: 8,
-    price: 8,
+    fromPrice: 10,
+    price: 10,
     badge: 'Best-seller',
-    desc: 'Mini-photos imprimées sur papier mat + clips en bois + guirlande LED chaude. Choisis le nombre de photos selon ton mur.',
-    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroid (5,4 × 8,6 cm), accompagnées de pinces en bois et d’une guirlande LED chaude à piles. Parfait pour habiller un mur, une tête de lit ou un coin de bureau. Envoie-nous tes photos sur Instagram après la commande.',
+    desc: 'Tes photos imprimées en format polaroïd, livrées avec les pinces en bois et la ficelle pour les accrocher.',
+    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroïd (5,4 × 8,6 cm), accompagnées des pinces en bois et d’une ficelle pour créer ton mur de souvenirs. Choisis le nombre de photos ci-dessous. Envoie-nous tes photos par message Instagram après la commande.',
     swatch: 'pack',
     tiers: true,
+    tierSet: 'kit',
+    kitNote: 'Le pack inclut : photos imprimées + pinces (clips en bois) + ficelle pour les accrocher.',
   },
   {
-    id: 'polaroid-10',
-    name: 'Polaroïd prints — Pack 10',
+    id: 'polaroid-prints',
+    name: 'Polaroïd — photos seules',
     cat: 'Photos',
-    price: 10,
-    desc: 'Tes 10 photos imprimées en format polaroid, sans LED ni clips. Idéal pour offrir.',
-    long: 'Dix mini-photos imprimées sur papier mat de qualité. Bord blanc style polaroid. Envoie-nous tes images après la commande.',
+    fromPrice: 8,
+    price: 8,
+    desc: 'Tes photos imprimées en format polaroïd, sans accessoires. Choisis ta quantité.',
+    long: 'Tes mini-photos imprimées sur papier mat de qualité, bord blanc style polaroïd (5,4 × 8,6 cm). Photos seules, sans pinces ni ficelle. Envoie-nous tes images par message Instagram après la commande.',
     swatch: 'photos',
+    tiers: true,
+    tierSet: 'prints',
+    kitNote: 'Photos imprimées seules (sans pinces ni ficelle).',
   },
   {
     id: 'stickers-mood',
@@ -135,6 +141,7 @@ const PRODUCTS = [
 
 const CATEGORIES = ['Tout', 'Packs', 'Photos', 'Stickers', 'Posters', 'Bougies', 'Cadeaux'];
 
+// Photos seules (impression uniquement) — d'après la price list officielle
 const PHOTO_TIERS = [
   { qty: 10, price: 8 },
   { qty: 20, price: 15 },
@@ -146,6 +153,30 @@ const PHOTO_TIERS = [
   { qty: 80, price: 45 },
   { qty: 90, price: 50 },
 ];
+
+// Mêmes quantités AVEC pinces (clips) + ficelle pour accrocher les photos
+const PHOTO_TIERS_KIT = [
+  { qty: 10, price: 10 },
+  { qty: 20, price: 17.5 },
+  { qty: 30, price: 23 },
+  { qty: 40, price: 28.5 },
+  { qty: 50, price: 34 },
+  { qty: 60, price: 39.5 },
+  { qty: 70, price: 45 },
+  { qty: 80, price: 50.5 },
+  { qty: 90, price: 56 },
+];
+
+// Grille tarifaire selon le produit (pack avec accessoires ou photos seules)
+function tiersFor(product) {
+  return product && product.tierSet === 'kit' ? PHOTO_TIERS_KIT : PHOTO_TIERS;
+}
+
+// Affichage des prix à la tunisienne/française : 17,5 DT (virgule, sans .0 inutile)
+function money(n) {
+  const r = Math.round(Number(n) * 100) / 100;
+  return String(r).replace('.', ',') + ' DT';
+}
 
 // Produits en préparation : affichés en avant-première mais pas encore en vente.
 // Ajoute / retire des entrées ici quand un nouveau produit est prêt à être teasé.
@@ -204,7 +235,8 @@ const PROMOS = [
   },
 ];
 
-window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON, DELIVERY_FEE, GOUVERNORATS, PROMOS };
+window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, PHOTO_TIERS_KIT, tiersFor, COMING_SOON, DELIVERY_FEE, GOUVERNORATS, PROMOS };
+window.money = money;
 
 // ── swatches.jsx ──────────────────────────────────────────────────────────────
 const SWATCHES = {
@@ -372,10 +404,10 @@ function PolaroidCluster() {
 window.PolaroidCluster = PolaroidCluster;
 
 // ── price-ladder.jsx ──────────────────────────────────────────────────────────
-function PriceLadder({ activeQty, onPick }) {
-  const { PHOTO_TIERS } = window.MEYVA_DATA;
+function PriceLadder({ activeQty, onPick, tiers }) {
+  const list = tiers || window.MEYVA_DATA.PHOTO_TIERS;
   return React.createElement('div', { className: 'ladder' },
-    PHOTO_TIERS.map(t =>
+    list.map(t =>
       React.createElement('div', {
         key: t.qty,
         className: 'ladder-row' + (activeQty === t.qty ? ' active' : ''),
@@ -387,7 +419,7 @@ function PriceLadder({ activeQty, onPick }) {
         ),
         React.createElement('span', { className: 'ladder-arrow' }, '→'),
         React.createElement('span', { className: 'ladder-price' },
-          t.price,
+          String(t.price).replace('.', ','),
           React.createElement('small', null, 'DT')
         ),
         React.createElement('span', null)
@@ -500,7 +532,7 @@ function ProductCard({ product, onOpen }) {
       React.createElement('div', { className: 'product-meta' },
         React.createElement('h3', { className: 'product-name' }, product.name),
         React.createElement('span', { className: 'product-price' },
-          product.tiers ? 'dès ' + product.fromPrice + ' DT' : product.price + ' DT'
+          product.tiers ? 'dès ' + window.money(product.fromPrice) : window.money(product.price)
         )
       ),
       product.secondary && React.createElement('div', { style: { fontSize: 12, color: 'var(--pink-deep)', marginTop: 4 } }, product.secondary)
@@ -523,7 +555,7 @@ function Footer() {
       React.createElement('div', null,
         React.createElement('h4', null, 'Boutique'),
         React.createElement('ul', null,
-          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Pack Polaroid + LED')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Pack Polaroïd + pinces & ficelle')),
           React.createElement('li', null, React.createElement('a', { href: '#' }, 'Stickers')),
           React.createElement('li', null, React.createElement('a', { href: '#' }, 'Posters')),
           React.createElement('li', null, React.createElement('a', { href: '#' }, 'Bougies')),
@@ -561,8 +593,8 @@ Object.assign(window, { Nav, Footer, ProductCard, UtilityBar, Icon, Logo });
 
 // ── pages.jsx ─────────────────────────────────────────────────────────────────
 function Home({ products, setPage, openProduct }) {
-  const featured = products.filter(p => ['pack-polaroid-led', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id));
-  const more = products.filter(p => !['pack-polaroid-led', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id)).slice(0, 4);
+  const featured = products.filter(p => ['pack-polaroid-kit', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id));
+  const more = products.filter(p => !['pack-polaroid-kit', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id)).slice(0, 4);
 
   return React.createElement(React.Fragment, null,
     React.createElement('section', { className: 'hero' },
@@ -718,7 +750,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [qty, setQty] = React.useState(1);
   const [tier, setTier] = React.useState(product.tiers ? 10 : null);
   const [added, setAdded] = React.useState(false);
-  const tiers = window.MEYVA_DATA.PHOTO_TIERS;
+  const tiers = window.MEYVA_DATA.tiersFor(product);
   const activeTier = tiers.find(t => t.qty === tier);
   const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
   const total = unitPrice * qty;
@@ -740,7 +772,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
     React.createElement('section', { className: 'pdp' },
       React.createElement('div', { className: 'pdp-gallery' },
         React.createElement('div', { className: 'pdp-main' },
-          product.id === 'pack-polaroid-led'
+          product.id === 'pack-polaroid-kit'
             ? React.createElement(window.PolaroidCluster, null)
             : React.createElement(ProductSwatch, { name: product.swatch })
         ),
@@ -756,17 +788,17 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
         React.createElement('div', { className: 'pdp-cat' }, product.cat),
         React.createElement('h1', { className: 'pdp-name' }, product.name),
         React.createElement('div', { className: 'pdp-price' },
-          (product.tiers ? unitPrice : product.price) + ' DT',
-          product.tiers && React.createElement('small', null, '· dès ' + product.fromPrice + ' DT'),
+          window.money(product.tiers ? unitPrice : product.price),
+          product.tiers && React.createElement('small', null, '· dès ' + window.money(product.fromPrice)),
           product.secondary && !product.tiers && React.createElement('small', null, '· ' + product.secondary)
         ),
         React.createElement('p', { className: 'pdp-desc' }, product.long || product.desc),
 
         product.tiers && React.createElement('div', { className: 'pdp-section' },
-          React.createElement('h4', null, 'Choisis ton pack'),
-          React.createElement(PriceLadder, { activeQty: tier, onPick: t => setTier(t.qty) }),
+          React.createElement('h4', null, 'Choisis le nombre de photos'),
+          React.createElement(PriceLadder, { activeQty: tier, onPick: t => setTier(t.qty), tiers: tiers }),
           React.createElement('div', { style: { fontSize: 12, color: 'var(--ink-soft)', marginTop: 10, lineHeight: 1.5 } },
-            'Le pack inclut : photos imprimées + clips en bois + guirlande LED chaude à piles. ',
+            (product.kitNote || '') + ' ',
             'Envoie-nous tes photos par message Instagram après la commande.')
         ),
 
@@ -781,7 +813,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
 
         React.createElement('div', { className: 'pdp-cta' },
           React.createElement('button', { className: 'btn btn-pink', onClick: onAdd },
-            added ? '✓ Ajouté au panier' : 'Ajouter — ' + total + ' DT'
+            added ? '✓ Ajouté au panier' : 'Ajouter — ' + window.money(total)
           )
         ),
 
@@ -877,7 +909,7 @@ function CartDrawer({ open, onClose, cart, updateQty, removeItem, onCheckout }) 
               ),
               React.createElement('div', { style: { textAlign: 'right' } },
                 React.createElement('div', { style: { fontFamily: 'Fraunces, serif', fontWeight: 500, fontSize: 16 } },
-                  (item.unitPrice * item.qty) + ' DT'),
+                  window.money(item.unitPrice * item.qty)),
                 React.createElement('button', {
                   onClick: () => removeItem(idx),
                   style: { background: 'none', border: 'none', fontSize: 12, color: 'var(--ink-soft)', textDecoration: 'underline', padding: 0, marginTop: 8, cursor: 'pointer' },
@@ -888,15 +920,15 @@ function CartDrawer({ open, onClose, cart, updateQty, removeItem, onCheckout }) 
       items.length > 0 && React.createElement('div', { className: 'drawer-foot' },
         React.createElement('div', { className: 'cart-row' },
           React.createElement('span', null, 'Sous-total'),
-          React.createElement('span', null, subtotal + ' DT')
+          React.createElement('span', null, window.money(subtotal))
         ),
         React.createElement('div', { className: 'cart-row' },
           React.createElement('span', null, 'Livraison'),
-          React.createElement('span', null, shipping + ' DT')
+          React.createElement('span', null, window.money(shipping))
         ),
         React.createElement('div', { className: 'cart-total' },
           React.createElement('span', null, 'Total'),
-          React.createElement('span', null, total + ' DT')
+          React.createElement('span', null, window.money(total))
         ),
         React.createElement('div', { className: 'checkout-note' },
           'Paiement en espèces à la livraison. Remplis tes coordonnées à l’étape suivante.'),
@@ -1052,7 +1084,7 @@ function Checkout({ cart, onPlaced, setPage }) {
       React.createElement('div', { className: 'check-badge' }, '✓'),
       React.createElement('h1', { className: 'serif' }, 'Commande enregistrée !'),
       React.createElement('p', null, 'Merci ', React.createElement('strong', null, placed.nom), '. Ta commande ', React.createElement('strong', null, placed.id), ' est bien enregistrée.'),
-      React.createElement('p', { className: 'muted' }, 'Paiement en espèces à la livraison · Total à payer : ', React.createElement('strong', null, placed.total + ' DT'), ' (livraison incluse).'),
+      React.createElement('p', { className: 'muted' }, 'Paiement en espèces à la livraison · Total à payer : ', React.createElement('strong', null, window.money(placed.total)), ' (livraison incluse).'),
       React.createElement('p', { className: 'muted' }, 'On te contacte sur Instagram pour confirmer. Tu peux aussi nous écrire avec ton numéro de commande.'),
       React.createElement('div', { style: { display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' } },
         React.createElement('button', { className: 'btn btn-pink', onClick: () => setPage('shop') }, 'Continuer mes achats'),
@@ -1140,11 +1172,11 @@ function Checkout({ cart, onPlaced, setPage }) {
       React.createElement('h3', null, 'Ta commande'),
       cart.map((i, idx) => React.createElement('div', { key: idx, className: 'sum-line' },
         React.createElement('span', null, i.name, i.option && i.option.tier ? ' · ' + i.option.tier.qty + ' photos' : '', ' × ' + i.qty),
-        React.createElement('span', null, (i.unitPrice * i.qty) + ' DT')
+        React.createElement('span', null, window.money(i.unitPrice * i.qty))
       )),
-      React.createElement('div', { className: 'sum-line muted' }, React.createElement('span', null, 'Sous-total'), React.createElement('span', null, subtotal + ' DT')),
-      React.createElement('div', { className: 'sum-line muted' }, React.createElement('span', null, 'Livraison'), React.createElement('span', null, shipping + ' DT')),
-      React.createElement('div', { className: 'sum-total' }, React.createElement('span', null, 'Total'), React.createElement('span', null, total + ' DT')),
+      React.createElement('div', { className: 'sum-line muted' }, React.createElement('span', null, 'Sous-total'), React.createElement('span', null, window.money(subtotal))),
+      React.createElement('div', { className: 'sum-line muted' }, React.createElement('span', null, 'Livraison'), React.createElement('span', null, window.money(shipping))),
+      React.createElement('div', { className: 'sum-total' }, React.createElement('span', null, 'Total'), React.createElement('span', null, window.money(total))),
       React.createElement('button', { className: 'btn btn-pink', style: { width: '100%', marginTop: 16 }, onClick: submit, disabled: sending },
         sending ? 'Envoi…' : 'Confirmer la commande'),
       React.createElement('p', { className: 'muted', style: { fontSize: 12, marginTop: 10, textAlign: 'center' } }, 'Aucun paiement en ligne — tu payes en espèces à la réception.')
@@ -1237,7 +1269,7 @@ function OrderAdmin() {
     React.createElement('div', { className: 'admin-bar' },
       React.createElement('div', { className: 'admin-stats' },
         React.createElement('span', null, React.createElement('strong', null, orders.length), ' commande' + (orders.length > 1 ? 's' : '')),
-        React.createElement('span', null, 'Total : ', React.createElement('strong', null, revenue + ' DT'))
+        React.createElement('span', null, 'Total : ', React.createElement('strong', null, window.money(revenue)))
       ),
       React.createElement('button', { className: 'btn btn-pink', onClick: exportCSV, disabled: !orders.length }, 'Exporter pour mescolis.tn (CSV)')
     ),
@@ -1259,7 +1291,7 @@ function OrderAdmin() {
                 React.createElement('td', null, o.ville),
                 React.createElement('td', null, o.adresse),
                 React.createElement('td', null, orderDesignation(o)),
-                React.createElement('td', null, o.total + ' DT')
+                React.createElement('td', null, window.money(o.total))
               ))
             )
           )

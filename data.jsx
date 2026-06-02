@@ -1,26 +1,33 @@
 // Meyva Collection — Tunisian gift shop product data (French)
+// NOTE : index.html est la version exécutée. Ce fichier est un miroir source.
 
 const PRODUCTS = [
   {
-    id: 'pack-polaroid-led',
-    name: 'Pack Polaroid + LED',
+    id: 'pack-polaroid-kit',
+    name: 'Pack Polaroïd + pinces & ficelle',
     cat: 'Packs',
-    fromPrice: 8,
-    price: 8,
+    fromPrice: 10,
+    price: 10,
     badge: 'Best-seller',
-    desc: 'Mini-photos imprimées sur papier mat + clips en bois + guirlande LED chaude. Choisis le nombre de photos selon ton mur.',
-    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroid (5,4 × 8,6 cm), accompagnées de pinces en bois et d\u2019une guirlande LED chaude à piles. Parfait pour habiller un mur, une tête de lit ou un coin de bureau. Envoie-nous tes photos sur Instagram après la commande.',
+    desc: 'Tes photos imprimées en format polaroïd, livrées avec les pinces en bois et la ficelle pour les accrocher.',
+    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroïd (5,4 × 8,6 cm), accompagnées des pinces en bois et d’une ficelle pour créer ton mur de souvenirs. Choisis le nombre de photos ci-dessous. Envoie-nous tes photos par message Instagram après la commande.',
     swatch: 'pack',
     tiers: true,
+    tierSet: 'kit',
+    kitNote: 'Le pack inclut : photos imprimées + pinces (clips en bois) + ficelle pour les accrocher.',
   },
   {
-    id: 'polaroid-10',
-    name: 'Polaroïd prints — Pack 10',
+    id: 'polaroid-prints',
+    name: 'Polaroïd — photos seules',
     cat: 'Photos',
-    price: 10,
-    desc: 'Tes 10 photos imprimées en format polaroid, sans LED ni clips. Idéal pour offrir.',
-    long: 'Dix mini-photos imprimées sur papier mat de qualité. Bord blanc style polaroid. Envoie-nous tes images après la commande.',
+    fromPrice: 8,
+    price: 8,
+    desc: 'Tes photos imprimées en format polaroïd, sans accessoires. Choisis ta quantité.',
+    long: 'Tes mini-photos imprimées sur papier mat de qualité, bord blanc style polaroïd (5,4 × 8,6 cm). Photos seules, sans pinces ni ficelle. Envoie-nous tes images par message Instagram après la commande.',
     swatch: 'photos',
+    tiers: true,
+    tierSet: 'prints',
+    kitNote: 'Photos imprimées seules (sans pinces ni ficelle).',
   },
   {
     id: 'stickers-mood',
@@ -38,7 +45,7 @@ const PRODUCTS = [
     cat: 'Stickers',
     price: 12,
     desc: 'Stickers anime, manga, kawaii. Pour laptop, journal, carnet.',
-    long: '30+ stickers thème anime et manga, vinyl résistant à l\u2019eau. Parfait pour un MacBook ou un bullet journal.',
+    long: '30+ stickers thème anime et manga, vinyl résistant à l’eau. Parfait pour un MacBook ou un bullet journal.',
     swatch: 'stickers-anime',
   },
   {
@@ -67,7 +74,7 @@ const PRODUCTS = [
     price: 4,
     secondary: '3 pour 10 DT',
     desc: 'Aura colorée, dégradés doux. Format A4.',
-    long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d\u2019aura. 3 posters au choix pour 10 DT.',
+    long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d’aura. 3 posters au choix pour 10 DT.',
     swatch: 'poster-aura',
   },
   {
@@ -76,7 +83,7 @@ const PRODUCTS = [
     cat: 'Bougies',
     price: 18,
     desc: 'Bougie en cire de soja parfum rose. Pot en verre 100g.',
-    long: 'Bougie artisanale en cire de soja, parfum rose poudrée. Pot en verre transparent, mèche en coton, durée d\u2019environ 25 heures.',
+    long: 'Bougie artisanale en cire de soja, parfum rose poudrée. Pot en verre transparent, mèche en coton, durée d’environ 25 heures.',
     swatch: 'bougie',
   },
   {
@@ -93,6 +100,7 @@ const PRODUCTS = [
 
 const CATEGORIES = ['Tout', 'Packs', 'Photos', 'Stickers', 'Posters', 'Bougies', 'Cadeaux'];
 
+// Photos seules (impression uniquement) — d'après la price list officielle
 const PHOTO_TIERS = [
   { qty: 10, price: 8 },
   { qty: 20, price: 15 },
@@ -105,9 +113,31 @@ const PHOTO_TIERS = [
   { qty: 90, price: 50 },
 ];
 
+// Mêmes quantités AVEC pinces (clips) + ficelle pour accrocher les photos
+const PHOTO_TIERS_KIT = [
+  { qty: 10, price: 10 },
+  { qty: 20, price: 17.5 },
+  { qty: 30, price: 23 },
+  { qty: 40, price: 28.5 },
+  { qty: 50, price: 34 },
+  { qty: 60, price: 39.5 },
+  { qty: 70, price: 45 },
+  { qty: 80, price: 50.5 },
+  { qty: 90, price: 56 },
+];
+
+// Grille tarifaire selon le produit (pack avec accessoires ou photos seules)
+function tiersFor(product) {
+  return product && product.tierSet === 'kit' ? PHOTO_TIERS_KIT : PHOTO_TIERS;
+}
+
+// Affichage des prix : 17,5 DT (virgule, sans .0 inutile)
+function money(n) {
+  const r = Math.round(Number(n) * 100) / 100;
+  return String(r).replace('.', ',') + ' DT';
+}
+
 // Produits en préparation : affichés en avant-première mais pas encore en vente.
-// Ajoute / retire des entrées ici quand un nouveau produit est prêt à être teasé.
-// Pour lancer un produit, déplace-le simplement dans PRODUCTS ci-dessus.
 const COMING_SOON = [
   {
     id: 'cs-tote',
@@ -162,4 +192,5 @@ const PROMOS = [
   },
 ];
 
-window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON, DELIVERY_FEE, GOUVERNORATS, PROMOS };
+window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, PHOTO_TIERS_KIT, tiersFor, COMING_SOON, DELIVERY_FEE, GOUVERNORATS, PROMOS };
+window.money = money;
