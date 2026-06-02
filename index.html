@@ -1805,6 +1805,9 @@ function OrderAdmin() {
   // Auto-load orders once signed in
   React.useEffect(() => { if (authState === 'signedIn') loadServer(); }, [authState]);
 
+  // Connexion automatique si la clé d'accès est déjà mémorisée sur cet appareil
+  React.useEffect(() => { const k = (adminKey || '').trim(); if (k && !keyMode) loginWithKey(); }, []);
+
   const Title = React.createElement('h1', { className: 'serif checkout-title' }, t(lang, 'ad_t1'), React.createElement('em', { className: 'serif-italic' }, t(lang, 'ad_em')));
   const Eyebrow = React.createElement('div', { className: 'section-eyebrow' }, t(lang, 'ad_eyebrow'));
 
