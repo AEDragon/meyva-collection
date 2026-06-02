@@ -42,6 +42,17 @@
 
 <script type="text/babel">
 // ── data.jsx ──────────────────────────────────────────────────────────────────
+// Galeries d'images par produit (plusieurs photos pour voir le rendu)
+const G = {
+  pack:     ['assets/insta/pack-polaroid.jpg', 'assets/products/polaroid.jpg', 'assets/products/g_polaroidB.jpg'],
+  polaroid: ['assets/products/polaroid.jpg', 'assets/products/g_polaroidB.jpg', 'assets/products/g_polaroidA.jpg'],
+  stickers: ['assets/products/stickers.jpg', 'assets/products/g_stkB.jpg', 'assets/products/g_stkC.jpg'],
+  posterV:  ['assets/products/poster-vintage.jpg', 'assets/products/g_frameA.jpg', 'assets/products/g_frameB.jpg'],
+  posterA:  ['assets/products/poster-aura.jpg', 'assets/products/g_gradB.jpg', 'assets/products/g_gradA.jpg'],
+  bougie:   ['assets/products/bougie.jpg', 'assets/products/g_candB.jpg', 'assets/products/g_candA.jpg'],
+  cert:     ['assets/products/certificat.jpg', 'assets/products/g_giftA.jpg', 'assets/products/g_giftB.jpg'],
+};
+
 const PRODUCTS = [
   {
     id: 'pack-polaroid-kit',
@@ -51,6 +62,7 @@ const PRODUCTS = [
     price: 10,
     badge: 'Best-seller',
     image: 'assets/insta/pack-polaroid.jpg',
+    gallery: G.pack,
     desc: 'Tes photos imprimées en format polaroïd, livrées avec les pinces en bois et une guirlande LED lumineuse de 10 m pour les accrocher.',
     long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroïd (5,4 × 8,6 cm), accompagnées des pinces en bois et d’une guirlande LED lumineuse de 10 m pour créer ton mur de souvenirs. Choisis le nombre de photos ci-dessous. Envoie-nous tes photos par message Instagram après la commande.',
     swatch: 'pack',
@@ -65,6 +77,7 @@ const PRODUCTS = [
     fromPrice: 8,
     price: 8,
     image: 'assets/products/polaroid.jpg',
+    gallery: G.polaroid,
     desc: 'Tes photos imprimées en format polaroïd, sans accessoires. Choisis ta quantité.',
     long: 'Tes mini-photos imprimées sur papier mat de qualité, bord blanc style polaroïd (5,4 × 8,6 cm). Photos seules, sans pinces ni ficelle. Envoie-nous tes images par message Instagram après la commande.',
     swatch: 'photos',
@@ -79,6 +92,7 @@ const PRODUCTS = [
     price: 1,
     badge: 'Personnalisé',
     image: 'assets/products/stickers.jpg',
+    gallery: G.stickers,
     upload: true,
     desc: '1 sticker = 1 DT. Choisis la quantité et dépose ton design.',
     long: 'Crée tes propres stickers : 1 sticker = 1 DT. Choisis le nombre de stickers et dépose ton image / ton design ci-dessous (PNG, JPG…). On les imprime sur vinyle résistant à l’eau. Astuce : profite de l’offre 5 + 3 offerts !',
@@ -90,6 +104,7 @@ const PRODUCTS = [
     cat: 'Stickers',
     price: 12,
     image: 'assets/products/stickers.jpg',
+    gallery: G.stickers,
     desc: 'Packet de 30+ stickers ambiance douce et pastel. Mix sur mesure possible.',
     long: 'Une sélection de 30+ stickers thème mood doux, pastel et fleuri. Indique-nous tes préférences sur Instagram et on adapte le mix.',
     swatch: 'stickers-pink',
@@ -100,6 +115,7 @@ const PRODUCTS = [
     cat: 'Stickers',
     price: 12,
     image: 'assets/products/stickers.jpg',
+    gallery: G.stickers,
     desc: 'Packet de 30+ stickers anime, manga, kawaii. Pour laptop, journal, carnet.',
     long: '30+ stickers thème anime et manga, vinyl résistant à l’eau. Parfait pour un MacBook ou un bullet journal.',
     swatch: 'stickers-anime',
@@ -110,6 +126,7 @@ const PRODUCTS = [
     cat: 'Stickers',
     price: 12,
     image: 'assets/products/stickers.jpg',
+    gallery: G.stickers,
     desc: 'Packet de 30+ stickers esthétique Y2K, holographique, fin des années 90.',
     long: '30+ stickers Y2K : papillons holographiques, étoiles, glitter, flames. Vinyl premium.',
     swatch: 'stickers-y2k',
@@ -121,6 +138,7 @@ const PRODUCTS = [
     price: 4,
     secondary: '3 pour 10 DT',
     image: 'assets/products/poster-vintage.jpg',
+    gallery: G.posterV,
     desc: 'Poster A4 sur papier mat. Imprimé chez nous.',
     long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Esthétique vintage moodboard. 3 posters au choix pour 10 DT.',
     swatch: 'poster-vintage',
@@ -132,6 +150,7 @@ const PRODUCTS = [
     price: 4,
     secondary: '3 pour 10 DT',
     image: 'assets/products/poster-aura.jpg',
+    gallery: G.posterA,
     desc: 'Aura colorée, dégradés doux. Format A4.',
     long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d’aura. 3 posters au choix pour 10 DT.',
     swatch: 'poster-aura',
@@ -142,6 +161,7 @@ const PRODUCTS = [
     cat: 'Bougies',
     price: 18,
     image: 'assets/products/bougie.jpg',
+    gallery: G.bougie,
     desc: 'Bougie en cire de soja parfum rose. Pot en verre 100g.',
     long: 'Bougie artisanale en cire de soja, parfum rose poudrée. Pot en verre transparent, mèche en coton, durée d’environ 25 heures.',
     swatch: 'bougie',
@@ -153,6 +173,7 @@ const PRODUCTS = [
     price: 8,
     badge: 'Custom',
     image: 'assets/products/certificat.jpg',
+    gallery: G.cert,
     upload: true,
     desc: 'Certificat imprimé avec ton texte. Pour offrir avec tendresse.',
     long: 'Certificat A5 imprimé sur papier épais avec ton texte personnalisé : dédicace, remerciement, déclaration. Dépose ton texte ou ton visuel ci-dessous, ou envoie-le par message Instagram.',
@@ -997,6 +1018,10 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [tier, setTier] = React.useState(product.tiers ? 10 : null);
   const [added, setAdded] = React.useState(false);
   const [files, setFiles] = React.useState([]); // un emplacement par unité
+  const [activeImg, setActiveImg] = React.useState(0);
+  React.useEffect(() => { setActiveImg(0); }, [product.id]);
+  const gallery = (product.gallery && product.gallery.length) ? product.gallery : (product.image ? [product.image] : []);
+  const mainImg = gallery[Math.min(activeImg, gallery.length - 1)];
   const tiers = window.MEYVA_DATA.tiersFor(product);
   const activeTier = tiers.find(t => t.qty === tier);
   const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
@@ -1026,16 +1051,19 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
     React.createElement('section', { className: 'pdp' },
       React.createElement('div', { className: 'pdp-gallery' },
         React.createElement('div', { className: 'pdp-main' },
-          product.image
-            ? React.createElement('img', { src: product.image, alt: pField(product, 'name', lang), className: 'pdp-photo' })
-            : product.id === 'pack-polaroid-kit'
-              ? React.createElement(window.PolaroidCluster, null)
-              : React.createElement(ProductSwatch, { name: product.swatch })
+          mainImg
+            ? React.createElement('img', { src: mainImg, alt: pField(product, 'name', lang), className: 'pdp-photo' })
+            : React.createElement(ProductSwatch, { name: product.swatch })
         ),
-        React.createElement('div', { className: 'pdp-thumbs' },
-          [product.swatch, 'photos', 'pack', 'certificat'].map((s, i) =>
-            React.createElement('div', { key: i, className: 'pdp-thumb' + (i === 0 ? ' active' : '') },
-              React.createElement(ProductSwatch, { name: s })
+        gallery.length > 1 && React.createElement('div', { className: 'pdp-thumbs' },
+          gallery.map((src, i) =>
+            React.createElement('button', {
+              key: i, type: 'button',
+              className: 'pdp-thumb' + (i === activeImg ? ' active' : ''),
+              onClick: () => setActiveImg(i),
+              'aria-label': pField(product, 'name', lang) + ' — photo ' + (i + 1),
+            },
+              React.createElement('img', { src: src, alt: '', className: 'pdp-thumb-img', loading: 'lazy' })
             )
           )
         )
@@ -1673,6 +1701,31 @@ function App() {
     try { document.documentElement.lang = l; } catch (e) {}
   };
   React.useEffect(() => { try { document.documentElement.lang = lang; } catch (e) {} }, [lang]);
+
+  // Admin est masqué pour les clients : accessible via #admin (lien secret du
+  // propriétaire) et révélé automatiquement une fois connecté avec Clerk.
+  const [showAdmin, setShowAdmin] = useState(() => {
+    try { return (window.location.hash || '').replace('#', '').toLowerCase() === 'admin'; } catch (e) { return false; }
+  });
+  React.useEffect(() => {
+    const applyHash = () => {
+      try {
+        if ((window.location.hash || '').replace('#', '').toLowerCase() === 'admin') {
+          setShowAdmin(true); setPage('admin'); window.scrollTo(0, 0);
+        }
+      } catch (e) {}
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    let unsub = null;
+    (window.__clerkReady || Promise.reject(new Error('no clerk'))).then((clerk) => {
+      const sync = () => { if (clerk.user) setShowAdmin(true); };
+      sync();
+      unsub = clerk.addListener(sync);
+    }).catch(() => {});
+    return () => { window.removeEventListener('hashchange', applyHash); if (typeof unsub === 'function') unsub(); };
+  }, []);
+
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -1716,7 +1769,7 @@ function App() {
           { id: 'shop', label: t(lang, 'nav_shop') },
           { id: 'product', label: t(lang, 'nav_product') },
           { id: 'about', label: t(lang, 'nav_about') },
-          { id: 'admin', label: t(lang, 'nav_admin') },
+          ...(showAdmin ? [{ id: 'admin', label: t(lang, 'nav_admin') }] : []),
         ].map(l => (
           <button key={l.id} className={page === l.id ? 'active' : ''} onClick={() => {
             if (l.id === 'product') setActiveProduct(PRODUCTS[0]);

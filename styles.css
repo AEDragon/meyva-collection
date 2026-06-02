@@ -674,20 +674,24 @@ a { color: inherit; text-decoration: none; }
   position: relative;
 }
 .pdp-thumbs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
+.pdp-thumb { width: 84px; }
 .pdp-thumb {
   aspect-ratio: 1;
   background: var(--cream-deep);
   cursor: pointer;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
+  border-radius: 10px;
   display: grid;
   place-items: center;
   overflow: hidden;
+  padding: 0;
 }
-.pdp-thumb.active { border-color: var(--ink); }
+.pdp-thumb.active { border-color: var(--pink-deep); }
+.pdp-thumb-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .pdp-info {
   padding-top: 24px;
