@@ -1110,10 +1110,14 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [added, setAdded] = React.useState(false);
   const [files, setFiles] = React.useState([]); // un emplacement par unité
   const [activeImg, setActiveImg] = React.useState(0);
-  const [model, setModel] = React.useState(null);
-  React.useEffect(() => { setActiveImg(0); setModel(null); }, [product.id]);
+  const hasModels = !!(product.models && product.models.length);
+  const [model, setModel] = React.useState(hasModels ? product.models[0] : null);
+  React.useEffect(() => { setActiveImg(0); setModel(hasModels ? product.models[0] : null); }, [product.id]);
   const gallery = (product.gallery && product.gallery.length) ? product.gallery : (product.image ? [product.image] : []);
-  const mainImg = gallery[Math.min(activeImg, gallery.length - 1)];
+  // Avec modèles : l'image principale suit le modèle sélectionné + flèches
+  const modelIdx = hasModels && model ? product.models.findIndex(m => m.label === model.label) : -1;
+  const stepModel = (d) => { if (!hasModels) return; const n = product.models.length; const cur = modelIdx < 0 ? 0 : modelIdx; setModel(product.models[(cur + d + n) % n]); };
+  const mainImg = hasModels && model ? model.img : gallery[Math.min(activeImg, gallery.length - 1)];
   const tiers = window.MEYVA_DATA.tiersFor(product);
   const activeTier = tiers.find(t => t.qty === tier);
   const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
@@ -1145,10 +1149,18 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
       React.createElement('div', { className: 'pdp-gallery' },
         React.createElement('div', { className: 'pdp-main' },
           mainImg
-            ? React.createElement('img', { src: mainImg, alt: pField(product, 'name', lang), className: 'pdp-photo' })
-            : React.createElement(ProductSwatch, { name: product.swatch })
+            ? React.createElement('img', { src: mainImg, alt: (hasModels && model ? model.label : pField(product, 'name', lang)), className: 'pdp-photo' + (hasModels ? ' contain' : '') })
+            : React.createElement(ProductSwatch, { name: product.swatch }),
+          hasModels && product.models.length > 1 && React.createElement('button', {
+            type: 'button', className: 'pdp-arrow pdp-arrow-l', onClick: () => stepModel(-1), 'aria-label': '‹',
+          }, '‹'),
+          hasModels && product.models.length > 1 && React.createElement('button', {
+            type: 'button', className: 'pdp-arrow pdp-arrow-r', onClick: () => stepModel(1), 'aria-label': '›',
+          }, '›'),
+          hasModels && model && React.createElement('span', { className: 'pdp-modeltag' }, model.label)
         ),
-        gallery.length > 1 && React.createElement('div', { className: 'pdp-thumbs' },
+        // Galerie de vignettes (produits sans sélecteur de modèle)
+        !hasModels && gallery.length > 1 && React.createElement('div', { className: 'pdp-thumbs' },
           gallery.map((src, i) =>
             React.createElement('button', {
               key: i, type: 'button',
