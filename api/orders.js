@@ -5,7 +5,7 @@
 // Orders are stored as individual private blobs (order/<id>.json) in the
 // linked Vercel Blob store, so concurrent orders never overwrite each other.
 
-import { put, list, get } from '@vercel/blob';
+import { put, list, get, del } from '@vercel/blob';
 import { verifyToken } from '@clerk/backend';
 
 const PREFIX = 'order/';
@@ -87,6 +87,21 @@ export default async function handler(req, res) {
       }
       const orders = await readAll(token);
       res.status(200).json({ orders });
+      return;
+    }
+
+    if (req.method === 'DELETE') {
+      if (!(await isAdmin(req))) {
+        res.status(401).json({ error: 'non autorisé' });
+        return;
+      }
+      const id = (req.query && req.query.id) || req.headers['x-order-id'];
+      if (!id || !/^CMD-[0-9]+-[0-9]+$/.test(String(id))) {
+        res.status(400).json({ error: 'id de commande invalide' });
+        return;
+      }
+      await del(PREFIX + id + '.json', { token });
+      res.status(200).json({ ok: true, id: id });
       return;
     }
 

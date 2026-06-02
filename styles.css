@@ -1093,6 +1093,13 @@ textarea.inp { resize: vertical; }
 }
 .admin-table td { padding: 11px 14px; border-top: 1px solid var(--line); vertical-align: top; }
 .admin-table tr:nth-child(even) td { background: var(--cream); }
+.btn-delete {
+  background: #fff; border: 1px solid var(--pink-deep); color: var(--pink-deep);
+  font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 12px;
+  border-radius: 999px; cursor: pointer; white-space: nowrap;
+}
+.btn-delete:hover { background: var(--pink-deep); color: #fff; }
+.btn-delete:disabled { opacity: 0.5; cursor: default; }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
