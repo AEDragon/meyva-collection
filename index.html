@@ -47,11 +47,37 @@ const G = {
   pack:     ['assets/insta/pack-polaroid.jpg', 'assets/products/polaroid.jpg', 'assets/products/g_polaroidB.jpg'],
   polaroid: ['assets/products/polaroid.jpg', 'assets/products/g_polaroidB.jpg', 'assets/products/g_polaroidA.jpg'],
   stickers: ['assets/products/stickers.jpg', 'assets/products/g_stkB.jpg', 'assets/products/g_stkC.jpg'],
-  posterV:  ['assets/products/poster-vintage.jpg', 'assets/products/g_frameA.jpg', 'assets/products/g_frameB.jpg'],
-  posterA:  ['assets/products/poster-aura.jpg', 'assets/products/g_gradB.jpg', 'assets/products/g_gradA.jpg'],
-  bougie:   ['assets/products/bougie.jpg', 'assets/products/g_candB.jpg', 'assets/products/g_candA.jpg'],
+  posterV:  ['assets/products/poster-1.jpg', 'assets/products/poster-2.jpg', 'assets/products/poster-3.jpg', 'assets/products/poster-6.jpg', 'assets/products/poster-7.jpg', 'assets/products/poster-8.jpg'],
+  posterA:  ['assets/products/poster-12.jpg', 'assets/products/poster-15.jpg', 'assets/products/poster-13.jpg', 'assets/products/poster-14.jpg', 'assets/products/poster-16.jpg', 'assets/products/poster-9.jpg'],
+  bougie:   ['assets/products/bougie-3.jpg', 'assets/products/bougie-4.jpg', 'assets/products/bougie-5.jpg', 'assets/products/bougie-6.jpg', 'assets/products/bougie-2.jpg', 'assets/products/bougie-1.jpg'],
   cert:     ['assets/products/certificat.jpg', 'assets/products/g_giftA.jpg', 'assets/products/g_giftB.jpg'],
 };
+
+// Modèles de posters à choisir (photos réelles envoyées par la cliente)
+const POSTER_MODELS = [
+  { img: 'assets/products/poster-1.jpg', label: 'Billie Eilish' },
+  { img: 'assets/products/poster-2.jpg', label: 'Billie Eilish — Lunch' },
+  { img: 'assets/products/poster-3.jpg', label: 'The Weeknd — After Hours' },
+  { img: 'assets/products/poster-4.jpg', label: 'The Weeknd' },
+  { img: 'assets/products/poster-5.jpg', label: 'The Weeknd — discographie' },
+  { img: 'assets/products/poster-6.jpg', label: 'Harry Potter' },
+  { img: 'assets/products/poster-7.jpg', label: 'Vogue' },
+  { img: 'assets/products/poster-8.jpg', label: 'Lana Del Rey' },
+  { img: 'assets/products/poster-9.jpg', label: 'Demon Slayer — Tanjiro' },
+  { img: 'assets/products/poster-10.jpg', label: 'Demon Slayer — Inosuke' },
+  { img: 'assets/products/poster-11.jpg', label: 'Death Note — Ryuk' },
+  { img: 'assets/products/poster-12.jpg', label: 'Taylor Swift' },
+  { img: 'assets/products/poster-13.jpg', label: 'Doja Cat' },
+  { img: 'assets/products/poster-14.jpg', label: 'Adele' },
+  { img: 'assets/products/poster-15.jpg', label: 'Ariana Grande' },
+  { img: 'assets/products/poster-16.jpg', label: 'Lose Your Mind' },
+  { img: 'assets/products/poster-17.jpg', label: 'Spider-Man' },
+];
+const ANIME_MODELS = [
+  { img: 'assets/products/poster-9.jpg', label: 'Demon Slayer — Tanjiro' },
+  { img: 'assets/products/poster-10.jpg', label: 'Demon Slayer — Inosuke' },
+  { img: 'assets/products/poster-11.jpg', label: 'Death Note — Ryuk' },
+];
 
 const PRODUCTS = [
   {
@@ -116,6 +142,7 @@ const PRODUCTS = [
     price: 12,
     image: 'assets/products/stickers.jpg',
     gallery: G.stickers,
+    models: ANIME_MODELS,
     desc: 'Packet de 30+ stickers anime, manga, kawaii. Pour laptop, journal, carnet.',
     long: '30+ stickers thème anime et manga, vinyl résistant à l’eau. Parfait pour un MacBook ou un bullet journal.',
     swatch: 'stickers-anime',
@@ -133,26 +160,28 @@ const PRODUCTS = [
   },
   {
     id: 'poster-vintage',
-    name: 'Poster — Vintage moodboard',
+    name: 'Poster A4 — au choix',
     cat: 'Posters',
     price: 4,
     secondary: '3 pour 10 DT',
-    image: 'assets/products/poster-vintage.jpg',
+    image: 'assets/products/poster-1.jpg',
     gallery: G.posterV,
-    desc: 'Poster A4 sur papier mat. Imprimé chez nous.',
-    long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Esthétique vintage moodboard. 3 posters au choix pour 10 DT.',
+    models: POSTER_MODELS,
+    desc: 'Poster A4 sur papier mat. Choisis ton modèle ci-dessous.',
+    long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Choisis ton modèle parmi nos designs (musique, anime, films, vintage…). 3 posters au choix pour 10 DT.',
     swatch: 'poster-vintage',
   },
   {
     id: 'poster-aura',
-    name: 'Poster — Aura print',
+    name: 'Poster A4 — édition celebs',
     cat: 'Posters',
     price: 4,
     secondary: '3 pour 10 DT',
-    image: 'assets/products/poster-aura.jpg',
+    image: 'assets/products/poster-12.jpg',
     gallery: G.posterA,
-    desc: 'Aura colorée, dégradés doux. Format A4.',
-    long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d’aura. 3 posters au choix pour 10 DT.',
+    models: POSTER_MODELS,
+    desc: 'Poster A4 sur papier mat. Choisis ton modèle ci-dessous.',
+    long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Choisis ton modèle parmi nos designs (musique, anime, films, vintage…). 3 posters au choix pour 10 DT.',
     swatch: 'poster-aura',
   },
   {
@@ -160,9 +189,9 @@ const PRODUCTS = [
     name: 'Bougie parfumée — Rose',
     cat: 'Bougies',
     price: 18,
-    image: 'assets/products/bougie.jpg',
+    image: 'assets/products/bougie-3.jpg',
     gallery: G.bougie,
-    desc: 'Bougie en cire de soja parfum rose. Pot en verre 100g.',
+    desc: 'Bougie fleur en cire de soja parfumée. Plusieurs couleurs disponibles.',
     long: 'Bougie artisanale en cire de soja, parfum rose poudrée. Pot en verre transparent, mèche en coton, durée d’environ 25 heures.',
     swatch: 'bougie',
   },
@@ -378,6 +407,7 @@ const I18N = {
     up_title: 'Tes fichiers / designs', up_drop: 'Dépose ton fichier ici', up_or: 'ou clique pour choisir', up_optional: '(facultatif)',
     up_hint: 'Un emplacement par sticker — ajoute une image pour chacun. Le nombre suit la quantité.',
     up_slot: 'image', up_more_ig: 'Pour plus de 30 images, envoie le reste par message Instagram.',
+    model_choose: 'Choisis ton modèle',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
     ad_h_files: 'Fichiers', ad_file: 'Fichier',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
@@ -462,6 +492,7 @@ const I18N = {
     up_title: 'Your files / designs', up_drop: 'Drop your file here', up_or: 'or click to choose', up_optional: '(optional)',
     up_hint: 'One slot per sticker — add an image for each. The number follows the quantity.',
     up_slot: 'image', up_more_ig: 'For more than 30 images, send the rest by Instagram message.',
+    model_choose: 'Choose your design',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
     ad_h_files: 'Files', ad_file: 'File',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
@@ -504,9 +535,9 @@ const PRODUCT_I18N = {
   'stickers-mood': { name: 'Sticker pack — Mood', desc: 'Pack of 30+ soft, pastel mood stickers. Custom mix available.', long: 'A selection of 30+ soft, pastel, floral mood stickers. Tell us your preferences on Instagram and we adapt the mix.' },
   'stickers-anime': { name: 'Sticker pack — Anime', desc: 'Anime, manga, kawaii stickers. For laptop, journal, notebook.', long: '30+ anime and manga stickers, water-resistant vinyl. Perfect for a MacBook or a bullet journal.' },
   'stickers-y2k': { name: 'Sticker pack — Y2K', desc: 'Y2K, holographic, late-90s aesthetic.', long: '30+ Y2K stickers: holographic butterflies, stars, glitter, flames. Premium vinyl.' },
-  'poster-vintage': { name: 'Poster — Vintage moodboard', secondary: '3 for 10 DT', desc: 'A4 poster on matte paper. Printed in-house.', long: 'A4 poster (21 × 29.7 cm) printed on 200g matte paper. Vintage moodboard aesthetic. 3 posters of your choice for 10 DT.' },
-  'poster-aura': { name: 'Poster — Aura print', secondary: '3 for 10 DT', desc: 'Colorful aura, soft gradients. A4 format.', long: 'A4 poster printed on 200g matte paper. Aura gradients inspired by aura tests. 3 posters of your choice for 10 DT.' },
-  'bougie-rose': { name: 'Scented candle — Rose', desc: 'Soy wax candle, rose scent. 100g glass jar.', long: 'Handmade soy wax candle, powdery rose scent. Clear glass jar, cotton wick, about 25 hours burn time.' },
+  'poster-vintage': { name: 'A4 Poster — your choice', secondary: '3 for 10 DT', desc: 'A4 poster on matte paper. Pick your design below.', long: 'A4 poster (21 × 29.7 cm) printed on 200g matte paper. Pick your design from our models (music, anime, movies, vintage…). 3 posters of your choice for 10 DT.' },
+  'poster-aura': { name: 'A4 Poster — celebs edition', secondary: '3 for 10 DT', desc: 'A4 poster on matte paper. Pick your design below.', long: 'A4 poster (21 × 29.7 cm) printed on 200g matte paper. Pick your design from our models (music, anime, movies, vintage…). 3 posters of your choice for 10 DT.' },
+  'bougie-rose': { name: 'Scented flower candle', desc: 'Flower-shaped scented soy wax candle. Several colors available.', long: 'Handmade flower-shaped soy wax candle, softly scented. Available in several colors (cream, pink, blue, lilac…). Cotton wick, about 25 hours burn time.' },
   'certificat': { name: 'Custom certificate', desc: 'Printed certificate with your text. To gift with love.', long: 'A5 certificate printed on thick paper with your custom text: dedication, thank-you, declaration. Send us the text by Instagram message.' },
   'promo-stickers-pack': { name: 'Stickers deal — 5 + 3 free', desc: '8 stickers for the price of 5! (5 + 3 free) — 5 DT the set.', long: 'Grab the deal: buy 5 stickers and get 3 free — that’s 8 stickers for only 5 DT. Drop your 8 designs below (PNG, JPG…). Printed on water-resistant vinyl.' },
   'promo-posters-pack': { name: 'Posters deal — 3 for 10 DT', desc: '3 posters of your choice for 10 DT (instead of 12 DT).', long: 'Build your trio: 3 A4 posters of your choice for 10 DT instead of 12 DT. Tell us your 3 favorite designs by Instagram message after ordering.' },
@@ -1079,7 +1110,8 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [added, setAdded] = React.useState(false);
   const [files, setFiles] = React.useState([]); // un emplacement par unité
   const [activeImg, setActiveImg] = React.useState(0);
-  React.useEffect(() => { setActiveImg(0); }, [product.id]);
+  const [model, setModel] = React.useState(null);
+  React.useEffect(() => { setActiveImg(0); setModel(null); }, [product.id]);
   const gallery = (product.gallery && product.gallery.length) ? product.gallery : (product.image ? [product.image] : []);
   const mainImg = gallery[Math.min(activeImg, gallery.length - 1)];
   const tiers = window.MEYVA_DATA.tiersFor(product);
@@ -1096,6 +1128,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
     const opt = {};
     if (product.tiers) opt.tier = activeTier;
     if (product.upload) { const fs = files.slice(0, slotCount).filter(Boolean); if (fs.length) opt.files = fs; }
+    if (product.models && model) opt.model = { label: model.label, img: model.img };
     addToCart(product, qty, Object.keys(opt).length ? opt : null);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -1137,6 +1170,23 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           pField(product, 'secondary', lang) && !product.tiers && React.createElement('small', null, '· ' + pField(product, 'secondary', lang))
         ),
         React.createElement('p', { className: 'pdp-desc' }, pField(product, 'long', lang) || pField(product, 'desc', lang)),
+
+        (product.models && product.models.length) && React.createElement('div', { className: 'pdp-section' },
+          React.createElement('h4', null, t(lang, 'model_choose'), ' ',
+            model && React.createElement('span', { style: { color: 'var(--pink-deep)', fontWeight: 400, fontSize: 14 } }, '· ' + model.label)),
+          React.createElement('div', { className: 'model-grid' },
+            product.models.map((m, i) =>
+              React.createElement('button', {
+                key: i, type: 'button',
+                className: 'model-card' + (model && model.label === m.label ? ' active' : ''),
+                onClick: () => setModel(m), title: m.label,
+              },
+                React.createElement('img', { src: m.img, alt: m.label, className: 'model-img', loading: 'lazy' }),
+                React.createElement('span', { className: 'model-label' }, m.label)
+              )
+            )
+          )
+        ),
 
         product.tiers && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'pdp_choose')),
@@ -1268,7 +1318,9 @@ function CartDrawer({ open, onClose, cart, updateQty, removeItem, onCheckout }) 
               React.createElement('div', null,
                 React.createElement('div', { className: 'cart-line-name' }, pField(item, 'name', lang)),
                 React.createElement('div', { className: 'cart-line-cat' },
-                  item.option && item.option.tier ? item.option.tier.qty + ' ' + t(lang, 'photos') : catLabel(item.cat, lang)
+                  item.option && item.option.model ? item.option.model.label
+                    : item.option && item.option.tier ? item.option.tier.qty + ' ' + t(lang, 'photos')
+                    : catLabel(item.cat, lang)
                 ),
                 React.createElement('div', { className: 'qty', style: { marginTop: 8 } },
                   React.createElement('button', { onClick: () => updateQty(idx, Math.max(1, item.qty - 1)) }, '−'),
@@ -1417,7 +1469,8 @@ function saveOrders(list) { localStorage.setItem(ORDERS_KEY, JSON.stringify(list
 function orderDesignation(o) {
   return (o.items || []).map(i => {
     const q = i.option && i.option.tier ? (i.option.tier.qty + ' photos') : null;
-    return i.name + (q ? ' (' + q + ')' : '') + ' x' + i.qty;
+    const m = i.option && i.option.model ? i.option.model.label : null;
+    return i.name + (m ? ' [' + m + ']' : '') + (q ? ' (' + q + ')' : '') + ' x' + i.qty;
   }).join(' + ');
 }
 function csvEscape(v) { v = (v == null ? '' : String(v)); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
@@ -1523,7 +1576,7 @@ function Checkout({ cart, onPlaced, setPage }) {
       createdAt: new Date().toISOString(),
       nom: f.nom.trim(), telephone: f.telephone.trim(), telephone2: f.telephone2.trim(),
       gouvernorat: f.gouvernorat, ville: f.ville.trim(), adresse: f.adresse.trim(), note: f.note.trim(),
-      items: cart.map(i => ({ name: i.name, qty: i.qty, option: i.option ? { tier: i.option.tier } : null, unitPrice: i.unitPrice, cat: i.cat })),
+      items: cart.map(i => ({ name: i.name, qty: i.qty, option: i.option ? { tier: i.option.tier, model: i.option.model ? { label: i.option.model.label } : undefined } : null, unitPrice: i.unitPrice, cat: i.cat })),
       files: files,
       subtotal: subtotal, shipping: shipping, total: total, colis: 1, status: 'nouveau',
     };
@@ -1575,7 +1628,7 @@ function Checkout({ cart, onPlaced, setPage }) {
     React.createElement('aside', { className: 'order-summary' },
       React.createElement('h3', null, t(lang, 'co_summary')),
       cart.map((i, idx) => React.createElement('div', { key: idx, className: 'sum-line' },
-        React.createElement('span', null, pField(i, 'name', lang), i.option && i.option.tier ? ' · ' + i.option.tier.qty + ' ' + t(lang, 'photos') : '', ' × ' + i.qty),
+        React.createElement('span', null, pField(i, 'name', lang), i.option && i.option.model ? ' · ' + i.option.model.label : '', i.option && i.option.tier ? ' · ' + i.option.tier.qty + ' ' + t(lang, 'photos') : '', ' × ' + i.qty),
         React.createElement('span', null, window.money(i.unitPrice * i.qty))
       )),
       React.createElement('div', { className: 'sum-line muted' }, React.createElement('span', null, t(lang, 'subtotal')), React.createElement('span', null, window.money(subtotal))),

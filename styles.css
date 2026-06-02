@@ -1198,6 +1198,23 @@ textarea.inp { resize: vertical; }
 .search-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: var(--cream-deep); flex: 0 0 auto; }
 .search-name { flex: 1; font-weight: 500; }
 .search-price { color: var(--pink-deep); font-weight: 600; white-space: nowrap; }
+/* model picker (posters, anime stickers…) */
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.model-card {
+  display: flex; flex-direction: column; gap: 4px; padding: 0;
+  background: #fff; border: 2px solid var(--line); border-radius: 10px;
+  cursor: pointer; overflow: hidden; font: inherit; text-align: center;
+}
+.model-card:hover { border-color: var(--pink); }
+.model-card.active { border-color: var(--pink-deep); box-shadow: 0 0 0 2px var(--pink-pale); }
+.model-img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--cream-deep); }
+.model-label { font-size: 11px; color: var(--ink-soft); padding: 2px 4px 6px; line-height: 1.2; }
+.model-card.active .model-label { color: var(--pink-deep); font-weight: 600; }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
