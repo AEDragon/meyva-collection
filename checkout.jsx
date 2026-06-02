@@ -152,19 +152,21 @@ function Checkout({ cart, onPlaced, setPage }) {
 
 function OrderAdmin() {
   const [orders, setOrders] = React.useState([]);
-  const [adminKey, setAdminKey] = React.useState(localStorage.getItem('meyva_admin_key') || '');
   const [status, setStatus] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [authState, setAuthState] = React.useState('loading'); // loading | signedOut | signedIn | error
+  const [userEmail, setUserEmail] = React.useState('');
+  const signInRef = React.useRef(null);
   const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
 
-  const loadServer = async (k) => {
-    const key = (k != null ? k : adminKey).trim();
-    if (!key) { setStatus('Entre la clé admin pour charger les commandes du serveur.'); return; }
-    localStorage.setItem('meyva_admin_key', key);
+  // Charge les commandes en envoyant le jeton de session Clerk (vérifié côté serveur).
+  const loadServer = async () => {
     setLoading(true); setStatus('Chargement depuis le serveur…');
     try {
-      const r = await fetch('/api/orders?key=' + encodeURIComponent(key));
-      if (r.status === 401) { setStatus('Clé admin incorrecte.'); setLoading(false); return; }
+      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
+      if (!tok) { setStatus('Session expirée — reconnecte-toi.'); setLoading(false); return; }
+      const r = await fetch('/api/orders', { headers: { Authorization: 'Bearer ' + tok } });
+      if (r.status === 401) { setStatus('Accès refusé. Vérifie que la clé secrète Clerk est configurée sur Vercel.'); setLoading(false); return; }
       if (!r.ok) { setStatus('Erreur serveur (' + r.status + ').'); setLoading(false); return; }
       const j = await r.json();
       setOrders(j.orders || []);
@@ -172,18 +174,58 @@ function OrderAdmin() {
     } catch (e) { setStatus('Impossible de joindre le serveur (disponible uniquement sur le site en ligne).'); }
     setLoading(false);
   };
-  const loadLocal = () => { setOrders(loadOrders()); setStatus('Commandes locales (cet appareil uniquement).'); };
   const exportCSV = () => { if (!orders.length) return; downloadFile('commandes-mescolis-' + stamp() + '.csv', buildMescolisCSV(orders), 'text/csv;charset=utf-8'); };
 
-  React.useEffect(() => { if (adminKey) loadServer(adminKey); }, []);
+  React.useEffect(() => {
+    let mounted = true, unsub = null;
+    (window.__clerkReady || Promise.reject(new Error('no clerk'))).then((clerk) => {
+      const sync = () => {
+        if (!mounted) return;
+        if (clerk.user) {
+          setAuthState('signedIn');
+          setUserEmail((clerk.user.primaryEmailAddress && clerk.user.primaryEmailAddress.emailAddress) || '');
+        } else { setAuthState('signedOut'); }
+      };
+      sync();
+      unsub = clerk.addListener(sync);
+    }).catch(() => { if (mounted) setAuthState('error'); });
+    return () => { mounted = false; if (typeof unsub === 'function') unsub(); };
+  }, []);
+
+  React.useEffect(() => {
+    if (authState === 'signedOut' && signInRef.current && window.Clerk) {
+      window.Clerk.mountSignIn(signInRef.current);
+      const node = signInRef.current;
+      return () => { try { window.Clerk.unmountSignIn(node); } catch (e) {} };
+    }
+  }, [authState]);
+
+  React.useEffect(() => { if (authState === 'signedIn') loadServer(); }, [authState]);
+
+  const Title = React.createElement('h1', { className: 'serif checkout-title' }, 'Commandes ', React.createElement('em', { className: 'serif-italic' }, 'reçues'));
+  const Eyebrow = React.createElement('div', { className: 'section-eyebrow' }, 'Espace boutique');
+
+  if (authState === 'loading') {
+    return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
+      React.createElement('p', { className: 'muted' }, 'Chargement de l’espace sécurisé…'));
+  }
+  if (authState === 'error') {
+    return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
+      React.createElement('p', { className: 'muted' }, 'Connexion sécurisée indisponible. Réessaie en rechargeant la page (le module de connexion ne fonctionne que sur le site en ligne).'));
+  }
+  if (authState === 'signedOut') {
+    return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
+      React.createElement('p', { className: 'muted', style: { marginBottom: 20 } }, 'Connecte-toi pour voir les commandes et les coordonnées de livraison.'),
+      React.createElement('div', { className: 'admin-signin', ref: signInRef }));
+  }
 
   return React.createElement('section', { className: 'admin' },
-    React.createElement('div', { className: 'section-eyebrow' }, 'Espace boutique'),
-    React.createElement('h1', { className: 'serif checkout-title' }, 'Commandes ', React.createElement('em', { className: 'serif-italic' }, 'reçues')),
-    React.createElement('div', { className: 'admin-keybar' },
-      React.createElement('input', { className: 'inp', style: { maxWidth: 280 }, type: 'password', placeholder: 'Clé admin', value: adminKey, onChange: e => setAdminKey(e.target.value) }),
-      React.createElement('button', { className: 'btn btn-pink', onClick: () => loadServer(), disabled: loading }, loading ? 'Chargement…' : 'Charger les commandes'),
-      React.createElement('button', { className: 'btn btn-outline', onClick: loadLocal }, 'Cet appareil')
+    Eyebrow,
+    Title,
+    React.createElement('div', { className: 'admin-userbar' },
+      React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, 'Connecté' + (userEmail ? ' : ' + userEmail : '')),
+      React.createElement('button', { className: 'btn btn-pink', onClick: () => loadServer(), disabled: loading }, loading ? 'Chargement…' : 'Actualiser'),
+      React.createElement('button', { className: 'btn btn-outline', onClick: () => window.Clerk.signOut() }, 'Se déconnecter')
     ),
     status && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, status),
     React.createElement('div', { className: 'admin-bar' },
@@ -195,7 +237,7 @@ function OrderAdmin() {
     ),
     React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, 'Le fichier CSV reprend exactement les colonnes du modèle mescolis.tn : destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.'),
     orders.length === 0
-      ? React.createElement('div', { className: 'admin-empty' }, 'Aucune commande chargée. Entre ta clé admin puis clique « Charger les commandes » pour voir les commandes reçues sur le site.')
+      ? React.createElement('div', { className: 'admin-empty' }, 'Aucune commande pour le moment. Les nouvelles commandes passées sur le site apparaîtront ici automatiquement.')
       : React.createElement('div', { className: 'admin-table-wrap' },
           React.createElement('table', { className: 'admin-table' },
             React.createElement('thead', null, React.createElement('tr', null,

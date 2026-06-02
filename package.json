@@ -5,6 +5,7 @@
   "type": "module",
   "description": "meyva collection storefront — static site + order API (Vercel)",
   "dependencies": {
+    "@clerk/backend": "^1.21.0",
     "@vercel/blob": "^2.4.0"
   }
 }

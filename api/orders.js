@@ -6,8 +6,26 @@
 // linked Vercel Blob store, so concurrent orders never overwrite each other.
 
 import { put, list, get } from '@vercel/blob';
+import { verifyToken } from '@clerk/backend';
 
 const PREFIX = 'order/';
+
+// Admin auth: a signed-in Clerk session (verified server-side) OR the legacy
+// access key as a fallback. Returns true when the request may read orders.
+async function isAdmin(req) {
+  // 1) Clerk session token (Authorization: Bearer <token>)
+  const auth = req.headers['authorization'] || req.headers['Authorization'] || '';
+  if (auth.startsWith('Bearer ') && process.env.CLERK_SECRET_KEY) {
+    try {
+      await verifyToken(auth.slice(7), { secretKey: process.env.CLERK_SECRET_KEY });
+      return true;
+    } catch (e) { /* fall through to key check */ }
+  }
+  // 2) Legacy access key (?key= or x-admin-key header)
+  const key = (req.query && req.query.key) || req.headers['x-admin-key'];
+  if (process.env.ADMIN_KEY && key === process.env.ADMIN_KEY) return true;
+  return false;
+}
 
 async function readAll(token) {
   const { blobs } = await list({ prefix: PREFIX, token });
@@ -63,8 +81,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const key = (req.query && req.query.key) || req.headers['x-admin-key'];
-      if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
+      if (!(await isAdmin(req))) {
         res.status(401).json({ error: 'non autorisé' });
         return;
       }
