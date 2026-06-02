@@ -103,6 +103,16 @@ export default async function handler(req, res) {
         res.status(200).send(Buffer.from(ab));
         return;
       }
+      // List newsletter subscribers (admin)
+      if (req.query && req.query.subs) {
+        const { blobs } = await list({ prefix: 'subscriber/', token });
+        const subs = await Promise.all(blobs.map(async (b) => {
+          try { const g = await get(b.pathname, { token, access: 'private' }); return JSON.parse(await new Response(g.stream).text()); }
+          catch (e) { return null; }
+        }));
+        res.status(200).json({ subscribers: subs.filter(Boolean) });
+        return;
+      }
       const orders = await readAll(token);
       res.status(200).json({ orders });
       return;

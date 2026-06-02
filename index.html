@@ -327,6 +327,8 @@ const I18N = {
     f_link_pack: 'Pack Polaroïd + pinces + LED', f_link_stickers: 'Stickers', f_link_posters: 'Posters', f_link_candles: 'Bougies', f_link_certs: 'Certificats',
     f_contact: 'Nous contacter', f_delivery: 'Livraison', f_howto: 'Comment commander', f_faq: 'FAQ',
     f_news_title: 'Reste au courant', f_news_sub: 'Nouveautés et drops, une fois par mois.', f_subscribe: 'S’inscrire', f_email_ph: 'ton@email.com',
+    f_sub_ok: 'Merci ! Tu es bien inscrit(e) 💌', f_sub_bad: 'Entre un email valide.',
+    search_ph: 'Rechercher un produit…', search_none: 'Aucun résultat.',
     hero_eyebrow: 'Boutique virtuelle', hero_t1: 'Des petites choses qui font ', hero_em: 'sourire',
     hero_sub: 'Photos polaroïd, stickers, posters et bougies — pour ta chambre, pour offrir, pour te faire plaisir.',
     hero_cta: 'Voir la boutique',
@@ -383,6 +385,8 @@ const I18N = {
     ad_error: 'Connexion sécurisée indisponible. Réessaie en rechargeant la page (le module de connexion ne fonctionne que sur le site en ligne).',
     ad_signin_sub: 'Connecte-toi pour voir les commandes et les coordonnées de livraison.',
     ad_connected: 'Connecté', ad_refresh: 'Actualiser', ad_loading2: 'Chargement…', ad_signout: 'Se déconnecter',
+    ad_key_ph: 'Clé d’accès propriétaire', ad_key_btn: 'Entrer',
+    ad_subs_btn: 'Emails newsletter (CSV)', ad_subs_none: 'Aucun inscrit pour le moment.', ad_subs_n: 'email(s) exporté(s).',
     ad_order: 'commande', ad_orders: 'commandes', ad_total: 'Total : ',
     ad_export: 'Exporter pour mescolis.tn (CSV)',
     ad_csvnote: 'Le fichier CSV reprend exactement les colonnes du modèle mescolis.tn : destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
@@ -407,6 +411,8 @@ const I18N = {
     f_link_pack: 'Polaroïd Pack + clips + LED', f_link_stickers: 'Stickers', f_link_posters: 'Posters', f_link_candles: 'Candles', f_link_certs: 'Certificates',
     f_contact: 'Contact us', f_delivery: 'Delivery', f_howto: 'How to order', f_faq: 'FAQ',
     f_news_title: 'Stay in the loop', f_news_sub: 'New arrivals and drops, once a month.', f_subscribe: 'Subscribe', f_email_ph: 'you@email.com',
+    f_sub_ok: 'Thanks! You’re subscribed 💌', f_sub_bad: 'Enter a valid email.',
+    search_ph: 'Search a product…', search_none: 'No results.',
     hero_eyebrow: 'Virtual boutique', hero_t1: 'Little things that make you ', hero_em: 'smile',
     hero_sub: 'Polaroïd photos, stickers, posters and candles — for your room, to gift, to treat yourself.',
     hero_cta: 'Shop now',
@@ -463,6 +469,8 @@ const I18N = {
     ad_error: 'Secure sign-in unavailable. Try reloading the page (the sign-in module only works on the live site).',
     ad_signin_sub: 'Sign in to see orders and delivery details.',
     ad_connected: 'Signed in', ad_refresh: 'Refresh', ad_loading2: 'Loading…', ad_signout: 'Sign out',
+    ad_key_ph: 'Owner access key', ad_key_btn: 'Enter',
+    ad_subs_btn: 'Newsletter emails (CSV)', ad_subs_none: 'No subscribers yet.', ad_subs_n: 'email(s) exported.',
     ad_order: 'order', ad_orders: 'orders', ad_total: 'Total: ',
     ad_export: 'Export for mescolis.tn (CSV)',
     ad_csvnote: 'The CSV uses exactly the mescolis.tn template columns: destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
@@ -770,7 +778,7 @@ function Logo() {
   );
 }
 
-function Nav({ page, setPage, cartCount, openCart }) {
+function Nav({ page, setPage, cartCount, openCart, openSearch }) {
   const lang = useLang();
   const links = [
     { id: 'home', label: t(lang, 'nav_home') },
@@ -791,7 +799,7 @@ function Nav({ page, setPage, cartCount, openCart }) {
       React.createElement('div', { className: 'nav-logo-text' }, 'meyva ', React.createElement('em', null, 'collection'))
     ),
     React.createElement('div', { className: 'nav-right' },
-      React.createElement('button', { className: 'nav-icon-btn', 'aria-label': t(lang, 'aria_search') }, React.createElement(Icon.search)),
+      React.createElement('button', { className: 'nav-icon-btn', 'aria-label': t(lang, 'aria_search'), onClick: openSearch }, React.createElement(Icon.search)),
       React.createElement('a', { className: 'nav-icon-btn', href: 'https://instagram.com/meyva__collection', target: '_blank', rel: 'noopener', 'aria-label': 'Instagram' }, React.createElement(Icon.insta)),
       React.createElement('button', { className: 'nav-icon-btn', onClick: openCart, 'aria-label': t(lang, 'aria_cart') },
         React.createElement(Icon.bag),
@@ -829,6 +837,16 @@ function ProductCard({ product, onOpen }) {
 
 function Footer() {
   const lang = useLang();
+  const [email, setEmail] = React.useState('');
+  const [subOk, setSubOk] = React.useState(false);
+  const [subMsg, setSubMsg] = React.useState('');
+  const subscribe = async () => {
+    const e = email.trim();
+    if (!/.+@.+\..+/.test(e)) { setSubMsg(t(lang, 'f_sub_bad')); return; }
+    setSubMsg('');
+    try { await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: e }) }); } catch (err) {}
+    setSubOk(true); setEmail('');
+  };
   return React.createElement('footer', { className: 'footer' },
     React.createElement('div', { className: 'footer-grid' },
       React.createElement('div', null,
@@ -863,8 +881,17 @@ function Footer() {
         React.createElement('h4', null, t(lang, 'f_news_title')),
         React.createElement('p', { style: { fontSize: 13, opacity: 0.75, marginTop: 0, marginBottom: 14 } },
           t(lang, 'f_news_sub')),
-        React.createElement('input', { placeholder: t(lang, 'f_email_ph') }),
-        React.createElement('button', { className: 'btn btn-pink', style: { width: '100%' } }, t(lang, 'f_subscribe'))
+        subOk
+          ? React.createElement('p', { style: { fontSize: 14, fontWeight: 600, color: 'var(--pink)' } }, t(lang, 'f_sub_ok'))
+          : React.createElement(React.Fragment, null,
+              React.createElement('input', {
+                placeholder: t(lang, 'f_email_ph'), type: 'email', value: email,
+                onChange: e => setEmail(e.target.value),
+                onKeyDown: e => { if (e.key === 'Enter') subscribe(); },
+              }),
+              React.createElement('button', { className: 'btn btn-pink', style: { width: '100%' }, onClick: subscribe }, t(lang, 'f_subscribe')),
+              subMsg && React.createElement('p', { style: { fontSize: 12, color: 'var(--pink-deep)', marginTop: 8 } }, subMsg)
+            )
       )
     ),
     React.createElement('div', { className: 'footer-bottom' },
@@ -1569,31 +1596,64 @@ function OrderAdmin() {
   const [authState, setAuthState] = React.useState('loading'); // loading | signedOut | signedIn | error
   const [userEmail, setUserEmail] = React.useState('');
   const [deleting, setDeleting] = React.useState('');
+  const [adminKey, setAdminKey] = React.useState(() => { try { return localStorage.getItem('meyva_admin_key') || ''; } catch (e) { return ''; } });
+  const [keyMode, setKeyMode] = React.useState(false);
   const signInRef = React.useRef(null);
   const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+  const signedIn = authState === 'signedIn' || keyMode;
+
+  // Auth via Clerk si connecté, sinon via la clé d'accès (repli sans Clerk)
+  const authHeaders = async () => {
+    try { const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null; if (tok) return { Authorization: 'Bearer ' + tok }; } catch (e) {}
+    if (adminKey) return { 'x-admin-key': adminKey };
+    return null;
+  };
 
   const loadServer = async () => {
     setLoading(true); setStatus(t(lang, 'ad_st_loading'));
     try {
-      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
-      if (!tok) { setStatus(t(lang, 'ad_st_expired')); setLoading(false); return; }
-      const r = await fetch('/api/orders', { headers: { Authorization: 'Bearer ' + tok } });
-      if (r.status === 401) { setStatus(t(lang, 'ad_st_denied')); setLoading(false); return; }
-      if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); setLoading(false); return; }
+      const h = await authHeaders();
+      if (!h) { setStatus(t(lang, 'ad_st_expired')); setLoading(false); return false; }
+      const r = await fetch('/api/orders', { headers: h });
+      if (r.status === 401) { setStatus(t(lang, 'ad_st_denied')); setLoading(false); return false; }
+      if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); setLoading(false); return false; }
       const j = await r.json();
       setOrders(j.orders || []);
       setStatus((j.orders || []).length + ' ' + t(lang, 'ad_st_loaded1'));
-    } catch (e) { setStatus(t(lang, 'ad_st_unreach')); }
-    setLoading(false);
+      setLoading(false); return true;
+    } catch (e) { setStatus(t(lang, 'ad_st_unreach')); setLoading(false); return false; }
   };
+
+  const loginWithKey = async () => {
+    const k = (adminKey || '').trim();
+    if (!k) return;
+    try { localStorage.setItem('meyva_admin_key', k); } catch (e) {}
+    const ok = await loadServer();
+    if (ok) setKeyMode(true);
+  };
+
   const exportCSV = () => { if (!orders.length) return; downloadFile('commandes-mescolis-' + stamp() + '.csv', buildMescolisCSV(orders), 'text/csv;charset=utf-8'); };
+
+  const exportSubs = async () => {
+    try {
+      const h = await authHeaders(); if (!h) return;
+      const r = await fetch('/api/orders?subs=1', { headers: h });
+      if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); return; }
+      const j = await r.json();
+      const subs = j.subscribers || [];
+      if (!subs.length) { setStatus(t(lang, 'ad_subs_none')); return; }
+      const csv = '﻿' + 'email,date\r\n' + subs.map(s => (s.email || '') + ',' + (s.at || '')).join('\r\n');
+      downloadFile('newsletter-' + stamp() + '.csv', csv, 'text/csv;charset=utf-8');
+      setStatus(subs.length + ' ' + t(lang, 'ad_subs_n'));
+    } catch (e) { setStatus(t(lang, 'ad_st_unreach')); }
+  };
 
   const deleteOrder = async (id) => {
     if (!window.confirm(t(lang, 'admin_delete_confirm'))) return;
     setDeleting(id);
     try {
-      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
-      const r = await fetch('/api/orders?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + tok } });
+      const h = await authHeaders();
+      const r = await fetch('/api/orders?id=' + encodeURIComponent(id), { method: 'DELETE', headers: h || {} });
       if (!r.ok) { setStatus(t(lang, 'admin_delete_fail') + ' (' + r.status + ').'); setDeleting(''); return; }
       setOrders(prev => prev.filter(o => o.id !== id));
       setStatus(t(lang, 'admin_deleted'));
@@ -1603,8 +1663,8 @@ function OrderAdmin() {
 
   const openFile = async (path) => {
     try {
-      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
-      const r = await fetch('/api/orders?file=' + encodeURIComponent(path), { headers: { Authorization: 'Bearer ' + tok } });
+      const h = await authHeaders();
+      const r = await fetch('/api/orders?file=' + encodeURIComponent(path), { headers: h || {} });
       if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); return; }
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
@@ -1647,18 +1707,25 @@ function OrderAdmin() {
   const Title = React.createElement('h1', { className: 'serif checkout-title' }, t(lang, 'ad_t1'), React.createElement('em', { className: 'serif-italic' }, t(lang, 'ad_em')));
   const Eyebrow = React.createElement('div', { className: 'section-eyebrow' }, t(lang, 'ad_eyebrow'));
 
-  if (authState === 'loading') {
+  if (!signedIn && authState === 'loading') {
     return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
       React.createElement('p', { className: 'muted' }, t(lang, 'ad_loading')));
   }
-  if (authState === 'error') {
+  if (!signedIn) {
+    // Connexion : widget Clerk (si configuré) + repli par clé d'accès
     return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
-      React.createElement('p', { className: 'muted' }, t(lang, 'ad_error')));
-  }
-  if (authState === 'signedOut') {
-    return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
-      React.createElement('p', { className: 'muted', style: { marginBottom: 20 } }, t(lang, 'ad_signin_sub')),
-      React.createElement('div', { className: 'admin-signin', ref: signInRef }));
+      React.createElement('p', { className: 'muted', style: { marginBottom: 16 } }, t(lang, 'ad_signin_sub')),
+      (authState === 'signedOut') && React.createElement('div', { className: 'admin-signin', ref: signInRef }),
+      React.createElement('div', { className: 'admin-keybar' },
+        React.createElement('input', {
+          className: 'inp', type: 'password', placeholder: t(lang, 'ad_key_ph'),
+          style: { maxWidth: 280 }, value: adminKey,
+          onChange: e => setAdminKey(e.target.value),
+          onKeyDown: e => { if (e.key === 'Enter') loginWithKey(); },
+        }),
+        React.createElement('button', { className: 'btn btn-pink', onClick: loginWithKey, disabled: loading }, loading ? t(lang, 'ad_loading2') : t(lang, 'ad_key_btn'))
+      ),
+      status && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, status));
   }
 
   return React.createElement('section', { className: 'admin' },
@@ -1667,7 +1734,7 @@ function OrderAdmin() {
     React.createElement('div', { className: 'admin-userbar' },
       React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, t(lang, 'ad_connected') + (userEmail ? ' : ' + userEmail : '')),
       React.createElement('button', { className: 'btn btn-pink', onClick: () => loadServer(), disabled: loading }, loading ? t(lang, 'ad_loading2') : t(lang, 'ad_refresh')),
-      React.createElement('button', { className: 'btn btn-outline', onClick: () => window.Clerk.signOut() }, t(lang, 'ad_signout'))
+      React.createElement('button', { className: 'btn btn-outline', onClick: () => { try { localStorage.removeItem('meyva_admin_key'); } catch (e) {} setKeyMode(false); setAdminKey(''); setOrders([]); if (window.Clerk && window.Clerk.user) window.Clerk.signOut(); } }, t(lang, 'ad_signout'))
     ),
     status && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, status),
     React.createElement('div', { className: 'admin-bar' },
@@ -1675,7 +1742,10 @@ function OrderAdmin() {
         React.createElement('span', null, React.createElement('strong', null, orders.length), ' ' + (orders.length > 1 ? t(lang, 'ad_orders') : t(lang, 'ad_order'))),
         React.createElement('span', null, t(lang, 'ad_total'), React.createElement('strong', null, window.money(revenue)))
       ),
-      React.createElement('button', { className: 'btn btn-pink', onClick: exportCSV, disabled: !orders.length }, t(lang, 'ad_export'))
+      React.createElement('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+        React.createElement('button', { className: 'btn btn-pink', onClick: exportCSV, disabled: !orders.length }, t(lang, 'ad_export')),
+        React.createElement('button', { className: 'btn btn-outline', onClick: exportSubs }, t(lang, 'ad_subs_btn'))
+      )
     ),
     React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, t(lang, 'ad_csvnote')),
     orders.length === 0
@@ -1723,6 +1793,42 @@ window.OrderAdmin = OrderAdmin;
 window.buildMescolisCSV = buildMescolisCSV;
 window.loadOrders = loadOrders;
 
+function SearchOverlay({ open, onClose, products, openProduct }) {
+  const lang = useLang();
+  const [q, setQ] = React.useState('');
+  const inputRef = React.useRef(null);
+  React.useEffect(() => {
+    if (open && inputRef.current) inputRef.current.focus();
+    if (!open) setQ('');
+    const esc = (e) => { if (e.key === 'Escape') onClose(); };
+    if (open) window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [open]);
+  if (!open) return null;
+  const ql = q.trim().toLowerCase();
+  const hit = (p) => [pField(p, 'name', lang), p.name, catLabel(p.cat, lang), pField(p, 'desc', lang)]
+    .some(s => (s || '').toLowerCase().indexOf(ql) !== -1);
+  const results = ql ? products.filter(p => !p.promoOnly && hit(p)) : [];
+  return React.createElement('div', { className: 'search-overlay', onClick: onClose },
+    React.createElement('div', { className: 'search-box', onClick: e => e.stopPropagation() },
+      React.createElement('input', {
+        ref: inputRef, className: 'search-input', placeholder: t(lang, 'search_ph'),
+        value: q, onChange: e => setQ(e.target.value),
+      }),
+      ql && (results.length
+        ? React.createElement('div', { className: 'search-results' },
+            results.map(p => React.createElement('button', { key: p.id, className: 'search-result', onClick: () => openProduct(p) },
+              p.image
+                ? React.createElement('img', { src: p.image, alt: '', className: 'search-thumb' })
+                : React.createElement('span', { className: 'search-thumb' }),
+              React.createElement('span', { className: 'search-name' }, pField(p, 'name', lang)),
+              React.createElement('span', { className: 'search-price' }, p.tiers ? t(lang, 'price_from') + ' ' + window.money(p.fromPrice) : window.money(p.price))
+            )))
+        : React.createElement('p', { className: 'muted', style: { padding: '14px 6px' } }, t(lang, 'search_none')))
+    )
+  );
+}
+
 // ── App ───────────────────────────────────────────────────────────────────────
 const { useState } = React;
 
@@ -1765,6 +1871,7 @@ function App() {
 
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const openProduct = (p) => {
     setActiveProduct(p);
@@ -1795,10 +1902,11 @@ function App() {
   return (
     <LangContext.Provider value={lang}>
       <UtilityBar lang={lang} setLang={setLang} />
-      <Nav page={page} setPage={(p) => { setPage(p); window.scrollTo(0,0); }} cartCount={cartCount} openCart={() => setCartOpen(true)} />
+      <Nav page={page} setPage={(p) => { setPage(p); window.scrollTo(0,0); }} cartCount={cartCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} />
       <main data-screen-label={page}>{content}</main>
       <Footer />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty} removeItem={removeItem} onCheckout={goCheckout} />
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} products={PRODUCTS} openProduct={(p) => { setSearchOpen(false); openProduct(p); }} />
 
       <div className="page-switcher" role="navigation" aria-label="Pages">
         {[
