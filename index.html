@@ -64,6 +64,7 @@ const PRODUCTS = [
     cat: 'Photos',
     fromPrice: 8,
     price: 8,
+    image: 'assets/products/polaroid.jpg',
     desc: 'Tes photos imprimées en format polaroïd, sans accessoires. Choisis ta quantité.',
     long: 'Tes mini-photos imprimées sur papier mat de qualité, bord blanc style polaroïd (5,4 × 8,6 cm). Photos seules, sans pinces ni ficelle. Envoie-nous tes images par message Instagram après la commande.',
     swatch: 'photos',
@@ -72,30 +73,44 @@ const PRODUCTS = [
     kitNote: 'Photos imprimées seules (sans pinces ni ficelle).',
   },
   {
+    id: 'sticker-unite',
+    name: 'Sticker à l’unité — perso',
+    cat: 'Stickers',
+    price: 1,
+    badge: 'Personnalisé',
+    image: 'assets/products/stickers.jpg',
+    upload: true,
+    desc: '1 sticker = 1 DT. Choisis la quantité et dépose ton design.',
+    long: 'Crée tes propres stickers : 1 sticker = 1 DT. Choisis le nombre de stickers et dépose ton image / ton design ci-dessous (PNG, JPG…). On les imprime sur vinyle résistant à l’eau. Astuce : profite de l’offre 5 + 3 offerts !',
+    swatch: 'stickers-pink',
+  },
+  {
     id: 'stickers-mood',
-    name: 'Sticker pack — Mood',
+    name: 'Pack stickers — Mood',
     cat: 'Stickers',
     price: 12,
-    badge: 'Personnalisable',
-    desc: 'Mélange de stickers ambiance douce et pastel. Mix sur mesure possible.',
+    image: 'assets/products/stickers.jpg',
+    desc: 'Packet de 30+ stickers ambiance douce et pastel. Mix sur mesure possible.',
     long: 'Une sélection de 30+ stickers thème mood doux, pastel et fleuri. Indique-nous tes préférences sur Instagram et on adapte le mix.',
     swatch: 'stickers-pink',
   },
   {
     id: 'stickers-anime',
-    name: 'Sticker pack — Anime',
+    name: 'Pack stickers — Anime',
     cat: 'Stickers',
     price: 12,
-    desc: 'Stickers anime, manga, kawaii. Pour laptop, journal, carnet.',
+    image: 'assets/products/stickers.jpg',
+    desc: 'Packet de 30+ stickers anime, manga, kawaii. Pour laptop, journal, carnet.',
     long: '30+ stickers thème anime et manga, vinyl résistant à l’eau. Parfait pour un MacBook ou un bullet journal.',
     swatch: 'stickers-anime',
   },
   {
     id: 'stickers-y2k',
-    name: 'Sticker pack — Y2K',
+    name: 'Pack stickers — Y2K',
     cat: 'Stickers',
     price: 12,
-    desc: 'Esthétique Y2K, holographique, fin des années 90.',
+    image: 'assets/products/stickers.jpg',
+    desc: 'Packet de 30+ stickers esthétique Y2K, holographique, fin des années 90.',
     long: '30+ stickers Y2K : papillons holographiques, étoiles, glitter, flames. Vinyl premium.',
     swatch: 'stickers-y2k',
   },
@@ -105,6 +120,7 @@ const PRODUCTS = [
     cat: 'Posters',
     price: 4,
     secondary: '3 pour 10 DT',
+    image: 'assets/products/poster-vintage.jpg',
     desc: 'Poster A4 sur papier mat. Imprimé chez nous.',
     long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Esthétique vintage moodboard. 3 posters au choix pour 10 DT.',
     swatch: 'poster-vintage',
@@ -115,6 +131,7 @@ const PRODUCTS = [
     cat: 'Posters',
     price: 4,
     secondary: '3 pour 10 DT',
+    image: 'assets/products/poster-aura.jpg',
     desc: 'Aura colorée, dégradés doux. Format A4.',
     long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d’aura. 3 posters au choix pour 10 DT.',
     swatch: 'poster-aura',
@@ -124,6 +141,7 @@ const PRODUCTS = [
     name: 'Bougie parfumée — Rose',
     cat: 'Bougies',
     price: 18,
+    image: 'assets/products/bougie.jpg',
     desc: 'Bougie en cire de soja parfum rose. Pot en verre 100g.',
     long: 'Bougie artisanale en cire de soja, parfum rose poudrée. Pot en verre transparent, mèche en coton, durée d’environ 25 heures.',
     swatch: 'bougie',
@@ -134,8 +152,10 @@ const PRODUCTS = [
     cat: 'Cadeaux',
     price: 8,
     badge: 'Custom',
+    image: 'assets/products/certificat.jpg',
+    upload: true,
     desc: 'Certificat imprimé avec ton texte. Pour offrir avec tendresse.',
-    long: 'Certificat A5 imprimé sur papier épais avec ton texte personnalisé : dédicace, remerciement, déclaration. Envoie-nous le texte par message Instagram.',
+    long: 'Certificat A5 imprimé sur papier épais avec ton texte personnalisé : dédicace, remerciement, déclaration. Dépose ton texte ou ton visuel ci-dessous, ou envoie-le par message Instagram.',
     swatch: 'certificat',
   },
 ];
@@ -301,6 +321,9 @@ const I18N = {
     co_summary: 'Ta commande', co_confirm: 'Confirmer la commande', co_sending: 'Envoi…',
     co_nopay: 'Aucun paiement en ligne — tu payes en espèces à la réception.',
     photos: 'photos',
+    up_title: 'Ton fichier / design', up_drop: 'Dépose ton fichier ici', up_or: 'ou clique pour choisir', up_optional: '(facultatif)',
+    up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
+    ad_h_files: 'Fichiers', ad_file: 'Fichier',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
     ad_loading: 'Chargement de l’espace sécurisé…',
     ad_error: 'Connexion sécurisée indisponible. Réessaie en rechargeant la page (le module de connexion ne fonctionne que sur le site en ligne).',
@@ -376,6 +399,9 @@ const I18N = {
     co_summary: 'Your order', co_confirm: 'Confirm order', co_sending: 'Sending…',
     co_nopay: 'No online payment — you pay cash on delivery.',
     photos: 'photos',
+    up_title: 'Your file / design', up_drop: 'Drop your file here', up_or: 'or click to choose', up_optional: '(optional)',
+    up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
+    ad_h_files: 'Files', ad_file: 'File',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
     ad_loading: 'Loading secure area…',
     ad_error: 'Secure sign-in unavailable. Try reloading the page (the sign-in module only works on the live site).',
@@ -410,7 +436,8 @@ function catLabel(cat, lang) { return (lang === 'en' && CAT_I18N[cat]) ? CAT_I18
 const PRODUCT_I18N = {
   'pack-polaroid-kit': { name: 'Polaroïd Pack + clips + LED', secondary: '', desc: 'Your photos printed polaroïd-style, delivered with wooden clips and a 10 m LED string light to hang them.', long: 'The signature pack: your favorite photos printed in mini polaroïd format (5.4 × 8.6 cm), with wooden clips and a 10 m LED string light to build your memory wall. Pick the number of photos below. Send us your photos by Instagram message after ordering.', kitNote: 'The pack includes: printed photos + clips (wooden pegs) + 10 m LED string light.' },
   'polaroid-prints': { name: 'Polaroïd — photos only', desc: 'Your photos printed polaroïd-style, no accessories. Pick your quantity.', long: 'Your mini photos printed on quality matte paper, white polaroïd-style border (5.4 × 8.6 cm). Photos only, no clips or string. Send us your images by Instagram message after ordering.', kitNote: 'Printed photos only (no clips or string).' },
-  'stickers-mood': { name: 'Sticker pack — Mood', desc: 'A mix of soft, pastel mood stickers. Custom mix available.', long: 'A selection of 30+ soft, pastel, floral mood stickers. Tell us your preferences on Instagram and we adapt the mix.' },
+  'sticker-unite': { name: 'Single sticker — custom', desc: '1 sticker = 1 DT. Pick the quantity and drop your design.', long: 'Make your own stickers: 1 sticker = 1 DT. Choose how many and drop your image / design below (PNG, JPG…). Printed on water-resistant vinyl. Tip: grab the 5 + 3 free deal!' },
+  'stickers-mood': { name: 'Sticker pack — Mood', desc: 'Pack of 30+ soft, pastel mood stickers. Custom mix available.', long: 'A selection of 30+ soft, pastel, floral mood stickers. Tell us your preferences on Instagram and we adapt the mix.' },
   'stickers-anime': { name: 'Sticker pack — Anime', desc: 'Anime, manga, kawaii stickers. For laptop, journal, notebook.', long: '30+ anime and manga stickers, water-resistant vinyl. Perfect for a MacBook or a bullet journal.' },
   'stickers-y2k': { name: 'Sticker pack — Y2K', desc: 'Y2K, holographic, late-90s aesthetic.', long: '30+ Y2K stickers: holographic butterflies, stars, glitter, flames. Premium vinyl.' },
   'poster-vintage': { name: 'Poster — Vintage moodboard', secondary: '3 for 10 DT', desc: 'A4 poster on matte paper. Printed in-house.', long: 'A4 poster (21 × 29.7 cm) printed on 200g matte paper. Vintage moodboard aesthetic. 3 posters of your choice for 10 DT.' },
@@ -965,6 +992,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [qty, setQty] = React.useState(1);
   const [tier, setTier] = React.useState(product.tiers ? 10 : null);
   const [added, setAdded] = React.useState(false);
+  const [file, setFile] = React.useState(null);
   const tiers = window.MEYVA_DATA.tiersFor(product);
   const activeTier = tiers.find(t => t.qty === tier);
   const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
@@ -972,7 +1000,10 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const related = products.filter(p => p.id !== product.id && p.cat === product.cat).slice(0, 4);
 
   const onAdd = () => {
-    addToCart(product, qty, product.tiers ? { tier: activeTier } : null);
+    const opt = {};
+    if (product.tiers) opt.tier = activeTier;
+    if (product.upload && file) opt.file = file;
+    addToCart(product, qty, Object.keys(opt).length ? opt : null);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -1017,6 +1048,28 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           React.createElement('div', { style: { fontSize: 12, color: 'var(--ink-soft)', marginTop: 10, lineHeight: 1.5 } },
             (pField(product, 'kitNote', lang) || '') + ' ',
             t(lang, 'pdp_send'))
+        ),
+
+        product.upload && React.createElement('div', { className: 'pdp-section' },
+          React.createElement('h4', null, t(lang, 'up_title'), ' ',
+            React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'up_optional'))),
+          React.createElement('label', { className: 'filedrop' + (file ? ' has-file' : '') },
+            React.createElement('input', {
+              type: 'file', accept: 'image/*,.pdf', style: { display: 'none' },
+              onChange: e => {
+                const fl = (e.target.files && e.target.files[0]) || null;
+                if (fl && fl.size > 3 * 1024 * 1024) { window.alert(t(lang, 'up_toobig')); e.target.value = ''; return; }
+                setFile(fl);
+              },
+            }),
+            file
+              ? React.createElement('span', { className: 'filedrop-name' }, '📎 ', file.name)
+              : React.createElement('span', null,
+                  React.createElement('strong', null, t(lang, 'up_drop')),
+                  React.createElement('br'),
+                  React.createElement('small', null, t(lang, 'up_or')))
+          ),
+          file && React.createElement('button', { className: 'link-btn', style: { marginTop: 8 }, onClick: () => setFile(null) }, t(lang, 'cart_remove'))
         ),
 
         React.createElement('div', { className: 'pdp-section' },
@@ -1339,18 +1392,38 @@ function Checkout({ cart, onPlaced, setPage }) {
   const submit = async () => {
     if (!validate()) { window.scrollTo(0, 0); return; }
     if (sending) return;
+    setSending(true);
+    // 1) Upload any customer files (custom stickers, certificate…)
+    const files = [];
+    for (const it of cart) {
+      const fl = it.option && it.option.file;
+      if (!fl) continue;
+      try {
+        const b64 = await new Promise((res, rej) => {
+          const fr = new FileReader();
+          fr.onload = () => res(String(fr.result).split(',')[1]);
+          fr.onerror = rej;
+          fr.readAsDataURL(fl);
+        });
+        const r = await fetch('/api/upload', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: fl.name, type: fl.type, dataBase64: b64 }),
+        });
+        if (r.ok) { const j = await r.json(); files.push({ path: j.path, name: j.name || fl.name }); }
+      } catch (e) { /* le fichier pourra être renvoyé via Instagram */ }
+    }
     const order = {
       id: 'CMD-' + Date.now(),
       createdAt: new Date().toISOString(),
       nom: f.nom.trim(), telephone: f.telephone.trim(), telephone2: f.telephone2.trim(),
       gouvernorat: f.gouvernorat, ville: f.ville.trim(), adresse: f.adresse.trim(), note: f.note.trim(),
-      items: cart.map(i => ({ name: i.name, qty: i.qty, option: i.option, unitPrice: i.unitPrice, cat: i.cat })),
+      items: cart.map(i => ({ name: i.name, qty: i.qty, option: i.option ? { tier: i.option.tier } : null, unitPrice: i.unitPrice, cat: i.cat })),
+      files: files,
       subtotal: subtotal, shipping: shipping, total: total, colis: 1, status: 'nouveau',
     };
     // local backup (works even hors-ligne / en démo)
     const list = loadOrders(); list.push(order); saveOrders(list);
     // envoi au serveur (collecte centrale)
-    setSending(true);
     try {
       await fetch('/api/orders', {
         method: 'POST',
@@ -1449,6 +1522,18 @@ function OrderAdmin() {
     setDeleting('');
   };
 
+  const openFile = async (path) => {
+    try {
+      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
+      const r = await fetch('/api/orders?file=' + encodeURIComponent(path), { headers: { Authorization: 'Bearer ' + tok } });
+      if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); return; }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) { setStatus(t(lang, 'ad_st_unreach')); }
+  };
+
   // Initialise Clerk and track sign-in state
   React.useEffect(() => {
     let mounted = true, unsub = null;
@@ -1519,7 +1604,7 @@ function OrderAdmin() {
       : React.createElement('div', { className: 'admin-table-wrap' },
           React.createElement('table', { className: 'admin-table' },
             React.createElement('thead', null, React.createElement('tr', null,
-              ['#', t(lang, 'ad_h_date'), t(lang, 'ad_h_name'), t(lang, 'ad_h_tel'), t(lang, 'ad_h_gov'), t(lang, 'ad_h_city'), t(lang, 'ad_h_addr'), t(lang, 'ad_h_items'), t(lang, 'ad_h_total'), t(lang, 'ad_h_action')].map((h, hi) => React.createElement('th', { key: hi }, h))
+              ['#', t(lang, 'ad_h_date'), t(lang, 'ad_h_name'), t(lang, 'ad_h_tel'), t(lang, 'ad_h_gov'), t(lang, 'ad_h_city'), t(lang, 'ad_h_addr'), t(lang, 'ad_h_items'), t(lang, 'ad_h_total'), t(lang, 'ad_h_files'), t(lang, 'ad_h_action')].map((h, hi) => React.createElement('th', { key: hi }, h))
             )),
             React.createElement('tbody', null,
               orders.slice().reverse().map((o, i) => React.createElement('tr', { key: o.id },
@@ -1532,6 +1617,14 @@ function OrderAdmin() {
                 React.createElement('td', null, o.adresse),
                 React.createElement('td', null, orderDesignation(o)),
                 React.createElement('td', null, window.money(o.total)),
+                React.createElement('td', null,
+                  (o.files && o.files.length)
+                    ? o.files.map((fl, fi) => React.createElement('button', {
+                        key: fi, className: 'btn-file', onClick: () => openFile(fl.path),
+                        title: fl.name,
+                      }, '📎 ' + t(lang, 'ad_file')))
+                    : React.createElement('span', { className: 'muted' }, '—')
+                ),
                 React.createElement('td', null,
                   React.createElement('button', {
                     className: 'btn-delete',

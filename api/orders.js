@@ -67,6 +67,9 @@ export default async function handler(req, res) {
         adresse: clean(body.adresse, 300),
         note: clean(body.note, 500),
         items: Array.isArray(body.items) ? body.items.slice(0, 50) : [],
+        files: Array.isArray(body.files)
+          ? body.files.slice(0, 20).map((fl) => ({ path: clean(fl && fl.path, 200), name: clean(fl && fl.name, 120) })).filter((fl) => fl.path)
+          : [],
         subtotal: Number(body.subtotal) || 0,
         shipping: Number(body.shipping) || 0,
         total: Number(body.total) || 0,
@@ -83,6 +86,21 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       if (!(await isAdmin(req))) {
         res.status(401).json({ error: 'non autorisé' });
+        return;
+      }
+      // Stream a single uploaded customer file (admin download)
+      const filePath = req.query && req.query.file;
+      if (filePath) {
+        if (!/^upload\/[A-Za-z0-9_.\-]+$/.test(String(filePath))) {
+          res.status(400).json({ error: 'chemin invalide' });
+          return;
+        }
+        const g = await get(String(filePath), { token, access: 'private' });
+        const ab = await new Response(g.stream).arrayBuffer();
+        const fname = String(filePath).split('-').slice(2).join('-') || 'fichier';
+        res.setHeader('Content-Type', (g && g.contentType) || 'application/octet-stream');
+        res.setHeader('Content-Disposition', 'inline; filename="' + fname + '"');
+        res.status(200).send(Buffer.from(ab));
         return;
       }
       const orders = await readAll(token);
