@@ -321,7 +321,9 @@ const I18N = {
     co_summary: 'Ta commande', co_confirm: 'Confirmer la commande', co_sending: 'Envoi…',
     co_nopay: 'Aucun paiement en ligne — tu payes en espèces à la réception.',
     photos: 'photos',
-    up_title: 'Ton fichier / design', up_drop: 'Dépose ton fichier ici', up_or: 'ou clique pour choisir', up_optional: '(facultatif)',
+    up_title: 'Tes fichiers / designs', up_drop: 'Dépose ton fichier ici', up_or: 'ou clique pour choisir', up_optional: '(facultatif)',
+    up_hint: 'Un emplacement par sticker — ajoute une image pour chacun. Le nombre suit la quantité.',
+    up_slot: 'image', up_more_ig: 'Pour plus de 30 images, envoie le reste par message Instagram.',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
     ad_h_files: 'Fichiers', ad_file: 'Fichier',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
@@ -399,7 +401,9 @@ const I18N = {
     co_summary: 'Your order', co_confirm: 'Confirm order', co_sending: 'Sending…',
     co_nopay: 'No online payment — you pay cash on delivery.',
     photos: 'photos',
-    up_title: 'Your file / design', up_drop: 'Drop your file here', up_or: 'or click to choose', up_optional: '(optional)',
+    up_title: 'Your files / designs', up_drop: 'Drop your file here', up_or: 'or click to choose', up_optional: '(optional)',
+    up_hint: 'One slot per sticker — add an image for each. The number follows the quantity.',
+    up_slot: 'image', up_more_ig: 'For more than 30 images, send the rest by Instagram message.',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
     ad_h_files: 'Files', ad_file: 'File',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
@@ -992,17 +996,21 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [qty, setQty] = React.useState(1);
   const [tier, setTier] = React.useState(product.tiers ? 10 : null);
   const [added, setAdded] = React.useState(false);
-  const [file, setFile] = React.useState(null);
+  const [files, setFiles] = React.useState([]); // un emplacement par unité
   const tiers = window.MEYVA_DATA.tiersFor(product);
   const activeTier = tiers.find(t => t.qty === tier);
   const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
   const total = unitPrice * qty;
   const related = products.filter(p => p.id !== product.id && p.cat === product.cat).slice(0, 4);
 
+  // Une case d'import par unité (max 30 affichées)
+  const slotCount = product.upload ? Math.min(qty, 30) : 0;
+  const setSlot = (i, fl) => setFiles(prev => { const n = prev.slice(); n[i] = fl || undefined; return n; });
+
   const onAdd = () => {
     const opt = {};
     if (product.tiers) opt.tier = activeTier;
-    if (product.upload && file) opt.file = file;
+    if (product.upload) { const fs = files.slice(0, slotCount).filter(Boolean); if (fs.length) opt.files = fs; }
     addToCart(product, qty, Object.keys(opt).length ? opt : null);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -1053,23 +1061,27 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
         product.upload && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'up_title'), ' ',
             React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'up_optional'))),
-          React.createElement('label', { className: 'filedrop' + (file ? ' has-file' : '') },
-            React.createElement('input', {
-              type: 'file', accept: 'image/*,.pdf', style: { display: 'none' },
-              onChange: e => {
-                const fl = (e.target.files && e.target.files[0]) || null;
-                if (fl && fl.size > 3 * 1024 * 1024) { window.alert(t(lang, 'up_toobig')); e.target.value = ''; return; }
-                setFile(fl);
-              },
-            }),
-            file
-              ? React.createElement('span', { className: 'filedrop-name' }, '📎 ', file.name)
-              : React.createElement('span', null,
-                  React.createElement('strong', null, t(lang, 'up_drop')),
-                  React.createElement('br'),
-                  React.createElement('small', null, t(lang, 'up_or')))
+          React.createElement('p', { style: { fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 10px' } }, t(lang, 'up_hint')),
+          React.createElement('div', { className: 'filedrop-grid' },
+            Array.from({ length: slotCount }).map((_, i) => {
+              const fl = files[i];
+              return React.createElement('label', { key: i, className: 'filedrop filedrop-slot' + (fl ? ' has-file' : '') },
+                React.createElement('input', {
+                  type: 'file', accept: 'image/*,.pdf', style: { display: 'none' },
+                  onChange: e => {
+                    const sel = (e.target.files && e.target.files[0]) || null;
+                    if (sel && sel.size > 3 * 1024 * 1024) { window.alert(t(lang, 'up_toobig')); e.target.value = ''; return; }
+                    setSlot(i, sel);
+                  },
+                }),
+                React.createElement('span', { className: 'filedrop-num' }, '#' + (i + 1)),
+                fl
+                  ? React.createElement('span', { className: 'filedrop-name' }, '📎 ', fl.name.length > 16 ? fl.name.slice(0, 14) + '…' : fl.name)
+                  : React.createElement('span', { className: 'filedrop-add' }, '+ ', t(lang, 'up_slot'))
+              );
+            })
           ),
-          file && React.createElement('button', { className: 'link-btn', style: { marginTop: 8 }, onClick: () => setFile(null) }, t(lang, 'cart_remove'))
+          qty > 30 && React.createElement('p', { className: 'muted', style: { fontSize: 12, marginTop: 8 } }, t(lang, 'up_more_ig'))
         ),
 
         React.createElement('div', { className: 'pdp-section' },
@@ -1393,24 +1405,26 @@ function Checkout({ cart, onPlaced, setPage }) {
     if (!validate()) { window.scrollTo(0, 0); return; }
     if (sending) return;
     setSending(true);
-    // 1) Upload any customer files (custom stickers, certificate…)
+    // 1) Upload any customer files (custom stickers, certificate…) — one per unit
     const files = [];
     for (const it of cart) {
-      const fl = it.option && it.option.file;
-      if (!fl) continue;
-      try {
-        const b64 = await new Promise((res, rej) => {
-          const fr = new FileReader();
-          fr.onload = () => res(String(fr.result).split(',')[1]);
-          fr.onerror = rej;
-          fr.readAsDataURL(fl);
-        });
-        const r = await fetch('/api/upload', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: fl.name, type: fl.type, dataBase64: b64 }),
-        });
-        if (r.ok) { const j = await r.json(); files.push({ path: j.path, name: j.name || fl.name }); }
-      } catch (e) { /* le fichier pourra être renvoyé via Instagram */ }
+      const fls = (it.option && it.option.files) || (it.option && it.option.file ? [it.option.file] : []);
+      for (const fl of fls) {
+        if (!fl) continue;
+        try {
+          const b64 = await new Promise((res, rej) => {
+            const fr = new FileReader();
+            fr.onload = () => res(String(fr.result).split(',')[1]);
+            fr.onerror = rej;
+            fr.readAsDataURL(fl);
+          });
+          const r = await fetch('/api/upload', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: fl.name, type: fl.type, dataBase64: b64 }),
+          });
+          if (r.ok) { const j = await r.json(); files.push({ path: j.path, name: j.name || fl.name }); }
+        } catch (e) { /* le fichier pourra être renvoyé via Instagram */ }
+      }
     }
     const order = {
       id: 'CMD-' + Date.now(),

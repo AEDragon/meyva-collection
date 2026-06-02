@@ -1142,7 +1142,26 @@ textarea.inp { resize: vertical; }
 .filedrop:hover { border-color: var(--pink); background: var(--pink-pale); }
 .filedrop.has-file { border-style: solid; border-color: var(--pink-deep); background: var(--pink-pale); color: var(--ink); }
 .filedrop strong { color: var(--ink); font-family: 'Fraunces', serif; font-weight: 500; }
-.filedrop-name { font-weight: 600; word-break: break-all; }
+.filedrop-name { font-weight: 600; word-break: break-all; font-size: 12px; }
+/* grid of per-unit upload slots */
+.filedrop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+.filedrop-slot {
+  padding: 14px 10px;
+  min-height: 78px;
+  border-radius: 12px;
+  position: relative;
+  gap: 2px;
+}
+.filedrop-num {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--pink-deep); opacity: 0.8;
+}
+.filedrop-add { font-size: 13px; color: var(--ink-soft); }
+.filedrop-slot.has-file .filedrop-add { display: none; }
 .link-btn {
   background: none; border: none; color: var(--ink-soft); font: inherit; font-size: 13px;
   text-decoration: underline; padding: 0; cursor: pointer;
