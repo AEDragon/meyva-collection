@@ -127,4 +127,15 @@ const COMING_SOON = [
   },
 ];
 
-window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON };
+// Frais de livraison (DT) — confirmé sur Instagram (8 DT partout en Tunisie)
+const DELIVERY_FEE = 8;
+
+// Gouvernorats de Tunisie (formulaire de commande + export mescolis.tn)
+const GOUVERNORATS = [
+  'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba',
+  'Kairouan', 'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba',
+  'Médenine', 'Monastir', 'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana',
+  'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
+];
+
+window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON, DELIVERY_FEE, GOUVERNORATS };
