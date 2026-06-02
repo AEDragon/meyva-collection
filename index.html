@@ -45,17 +45,18 @@
 const PRODUCTS = [
   {
     id: 'pack-polaroid-kit',
-    name: 'Pack Polaroïd + pinces & ficelle',
+    name: 'Pack Polaroïd + pinces + LED',
     cat: 'Packs',
     fromPrice: 10,
     price: 10,
     badge: 'Best-seller',
-    desc: 'Tes photos imprimées en format polaroïd, livrées avec les pinces en bois et la ficelle pour les accrocher.',
-    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroïd (5,4 × 8,6 cm), accompagnées des pinces en bois et d’une ficelle pour créer ton mur de souvenirs. Choisis le nombre de photos ci-dessous. Envoie-nous tes photos par message Instagram après la commande.',
+    image: 'assets/insta/pack-polaroid.jpg',
+    desc: 'Tes photos imprimées en format polaroïd, livrées avec les pinces en bois et une guirlande LED lumineuse de 10 m pour les accrocher.',
+    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroïd (5,4 × 8,6 cm), accompagnées des pinces en bois et d’une guirlande LED lumineuse de 10 m pour créer ton mur de souvenirs. Choisis le nombre de photos ci-dessous. Envoie-nous tes photos par message Instagram après la commande.',
     swatch: 'pack',
     tiers: true,
     tierSet: 'kit',
-    kitNote: 'Le pack inclut : photos imprimées + pinces (clips en bois) + ficelle pour les accrocher.',
+    kitNote: 'Le pack inclut : photos imprimées + pinces (clips en bois) + guirlande LED lumineuse 10 m.',
   },
   {
     id: 'polaroid-prints',
@@ -523,7 +524,9 @@ function ProductCard({ product, onOpen }) {
     React.createElement('div', { className: 'product-thumb' },
       product.badge && React.createElement('span', { className: 'product-badge' }, product.badge),
       React.createElement('div', { className: 'product-thumb-inner' },
-        React.createElement(ProductSwatch, { name: product.swatch })
+        product.image
+          ? React.createElement('img', { src: product.image, alt: product.name, className: 'product-photo', loading: 'lazy' })
+          : React.createElement(ProductSwatch, { name: product.swatch })
       ),
       React.createElement('div', { className: 'product-quick' }, 'Voir le produit')
     ),
@@ -555,7 +558,7 @@ function Footer() {
       React.createElement('div', null,
         React.createElement('h4', null, 'Boutique'),
         React.createElement('ul', null,
-          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Pack Polaroïd + pinces & ficelle')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Pack Polaroïd + pinces + LED')),
           React.createElement('li', null, React.createElement('a', { href: '#' }, 'Stickers')),
           React.createElement('li', null, React.createElement('a', { href: '#' }, 'Posters')),
           React.createElement('li', null, React.createElement('a', { href: '#' }, 'Bougies')),
@@ -772,9 +775,11 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
     React.createElement('section', { className: 'pdp' },
       React.createElement('div', { className: 'pdp-gallery' },
         React.createElement('div', { className: 'pdp-main' },
-          product.id === 'pack-polaroid-kit'
-            ? React.createElement(window.PolaroidCluster, null)
-            : React.createElement(ProductSwatch, { name: product.swatch })
+          product.image
+            ? React.createElement('img', { src: product.image, alt: product.name, className: 'pdp-photo' })
+            : product.id === 'pack-polaroid-kit'
+              ? React.createElement(window.PolaroidCluster, null)
+              : React.createElement(ProductSwatch, { name: product.swatch })
         ),
         React.createElement('div', { className: 'pdp-thumbs' },
           [product.swatch, 'photos', 'pack', 'certificat'].map((s, i) =>

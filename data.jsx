@@ -4,17 +4,18 @@
 const PRODUCTS = [
   {
     id: 'pack-polaroid-kit',
-    name: 'Pack Polaroïd + pinces & ficelle',
+    name: 'Pack Polaroïd + pinces + LED',
     cat: 'Packs',
     fromPrice: 10,
     price: 10,
     badge: 'Best-seller',
-    desc: 'Tes photos imprimées en format polaroïd, livrées avec les pinces en bois et la ficelle pour les accrocher.',
-    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroïd (5,4 × 8,6 cm), accompagnées des pinces en bois et d’une ficelle pour créer ton mur de souvenirs. Choisis le nombre de photos ci-dessous. Envoie-nous tes photos par message Instagram après la commande.',
+    image: 'assets/insta/pack-polaroid.jpg',
+    desc: 'Tes photos imprimées en format polaroïd, livrées avec les pinces en bois et une guirlande LED lumineuse de 10 m pour les accrocher.',
+    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroïd (5,4 × 8,6 cm), accompagnées des pinces en bois et d’une guirlande LED lumineuse de 10 m pour créer ton mur de souvenirs. Choisis le nombre de photos ci-dessous. Envoie-nous tes photos par message Instagram après la commande.',
     swatch: 'pack',
     tiers: true,
     tierSet: 'kit',
-    kitNote: 'Le pack inclut : photos imprimées + pinces (clips en bois) + ficelle pour les accrocher.',
+    kitNote: 'Le pack inclut : photos imprimées + pinces (clips en bois) + guirlande LED lumineuse 10 m.',
   },
   {
     id: 'polaroid-prints',
