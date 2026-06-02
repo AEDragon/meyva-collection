@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>meyva collection — boutique virtuelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+// ── data.jsx ──────────────────────────────────────────────────────────────────
+const PRODUCTS = [
+  {
+    id: 'pack-polaroid-led',
+    name: 'Pack Polaroid + LED',
+    cat: 'Packs',
+    fromPrice: 8,
+    price: 8,
+    badge: 'Best-seller',
+    desc: 'Mini-photos imprimées sur papier mat + clips en bois + guirlande LED chaude. Choisis le nombre de photos selon ton mur.',
+    long: 'Le pack signature : tes photos préférées imprimées en mini-format polaroid (5,4 × 8,6 cm), accompagnées de pinces en bois et d’une guirlande LED chaude à piles. Parfait pour habiller un mur, une tête de lit ou un coin de bureau. Envoie-nous tes photos sur Instagram après la commande.',
+    swatch: 'pack',
+    tiers: true,
+  },
+  {
+    id: 'polaroid-10',
+    name: 'Polaroïd prints — Pack 10',
+    cat: 'Photos',
+    price: 10,
+    desc: 'Tes 10 photos imprimées en format polaroid, sans LED ni clips. Idéal pour offrir.',
+    long: 'Dix mini-photos imprimées sur papier mat de qualité. Bord blanc style polaroid. Envoie-nous tes images après la commande.',
+    swatch: 'photos',
+  },
+  {
+    id: 'stickers-mood',
+    name: 'Sticker pack — Mood',
+    cat: 'Stickers',
+    price: 12,
+    badge: 'Personnalisable',
+    desc: 'Mélange de stickers ambiance douce et pastel. Mix sur mesure possible.',
+    long: 'Une sélection de 30+ stickers thème mood doux, pastel et fleuri. Indique-nous tes préférences sur Instagram et on adapte le mix.',
+    swatch: 'stickers-pink',
+  },
+  {
+    id: 'stickers-anime',
+    name: 'Sticker pack — Anime',
+    cat: 'Stickers',
+    price: 12,
+    desc: 'Stickers anime, manga, kawaii. Pour laptop, journal, carnet.',
+    long: '30+ stickers thème anime et manga, vinyl résistant à l’eau. Parfait pour un MacBook ou un bullet journal.',
+    swatch: 'stickers-anime',
+  },
+  {
+    id: 'stickers-y2k',
+    name: 'Sticker pack — Y2K',
+    cat: 'Stickers',
+    price: 12,
+    desc: 'Esthétique Y2K, holographique, fin des années 90.',
+    long: '30+ stickers Y2K : papillons holographiques, étoiles, glitter, flames. Vinyl premium.',
+    swatch: 'stickers-y2k',
+  },
+  {
+    id: 'poster-vintage',
+    name: 'Poster — Vintage moodboard',
+    cat: 'Posters',
+    price: 5,
+    secondary: '3 pour 10 DT',
+    desc: 'Poster A4 sur papier mat. Imprimé chez nous.',
+    long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Esthétique vintage moodboard. 3 posters au choix pour 10 DT.',
+    swatch: 'poster-vintage',
+  },
+  {
+    id: 'poster-aura',
+    name: 'Poster — Aura print',
+    cat: 'Posters',
+    price: 5,
+    secondary: '3 pour 10 DT',
+    desc: 'Aura colorée, dégradés doux. Format A4.',
+    long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d’aura. 3 posters au choix pour 10 DT.',
+    swatch: 'poster-aura',
+  },
+  {
+    id: 'bougie-rose',
+    name: 'Bougie parfumée — Rose',
+    cat: 'Bougies',
+    price: 18,
+    desc: 'Bougie en cire de soja parfum rose. Pot en verre 100g.',
+    long: 'Bougie artisanale en cire de soja, parfum rose poudrée. Pot en verre transparent, mèche en coton, durée d’environ 25 heures.',
+    swatch: 'bougie',
+  },
+  {
+    id: 'certificat',
+    name: 'Certificat personnalisé',
+    cat: 'Cadeaux',
+    price: 8,
+    badge: 'Custom',
+    desc: 'Certificat imprimé avec ton texte. Pour offrir avec tendresse.',
+    long: 'Certificat A5 imprimé sur papier épais avec ton texte personnalisé : dédicace, remerciement, déclaration. Envoie-nous le texte par message Instagram.',
+    swatch: 'certificat',
+  },
+];
+
+const CATEGORIES = ['Tout', 'Packs', 'Photos', 'Stickers', 'Posters', 'Bougies', 'Cadeaux'];
+
+const PHOTO_TIERS = [
+  { qty: 10, price: 8 },
+  { qty: 20, price: 15 },
+  { qty: 30, price: 20 },
+  { qty: 40, price: 25 },
+  { qty: 50, price: 30 },
+  { qty: 60, price: 35 },
+  { qty: 70, price: 40 },
+  { qty: 80, price: 45 },
+  { qty: 90, price: 50 },
+];
+
+// Produits en préparation : affichés en avant-première mais pas encore en vente.
+// Ajoute / retire des entrées ici quand un nouveau produit est prêt à être teasé.
+// Pour lancer un produit, déplace-le simplement dans PRODUCTS ci-dessus.
+const COMING_SOON = [
+  {
+    id: 'cs-tote',
+    name: 'Tote bag personnalisé',
+    cat: 'Bientôt',
+    eta: 'Bientôt',
+    teaser: 'Ton design ou ta photo imprimés sur un tote bag en coton épais. On prépare ça pour la prochaine collection.',
+    swatch: 'stickers-pink',
+  },
+  {
+    id: 'cs-mug',
+    name: 'Mug photo',
+    cat: 'Bientôt',
+    eta: 'Bientôt',
+    teaser: 'Ta photo préférée sur un mug en céramique. Parfait pour offrir à quelqu’un qu’on aime.',
+    swatch: 'photos',
+  },
+];
+
+window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON };
+
+// ── swatches.jsx ──────────────────────────────────────────────────────────────
+const SWATCHES = {
+  pack: () => React.createElement('div', { style: { width: '100%', height: '100%', position: 'relative', background: 'var(--pink-pale)', overflow: 'hidden' } },
+    [
+      { l: 18, t: 18, r: -8, tone: '#c9bfae' },
+      { l: 50, t: 22, r: 6, tone: '#d9d2c8' },
+      { l: 32, t: 50, r: -4, tone: '#e0cab4' },
+    ].map((p, i) => React.createElement('div', {
+      key: i,
+      style: {
+        position: 'absolute', left: p.l + '%', top: p.t + '%', width: '34%', aspectRatio: '0.85',
+        background: 'white', padding: '8%', paddingBottom: '20%',
+        border: '1px solid var(--line)',
+        transform: 'rotate(' + p.r + 'deg)',
+      },
+    }, React.createElement('div', { style: { width: '100%', aspectRatio: 1, background: p.tone } }))),
+    React.createElement('svg', { viewBox: '0 0 100 100', style: { position: 'absolute', inset: 0, width: '100%', height: '100%' }, preserveAspectRatio: 'none' },
+      [[10, 30], [25, 12], [50, 10], [75, 14], [90, 30], [85, 60], [70, 80], [40, 85], [15, 75]].map((p, i) =>
+        React.createElement('circle', { key: i, cx: p[0], cy: p[1], r: 1.6, fill: '#f5cf6e' })
+      )
+    )
+  ),
+  photos: () => React.createElement('div', { style: { width: '100%', height: '100%', background: 'var(--pink-pale)', position: 'relative' } },
+    [{ l: 22, t: 18, r: -6 }, { l: 38, t: 30, r: 4 }, { l: 28, t: 48, r: -3 }].map((p, i) =>
+      React.createElement('div', { key: i, style: {
+        position: 'absolute', left: p.l + '%', top: p.t + '%', width: '40%', aspectRatio: 0.82,
+        background: 'white', padding: '8%', paddingBottom: '22%',
+        border: '1px solid var(--line)',
+        transform: 'rotate(' + p.r + 'deg)',
+      } }, React.createElement('div', { style: { width: '100%', aspectRatio: 1, background: ['#c9bfae','#d9d2c8','#e0cab4'][i] } }))
+    )
+  ),
+  'stickers-pink': () => React.createElement('div', { style: { width: '100%', height: '100%', background: '#fce8f0', display: 'grid', placeItems: 'center' } },
+    React.createElement('svg', { viewBox: '0 0 100 100', style: { width: '70%' } },
+      React.createElement('circle', { cx: 30, cy: 30, r: 14, fill: '#f4a8c8', stroke: '#fff', strokeWidth: 1.5 }),
+      React.createElement('path', { d: 'M55 25 L75 25 L70 45 L50 45 Z', fill: '#f5cf6e', stroke: '#fff', strokeWidth: 1.5, transform: 'rotate(-8 62 35)' }),
+      React.createElement('circle', { cx: 70, cy: 65, r: 10, fill: '#d96a9a', stroke: '#fff', strokeWidth: 1.5 }),
+      React.createElement('path', { d: 'M25 60 q5 -10 12 0 q5 -10 12 0 q-5 12 -12 12 q-7 0 -12 -12 z', fill: '#d96a9a', stroke: '#fff', strokeWidth: 1.5 }),
+      React.createElement('text', { x: 42, y: 90, fontFamily: 'Fraunces', fontSize: 9, fill: '#2a2422', fontStyle: 'italic' }, 'mood'),
+    )
+  ),
+  'stickers-anime': () => React.createElement('div', { style: { width: '100%', height: '100%', background: '#fce8f0', display: 'grid', placeItems: 'center' } },
+    React.createElement('svg', { viewBox: '0 0 100 100', style: { width: '70%' } },
+      React.createElement('circle', { cx: 35, cy: 35, r: 16, fill: '#f4a8c8', stroke: '#2a2422', strokeWidth: 1 }),
+      React.createElement('circle', { cx: 30, cy: 32, r: 1.5, fill: '#2a2422' }),
+      React.createElement('circle', { cx: 40, cy: 32, r: 1.5, fill: '#2a2422' }),
+      React.createElement('path', { d: 'M30 40 q5 4 10 0', stroke: '#2a2422', strokeWidth: 1, fill: 'none' }),
+      React.createElement('path', { d: 'M65 25 L72 18 L72 30 Z', fill: '#d96a9a', stroke: '#2a2422', strokeWidth: 1 }),
+      React.createElement('path', { d: 'M58 60 l8 -4 l4 8 l-8 4 z', fill: '#f5cf6e', stroke: '#2a2422', strokeWidth: 1 }),
+      React.createElement('path', { d: 'M30 70 l4 -6 l4 6 l-4 6 z', fill: '#d96a9a', stroke: '#2a2422', strokeWidth: 1 }),
+    )
+  ),
+  'stickers-y2k': () => React.createElement('div', { style: { width: '100%', height: '100%', background: '#fce8f0', display: 'grid', placeItems: 'center' } },
+    React.createElement('svg', { viewBox: '0 0 100 100', style: { width: '70%' } },
+      React.createElement('path', { d: 'M50 40 q-12 -14 -22 -8 q-6 8 4 16 q-10 6 -2 14 q14 4 20 -10 z M50 40 q12 -14 22 -8 q6 8 -4 16 q10 6 2 14 q-14 4 -20 -10 z', fill: '#d4a8e8', stroke: '#2a2422', strokeWidth: 1 }),
+      React.createElement('path', { d: 'M22 18 l3 7 l7 1 l-5 5 l1 7 l-6 -3 l-6 3 l1 -7 l-5 -5 l7 -1 z', fill: '#f5cf6e', stroke: '#2a2422', strokeWidth: 1 }),
+      React.createElement('path', { d: 'M82 78 l2 5 l5 1 l-4 3 l1 5 l-4 -2 l-4 2 l1 -5 l-4 -3 l5 -1 z', fill: '#f4a8c8', stroke: '#2a2422', strokeWidth: 1 }),
+    )
+  ),
+  'poster-vintage': () => React.createElement('div', { style: { width: '100%', height: '100%', background: 'var(--cream-deep)', display: 'grid', placeItems: 'center', padding: '12%' } },
+    React.createElement('div', { style: { width: '70%', aspectRatio: '0.71', background: 'white', border: '1px solid var(--line)', padding: '8%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
+      ['#c9bfae', '#d9d2c8', '#e8d4b8', '#c8b8a8'].map((c, i) =>
+        React.createElement('div', { key: i, style: { background: c } })
+      )
+    )
+  ),
+  'poster-aura': () => React.createElement('div', { style: { width: '100%', height: '100%', background: 'var(--cream-deep)', display: 'grid', placeItems: 'center', padding: '12%' } },
+    React.createElement('div', {
+      style: { width: '70%', aspectRatio: '0.71', background: 'white', border: '1px solid var(--line)', padding: '8%' }
+    },
+      React.createElement('div', {
+        style: {
+          width: '100%', height: '100%',
+          background: 'radial-gradient(circle at 30% 40%, #f4a8c8, transparent 50%), radial-gradient(circle at 70% 70%, #d4a8e8, transparent 55%), radial-gradient(circle at 50% 20%, #f5cf6e, transparent 45%), #fce8f0',
+        }
+      })
+    )
+  ),
+  bougie: () => React.createElement('div', { style: { width: '100%', height: '100%', background: 'var(--pink-pale)', display: 'grid', placeItems: 'center' } },
+    React.createElement('svg', { viewBox: '0 0 100 100', style: { width: '50%' } },
+      React.createElement('rect', { x: 32, y: 30, width: 36, height: 55, rx: 2, fill: '#fff5e8', stroke: '#2a2422', strokeWidth: 0.8 }),
+      React.createElement('rect', { x: 36, y: 36, width: 28, height: 44, fill: '#f4a8c8', opacity: 0.5 }),
+      React.createElement('line', { x1: 50, y1: 18, x2: 50, y2: 30, stroke: '#2a2422', strokeWidth: 1 }),
+      React.createElement('path', { d: 'M48 14 q2 -4 2 0 q-2 4 0 4 q2 0 0 -4', fill: '#f5cf6e' }),
+      React.createElement('text', { x: 50, y: 60, fontFamily: 'Fraunces', fontSize: 6, textAnchor: 'middle', fontStyle: 'italic', fill: '#2a2422' }, 'rose'),
+    )
+  ),
+  certificat: () => React.createElement('div', { style: { width: '100%', height: '100%', background: 'var(--cream-deep)', display: 'grid', placeItems: 'center', padding: '14%' } },
+    React.createElement('div', { style: { width: '100%', aspectRatio: 1.4, background: '#fffbf5', border: '1px solid var(--ink)', padding: '8%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 } },
+      React.createElement('div', { style: { fontFamily: 'Fraunces', fontStyle: 'italic', fontSize: 14, color: 'var(--pink-deep)' }, className: 'serif-italic' }, 'certificat'),
+      React.createElement('div', { style: { width: '60%', height: 1, background: 'var(--line)' } }),
+      React.createElement('div', { style: { fontSize: 8, color: 'var(--ink-soft)' } }, 'pour ___'),
+    )
+  ),
+};
+
+function ProductSwatch({ name }) {
+  const Sw = SWATCHES[name] || SWATCHES.pack;
+  return React.createElement(Sw);
+}
+
+window.ProductSwatch = ProductSwatch;
+
+// ── polaroid-cluster.jsx ──────────────────────────────────────────────────────
+function PolaroidCluster() {
+  const polaroids = [
+    { l: 12, t: 18, r: -10, tone: 1 },
+    { l: 38, t: 8,  r: 4,   tone: 3 },
+    { l: 64, t: 18, r: 9,   tone: 2 },
+    { l: 22, t: 44, r: 6,   tone: 4 },
+    { l: 56, t: 44, r: -6,  tone: 5 },
+    { l: 38, t: 64, r: 2,   tone: 7 },
+  ];
+
+  const ledDots = [];
+  const path = [
+    [4, 10], [14, 14], [26, 18], [38, 12], [50, 14], [62, 18], [74, 14], [84, 22],
+    [80, 38], [70, 46], [58, 48], [46, 50], [34, 48], [22, 50], [14, 54], [20, 66],
+    [32, 70], [44, 76], [56, 72], [68, 70], [78, 64], [82, 78], [70, 84], [54, 88], [40, 86], [26, 84], [14, 80],
+  ];
+  path.forEach((p, i) => ledDots.push({ x: p[0], y: p[1], i }));
+
+  const wirePath = path.map((p, i) => (i === 0 ? 'M' : 'L') + p[0] + ' ' + p[1]).join(' ');
+
+  return React.createElement('div', { className: 'polaroid-cluster' },
+    React.createElement('svg', {
+      className: 'led-line',
+      viewBox: '0 0 100 100',
+      preserveAspectRatio: 'none',
+      style: { width: '100%', height: '100%', position: 'absolute', inset: 0 },
+    },
+      React.createElement('path', {
+        d: wirePath,
+        stroke: '#2a2422',
+        strokeWidth: '0.3',
+        fill: 'none',
+        opacity: '0.5',
+      }),
+      ledDots.map(d =>
+        React.createElement('g', { key: d.i },
+          React.createElement('circle', { cx: d.x, cy: d.y, r: '1.6', fill: '#f5cf6e', opacity: '0.35' }),
+          React.createElement('circle', { cx: d.x, cy: d.y, r: '0.8', fill: '#fff5d4' })
+        )
+      )
+    ),
+    polaroids.map((p, i) =>
+      React.createElement('div', {
+        key: i,
+        className: 'polaroid',
+        style: {
+          left: p.l + '%',
+          top: p.t + '%',
+          transform: 'rotate(' + p.r + 'deg)',
+          zIndex: 2 + i,
+        },
+      },
+        React.createElement('div', { className: 'polaroid-clip' }),
+        React.createElement('div', { className: 'polaroid-photo tone-' + p.tone })
+      )
+    )
+  );
+}
+
+window.PolaroidCluster = PolaroidCluster;
+
+// ── price-ladder.jsx ──────────────────────────────────────────────────────────
+function PriceLadder({ activeQty, onPick }) {
+  const { PHOTO_TIERS } = window.MEYVA_DATA;
+  return React.createElement('div', { className: 'ladder' },
+    PHOTO_TIERS.map(t =>
+      React.createElement('div', {
+        key: t.qty,
+        className: 'ladder-row' + (activeQty === t.qty ? ' active' : ''),
+        onClick: () => onPick && onPick(t),
+      },
+        React.createElement('div', null,
+          React.createElement('span', { className: 'ladder-qty' }, t.qty),
+          React.createElement('span', { className: 'ladder-label' }, 'photos')
+        ),
+        React.createElement('span', { className: 'ladder-arrow' }, '→'),
+        React.createElement('span', { className: 'ladder-price' },
+          t.price,
+          React.createElement('small', null, 'DT')
+        ),
+        React.createElement('span', null)
+      )
+    )
+  );
+}
+
+window.PriceLadder = PriceLadder;
+
+// ── shared.jsx ────────────────────────────────────────────────────────────────
+const Icon = {
+  search: () => React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('circle', { cx: 11, cy: 11, r: 7 }),
+    React.createElement('line', { x1: 16, y1: 16, x2: 21, y2: 21 })
+  ),
+  heart: () => React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('path', { d: 'M12 21s-7-4.5-9.5-9C.7 8.6 2.5 4 6.5 4c2 0 3.5 1.2 5.5 3.5C13.8 5.2 15.5 4 17.5 4c4 0 5.8 4.6 4 8-2.5 4.5-9.5 9-9.5 9z' })
+  ),
+  bag: () => React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('path', { d: 'M5 8h14l-1.2 12.3a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7L5 8z' }),
+    React.createElement('path', { d: 'M9 8V6a3 3 0 0 1 6 0v2' })
+  ),
+  close: () => React.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }),
+    React.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 })
+  ),
+  insta: () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('rect', { x: 3, y: 3, width: 18, height: 18, rx: 5 }),
+    React.createElement('circle', { cx: 12, cy: 12, r: 4 }),
+    React.createElement('circle', { cx: 17.5, cy: 6.5, r: 0.8, fill: 'currentColor' })
+  ),
+  truck: () => React.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('rect', { x: 1, y: 6, width: 13, height: 11 }),
+    React.createElement('path', { d: 'M14 9h4l3 3v5h-7' }),
+    React.createElement('circle', { cx: 5, cy: 18, r: 2 }),
+    React.createElement('circle', { cx: 17, cy: 18, r: 2 })
+  ),
+  gift: () => React.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('rect', { x: 3, y: 8, width: 18, height: 4 }),
+    React.createElement('rect', { x: 5, y: 12, width: 14, height: 9 }),
+    React.createElement('line', { x1: 12, y1: 8, x2: 12, y2: 21 }),
+    React.createElement('path', { d: 'M12 8s-3-5-6-3 1 5 6 3M12 8s3-5 6-3-1 5-6 3' })
+  ),
+  spark: () => React.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1 },
+    React.createElement('path', { d: 'M12 3v6M12 15v6M3 12h6M15 12h6M5.5 5.5l4 4M14.5 14.5l4 4M5.5 18.5l4 -4M14.5 9.5l4 -4' })
+  ),
+};
+
+function UtilityBar({ lang, setLang }) {
+  return React.createElement('div', { className: 'utility-bar' },
+    React.createElement('div', { className: 'lang-toggle' },
+      React.createElement('button', { className: lang === 'fr' ? 'active' : '', onClick: () => setLang('fr') }, 'FR'),
+      React.createElement('span', { className: 'sep' }, '|'),
+      React.createElement('button', { className: lang === 'ar' ? 'active' : '', onClick: () => setLang('ar') }, 'ع')
+    ),
+    React.createElement('div', null, 'Frais de livraison : 8 DT partout en Tunisie')
+  );
+}
+
+function Logo() {
+  return React.createElement('div', { className: 'nav-logo-mark' },
+    React.createElement('svg', { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'var(--pink-deep)' },
+      React.createElement('path', { d: 'M12 21s-7-4.5-9.5-9C.7 8.6 2.5 4 6.5 4c2 0 3.5 1.2 5.5 3.5C13.8 5.2 15.5 4 17.5 4c4 0 5.8 4.6 4 8-2.5 4.5-9.5 9-9.5 9z' })
+    )
+  );
+}
+
+function Nav({ page, setPage, cartCount, openCart }) {
+  const links = [
+    { id: 'home', label: 'Accueil' },
+    { id: 'shop', label: 'Boutique' },
+    { id: 'product', label: 'Pack Polaroid' },
+    { id: 'about', label: 'À propos' },
+  ];
+  return React.createElement('nav', { className: 'nav' },
+    React.createElement('div', { className: 'nav-links' },
+      links.map(l => React.createElement('button', {
+        key: l.id,
+        onClick: () => setPage(l.id),
+        className: page === l.id ? 'active' : '',
+      }, l.label))
+    ),
+    React.createElement('div', { className: 'nav-logo', onClick: () => setPage('home') },
+      React.createElement(Logo, null),
+      React.createElement('div', { className: 'nav-logo-text' }, 'meyva ', React.createElement('em', null, 'collection'))
+    ),
+    React.createElement('div', { className: 'nav-right' },
+      React.createElement('button', { className: 'nav-icon-btn', 'aria-label': 'Recherche' }, React.createElement(Icon.search)),
+      React.createElement('a', { className: 'nav-icon-btn', href: 'https://instagram.com/meyva__collection', target: '_blank', rel: 'noopener', 'aria-label': 'Instagram' }, React.createElement(Icon.insta)),
+      React.createElement('button', { className: 'nav-icon-btn', onClick: openCart, 'aria-label': 'Panier' },
+        React.createElement(Icon.bag),
+        cartCount > 0 && React.createElement('span', { className: 'cart-count' }, cartCount)
+      )
+    )
+  );
+}
+
+function ProductCard({ product, onOpen }) {
+  return React.createElement('article', { className: 'product-card', onClick: () => onOpen(product) },
+    React.createElement('div', { className: 'product-thumb' },
+      product.badge && React.createElement('span', { className: 'product-badge' }, product.badge),
+      React.createElement('div', { className: 'product-thumb-inner' },
+        React.createElement(ProductSwatch, { name: product.swatch })
+      ),
+      React.createElement('div', { className: 'product-quick' }, 'Voir le produit')
+    ),
+    React.createElement('div', null,
+      React.createElement('div', { className: 'product-cat' }, product.cat),
+      React.createElement('div', { className: 'product-meta' },
+        React.createElement('h3', { className: 'product-name' }, product.name),
+        React.createElement('span', { className: 'product-price' },
+          product.tiers ? 'dès ' + product.fromPrice + ' DT' : product.price + ' DT'
+        )
+      ),
+      product.secondary && React.createElement('div', { style: { fontSize: 12, color: 'var(--pink-deep)', marginTop: 4 } }, product.secondary)
+    )
+  );
+}
+
+function Footer() {
+  return React.createElement('footer', { className: 'footer' },
+    React.createElement('div', { className: 'footer-grid' },
+      React.createElement('div', null,
+        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 } },
+          React.createElement(Logo, null),
+          React.createElement('div', { style: { fontFamily: 'Fraunces, serif', fontSize: 22, fontWeight: 500 } },
+            'meyva ', React.createElement('em', { className: 'serif-italic', style: { color: 'var(--pink)' } }, 'collection'))
+        ),
+        React.createElement('p', { style: { fontSize: 14, opacity: 0.75, lineHeight: 1.6, maxWidth: 320, margin: 0 } },
+          'Petits objets doux, photos polaroid et cadeaux personnalisés. Livré partout en Tunisie 🇹🇳')
+      ),
+      React.createElement('div', null,
+        React.createElement('h4', null, 'Boutique'),
+        React.createElement('ul', null,
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Pack Polaroid + LED')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Stickers')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Posters')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Bougies')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Certificats'))
+        )
+      ),
+      React.createElement('div', null,
+        React.createElement('h4', null, 'Aide'),
+        React.createElement('ul', null,
+          React.createElement('li', null, React.createElement('a', { href: 'https://instagram.com/meyva__collection', target: '_blank', rel: 'noopener' }, 'Nous contacter')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Livraison')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'Comment commander')),
+          React.createElement('li', null, React.createElement('a', { href: '#' }, 'FAQ'))
+        )
+      ),
+      React.createElement('div', { className: 'newsletter' },
+        React.createElement('h4', null, 'Reste au courant'),
+        React.createElement('p', { style: { fontSize: 13, opacity: 0.75, marginTop: 0, marginBottom: 14 } },
+          'Nouveautés et drops, une fois par mois.'),
+        React.createElement('input', { placeholder: 'ton@email.com' }),
+        React.createElement('button', { className: 'btn btn-pink', style: { width: '100%' } }, 'S’inscrire')
+      )
+    ),
+    React.createElement('div', { className: 'footer-bottom' },
+      React.createElement('span', null, '© 2026 meyva collection'),
+      React.createElement('span', { className: 'footer-tagline' },
+        'Made with ', React.createElement('em', null, 'love'), ' in Tunis · صنع بالحب في تونس'),
+      React.createElement('a', { href: 'https://instagram.com/meyva__collection', target: '_blank', rel: 'noopener', style: { display: 'flex', alignItems: 'center', gap: 6 } },
+        React.createElement(Icon.insta), '@meyva__collection')
+    )
+  );
+}
+
+Object.assign(window, { Nav, Footer, ProductCard, UtilityBar, Icon, Logo });
+
+// ── pages.jsx ─────────────────────────────────────────────────────────────────
+function Home({ products, setPage, openProduct }) {
+  const featured = products.filter(p => ['pack-polaroid-led', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id));
+  const more = products.filter(p => !['pack-polaroid-led', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id)).slice(0, 4);
+
+  return React.createElement(React.Fragment, null,
+    React.createElement('section', { className: 'hero' },
+      React.createElement('div', { className: 'hero-text' },
+        React.createElement('span', { className: 'hero-eyebrow' }, 'Boutique virtuelle'),
+        React.createElement('h1', { className: 'hero-title' },
+          'Des petites choses qui font ',
+          React.createElement('em', null, 'sourire')
+        ),
+        React.createElement('p', { className: 'hero-sub' },
+          'Photos polaroid, stickers, posters et bougies — pour ta chambre, pour offrir, pour te faire plaisir.'),
+        React.createElement('div', { className: 'hero-cta' },
+          React.createElement('button', { className: 'btn btn-pink', onClick: () => setPage('shop') }, 'Voir la boutique'),
+          React.createElement('a', {
+            className: 'btn btn-outline',
+            href: 'https://instagram.com/meyva__collection',
+            target: '_blank',
+            rel: 'noopener',
+          }, React.createElement(Icon.insta), '@meyva__collection')
+        )
+      ),
+      React.createElement('div', { className: 'hero-img' },
+        React.createElement('div', { className: 'aura-bg' }),
+        React.createElement(PolaroidCluster, null)
+      )
+    ),
+
+    React.createElement('div', { className: 'feature-row' },
+      React.createElement('div', { className: 'feature' },
+        React.createElement('div', { className: 'feature-icon' }, React.createElement(Icon.truck)),
+        React.createElement('h5', null, 'Livraison 8 DT'),
+        React.createElement('p', null, 'Partout en Tunisie, en 2–4 jours')
+      ),
+      React.createElement('div', { className: 'feature' },
+        React.createElement('div', { className: 'feature-icon' }, React.createElement(Icon.gift)),
+        React.createElement('h5', null, 'Personnalisable'),
+        React.createElement('p', null, 'Tes photos, ton texte, ton mix')
+      ),
+      React.createElement('div', { className: 'feature' },
+        React.createElement('div', { className: 'feature-icon' }, React.createElement(Icon.spark)),
+        React.createElement('h5', null, 'Commande sur Insta'),
+        React.createElement('p', null, 'Confirmation et paiement par DM')
+      )
+    ),
+
+    React.createElement('section', { className: 'section' },
+      React.createElement('div', { className: 'section-head' },
+        React.createElement('div', null,
+          React.createElement('div', { className: 'section-eyebrow' }, 'Sélection'),
+          React.createElement('h2', { className: 'section-title' },
+            'Les ', React.createElement('em', null, 'préférés'), ' de la maison')
+        ),
+        React.createElement('button', { className: 'section-link', onClick: () => setPage('shop') }, 'Tout voir →')
+      ),
+      React.createElement('div', { className: 'product-grid' },
+        featured.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: openProduct }))
+      )
+    ),
+
+    React.createElement('section', { className: 'story-band' },
+      React.createElement('div', { className: 'story-band-inner' },
+        React.createElement('h2', null,
+          'Imprime tes souvenirs,', React.createElement('br'),
+          'décore ta ', React.createElement('em', null, 'chambre.')),
+        React.createElement('p', null,
+          'Le pack signature : tes photos préférées en mini-format polaroid, avec des clips en bois et une guirlande LED chaude. À toi de choisir combien de photos.'),
+        React.createElement('button', {
+          className: 'btn btn-pink',
+          style: { marginTop: 28 },
+          onClick: () => setPage('product'),
+        }, 'Découvrir le pack')
+      )
+    ),
+
+    React.createElement('section', { className: 'section' },
+      React.createElement('div', { className: 'section-head' },
+        React.createElement('div', null,
+          React.createElement('div', { className: 'section-eyebrow' }, 'Aussi en boutique'),
+          React.createElement('h2', { className: 'section-title' }, 'Tout le reste.')
+        )
+      ),
+      React.createElement('div', { className: 'product-grid' },
+        more.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: openProduct }))
+      )
+    ),
+
+    React.createElement(ComingSoon, null),
+
+    React.createElement('section', { className: 'section', style: { paddingTop: 0 } },
+      React.createElement('div', { className: 'section-head' },
+        React.createElement('div', null,
+          React.createElement('div', { className: 'section-eyebrow' }, '@meyva__collection'),
+          React.createElement('h2', { className: 'section-title' },
+            'Sur ', React.createElement('em', null, 'Instagram'))
+        ),
+        React.createElement('a', {
+          href: 'https://instagram.com/meyva__collection', target: '_blank', rel: 'noopener',
+          className: 'section-link',
+        }, 'Suivre →')
+      ),
+      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8, maxWidth: 1280, margin: '0 auto' } },
+        ['pack', 'photos', 'stickers-pink', 'poster-aura', 'bougie', 'certificat'].map((s, i) =>
+          React.createElement('div', { key: i, style: { aspectRatio: '1', overflow: 'hidden', cursor: 'pointer' } },
+            React.createElement(ProductSwatch, { name: s })
+          )
+        )
+      )
+    )
+  );
+}
+
+function Shop({ products, categories, openProduct }) {
+  const [cat, setCat] = React.useState('Tout');
+  const [sort, setSort] = React.useState('featured');
+  let list = cat === 'Tout' ? products : products.filter(p => p.cat === cat);
+  if (sort === 'price-asc') list = [...list].sort((a, b) => (a.fromPrice || a.price) - (b.fromPrice || b.price));
+  if (sort === 'price-desc') list = [...list].sort((a, b) => (b.fromPrice || b.price) - (a.fromPrice || a.price));
+
+  return React.createElement(React.Fragment, null,
+    React.createElement('div', { className: 'shop-head' },
+      React.createElement('div', { style: { fontSize: 13, color: 'var(--pink-deep)', marginBottom: 12 } }, 'Boutique'),
+      React.createElement('h1', null, 'Toute la ', React.createElement('em', { className: 'serif-italic' }, 'collection')),
+      React.createElement('p', null, list.length + ' articles · livraison partout en Tunisie')
+    ),
+    React.createElement('div', { className: 'shop-bar' },
+      React.createElement('div', { className: 'cat-tabs' },
+        categories.map(c => React.createElement('button', {
+          key: c,
+          className: 'cat-tab' + (cat === c ? ' active' : ''),
+          onClick: () => setCat(c),
+        }, c))
+      ),
+      React.createElement('div', { className: 'shop-meta' },
+        'Trier :',
+        React.createElement('select', { value: sort, onChange: e => setSort(e.target.value) },
+          React.createElement('option', { value: 'featured' }, 'Sélection'),
+          React.createElement('option', { value: 'price-asc' }, 'Prix croissant'),
+          React.createElement('option', { value: 'price-desc' }, 'Prix décroissant')
+        )
+      )
+    ),
+    React.createElement('div', { className: 'shop-grid' },
+      React.createElement('div', { className: 'product-grid' },
+        list.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: openProduct }))
+      )
+    )
+  );
+}
+
+function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
+  const [qty, setQty] = React.useState(1);
+  const [tier, setTier] = React.useState(product.tiers ? 10 : null);
+  const [added, setAdded] = React.useState(false);
+  const tiers = window.MEYVA_DATA.PHOTO_TIERS;
+  const activeTier = tiers.find(t => t.qty === tier);
+  const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
+  const total = unitPrice * qty;
+  const related = products.filter(p => p.id !== product.id && p.cat === product.cat).slice(0, 4);
+
+  const onAdd = () => {
+    addToCart(product, qty, product.tiers ? { tier: activeTier } : null);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return React.createElement(React.Fragment, null,
+    React.createElement('div', { style: { padding: '20px 40px 0', maxWidth: 1280, margin: '0 auto', fontSize: 13, color: 'var(--ink-soft)' } },
+      React.createElement('button', { onClick: () => setPage('home'), style: { background: 'none', border: 'none', color: 'inherit', font: 'inherit', padding: 0 } }, 'Accueil'),
+      ' / ',
+      React.createElement('button', { onClick: () => setPage('shop'), style: { background: 'none', border: 'none', color: 'inherit', font: 'inherit', padding: 0 } }, 'Boutique'),
+      ' / ', product.name
+    ),
+    React.createElement('section', { className: 'pdp' },
+      React.createElement('div', { className: 'pdp-gallery' },
+        React.createElement('div', { className: 'pdp-main' },
+          product.id === 'pack-polaroid-led'
+            ? React.createElement(window.PolaroidCluster, null)
+            : React.createElement(ProductSwatch, { name: product.swatch })
+        ),
+        React.createElement('div', { className: 'pdp-thumbs' },
+          [product.swatch, 'photos', 'pack', 'certificat'].map((s, i) =>
+            React.createElement('div', { key: i, className: 'pdp-thumb' + (i === 0 ? ' active' : '') },
+              React.createElement(ProductSwatch, { name: s })
+            )
+          )
+        )
+      ),
+      React.createElement('div', { className: 'pdp-info' },
+        React.createElement('div', { className: 'pdp-cat' }, product.cat),
+        React.createElement('h1', { className: 'pdp-name' }, product.name),
+        React.createElement('div', { className: 'pdp-price' },
+          (product.tiers ? unitPrice : product.price) + ' DT',
+          product.tiers && React.createElement('small', null, '· dès ' + product.fromPrice + ' DT'),
+          product.secondary && !product.tiers && React.createElement('small', null, '· ' + product.secondary)
+        ),
+        React.createElement('p', { className: 'pdp-desc' }, product.long || product.desc),
+
+        product.tiers && React.createElement('div', { className: 'pdp-section' },
+          React.createElement('h4', null, 'Choisis ton pack'),
+          React.createElement(PriceLadder, { activeQty: tier, onPick: t => setTier(t.qty) }),
+          React.createElement('div', { style: { fontSize: 12, color: 'var(--ink-soft)', marginTop: 10, lineHeight: 1.5 } },
+            'Le pack inclut : photos imprimées + clips en bois + guirlande LED chaude à piles. ',
+            'Envoie-nous tes photos par message Instagram après la commande.')
+        ),
+
+        React.createElement('div', { className: 'pdp-section' },
+          React.createElement('h4', null, 'Quantité'),
+          React.createElement('div', { className: 'qty' },
+            React.createElement('button', { onClick: () => setQty(Math.max(1, qty - 1)) }, '−'),
+            React.createElement('span', null, qty),
+            React.createElement('button', { onClick: () => setQty(qty + 1) }, '+')
+          )
+        ),
+
+        React.createElement('div', { className: 'pdp-cta' },
+          React.createElement('button', { className: 'btn btn-pink', onClick: onAdd },
+            added ? '✓ Ajouté au panier' : 'Ajouter — ' + total + ' DT'
+          )
+        ),
+
+        React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, paddingTop: 18, borderTop: '1px solid var(--line)', fontSize: 13 } },
+          React.createElement('div', null,
+            React.createElement('div', { style: { fontSize: 11, color: 'var(--ink-soft)', marginBottom: 4 } }, 'Livraison'),
+            React.createElement('div', null, '8 DT · 2–4 j')
+          ),
+          React.createElement('div', null,
+            React.createElement('div', { style: { fontSize: 11, color: 'var(--ink-soft)', marginBottom: 4 } }, 'Paiement'),
+            React.createElement('div', null, 'À la livraison')
+          ),
+          React.createElement('div', null,
+            React.createElement('div', { style: { fontSize: 11, color: 'var(--ink-soft)', marginBottom: 4 } }, 'Confirmation'),
+            React.createElement('div', null, 'Par Instagram')
+          )
+        )
+      )
+    ),
+
+    related.length > 0 && React.createElement('section', { className: 'section', style: { paddingTop: 40 } },
+      React.createElement('div', { className: 'section-head' },
+        React.createElement('h2', { className: 'section-title' }, 'Tu aimeras aussi')
+      ),
+      React.createElement('div', { className: 'product-grid' },
+        related.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: openProduct }))
+      )
+    )
+  );
+}
+
+function About({ setPage }) {
+  return React.createElement('section', { style: { padding: '96px 40px', maxWidth: 760, margin: '0 auto', textAlign: 'center' } },
+    React.createElement('div', { className: 'section-eyebrow' }, 'À propos'),
+    React.createElement('h1', { className: 'serif', style: { fontSize: 64, lineHeight: 1.05, margin: '12px 0 32px', letterSpacing: '-0.02em' } },
+      'Des petites choses,', React.createElement('br'),
+      React.createElement('em', { className: 'serif-italic', style: { color: 'var(--pink-deep)' } }, 'beaucoup d’amour.')),
+    React.createElement('p', { style: { fontSize: 18, lineHeight: 1.8, color: 'var(--ink-soft)', textAlign: 'left' } },
+      'Meyva collection, c’est une petite boutique tunisienne qui fait des objets pour décorer ta chambre, ',
+      'offrir à tes amies, ou simplement te faire plaisir. Photos polaroid, stickers, posters, bougies, ',
+      'certificats personnalisés — tout est à petit prix et livré partout en Tunisie.'),
+    React.createElement('p', { style: { fontSize: 18, lineHeight: 1.8, color: 'var(--ink-soft)', textAlign: 'left', marginTop: 18 } },
+      'Tout passe par Instagram : tu choisis ton produit, tu nous envoies un message avec tes photos ou ton texte, ',
+      'et on s’occupe du reste. Paiement à la livraison.'),
+    React.createElement('a', {
+      className: 'btn btn-pink',
+      href: 'https://instagram.com/meyva__collection',
+      target: '_blank', rel: 'noopener',
+      style: { marginTop: 40, display: 'inline-flex' },
+    }, '@meyva__collection sur Instagram')
+  );
+}
+
+Object.assign(window, { Home, Shop, ProductDetail, About });
+
+// ── cart-drawer.jsx ───────────────────────────────────────────────────────────
+function CartDrawer({ open, onClose, cart, updateQty, removeItem }) {
+  const items = cart;
+  const subtotal = items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
+  const shipping = subtotal > 0 ? 8 : 0;
+  const total = subtotal + shipping;
+
+  const checkout = () => window.open('https://instagram.com/meyva__collection', '_blank');
+
+  return React.createElement(React.Fragment, null,
+    React.createElement('div', { className: 'drawer-backdrop' + (open ? ' open' : ''), onClick: onClose }),
+    React.createElement('aside', { className: 'drawer' + (open ? ' open' : '') },
+      React.createElement('div', { className: 'drawer-head' },
+        React.createElement('h3', null, 'Ton panier (', items.reduce((s, i) => s + i.qty, 0), ')'),
+        React.createElement('button', { className: 'nav-icon-btn', onClick: onClose, 'aria-label': 'Fermer' },
+          React.createElement(Icon.close))
+      ),
+      React.createElement('div', { className: 'drawer-body' },
+        items.length === 0
+          ? React.createElement('div', { style: { textAlign: 'center', padding: '60px 20px', color: 'var(--ink-soft)' } },
+              React.createElement('div', { className: 'serif', style: { fontSize: 24, color: 'var(--ink)', marginBottom: 8 } }, 'Ton panier est vide'),
+              React.createElement('p', { style: { fontSize: 14 } }, 'Ajoute des petites choses jolies.')
+            )
+          : items.map((item, idx) => React.createElement('div', { key: idx, className: 'cart-line' },
+              React.createElement('div', { className: 'cart-line-thumb' },
+                React.createElement(ProductSwatch, { name: item.swatch })
+              ),
+              React.createElement('div', null,
+                React.createElement('div', { className: 'cart-line-name' }, item.name),
+                React.createElement('div', { className: 'cart-line-cat' },
+                  item.option && item.option.tier ? item.option.tier.qty + ' photos' : item.cat
+                ),
+                React.createElement('div', { className: 'qty', style: { marginTop: 8 } },
+                  React.createElement('button', { onClick: () => updateQty(idx, Math.max(1, item.qty - 1)) }, '−'),
+                  React.createElement('span', null, item.qty),
+                  React.createElement('button', { onClick: () => updateQty(idx, item.qty + 1) }, '+')
+                )
+              ),
+              React.createElement('div', { style: { textAlign: 'right' } },
+                React.createElement('div', { style: { fontFamily: 'Fraunces, serif', fontWeight: 500, fontSize: 16 } },
+                  (item.unitPrice * item.qty) + ' DT'),
+                React.createElement('button', {
+                  onClick: () => removeItem(idx),
+                  style: { background: 'none', border: 'none', fontSize: 12, color: 'var(--ink-soft)', textDecoration: 'underline', padding: 0, marginTop: 8, cursor: 'pointer' },
+                }, 'Retirer')
+              )
+            ))
+      ),
+      items.length > 0 && React.createElement('div', { className: 'drawer-foot' },
+        React.createElement('div', { className: 'cart-row' },
+          React.createElement('span', null, 'Sous-total'),
+          React.createElement('span', null, subtotal + ' DT')
+        ),
+        React.createElement('div', { className: 'cart-row' },
+          React.createElement('span', null, 'Livraison'),
+          React.createElement('span', null, shipping + ' DT')
+        ),
+        React.createElement('div', { className: 'cart-total' },
+          React.createElement('span', null, 'Total'),
+          React.createElement('span', null, total + ' DT')
+        ),
+        React.createElement('div', { className: 'checkout-note' },
+          'Le paiement et la confirmation se font directement par message Instagram.'),
+        React.createElement('button', { className: 'btn btn-pink', style: { width: '100%' }, onClick: checkout },
+          React.createElement(Icon.insta),
+          'Confirmer la commande sur Instagram'
+        )
+      )
+    )
+  );
+}
+
+window.CartDrawer = CartDrawer;
+
+// ── coming-soon.jsx ───────────────────────────────────────────────────────────
+function ComingSoonCard({ product }) {
+  return React.createElement('article', { className: 'product-card coming-soon-card' },
+    React.createElement('div', { className: 'product-thumb' },
+      React.createElement('span', { className: 'product-badge cs-badge' }, product.eta || 'Bientôt'),
+      React.createElement('div', { className: 'product-thumb-inner cs-thumb-inner' },
+        React.createElement(ProductSwatch, { name: product.swatch })
+      ),
+      React.createElement('div', { className: 'cs-veil' },
+        React.createElement('span', { className: 'cs-veil-text' }, 'Bientôt disponible')
+      )
+    ),
+    React.createElement('div', null,
+      React.createElement('div', { className: 'product-cat' }, product.cat),
+      React.createElement('div', { className: 'product-meta' },
+        React.createElement('h3', { className: 'product-name' }, product.name)
+      ),
+      product.teaser && React.createElement('p', { className: 'cs-teaser' }, product.teaser)
+    )
+  );
+}
+
+function ComingSoon() {
+  const items = (window.MEYVA_DATA && window.MEYVA_DATA.COMING_SOON) || [];
+  if (!items.length) return null;
+
+  return React.createElement('section', { className: 'section coming-soon' },
+    React.createElement('div', { className: 'section-head' },
+      React.createElement('div', null,
+        React.createElement('div', { className: 'section-eyebrow' }, 'En préparation'),
+        React.createElement('h2', { className: 'section-title' },
+          'Bientôt ', React.createElement('em', null, 'disponible'))
+      ),
+      React.createElement('a', {
+        href: 'https://instagram.com/meyva__collection', target: '_blank', rel: 'noopener',
+        className: 'section-link',
+      }, 'Être prévenu(e) →')
+    ),
+    React.createElement('div', { className: 'product-grid' },
+      items.map(p => React.createElement(ComingSoonCard, { key: p.id, product: p }))
+    ),
+    React.createElement('p', { className: 'cs-note' },
+      'Ces nouveautés ne sont pas encore en vente. Écris-nous sur Instagram pour les réserver ou être prévenu(e) du lancement.')
+  );
+}
+
+window.ComingSoon = ComingSoon;
+
+// ── App ───────────────────────────────────────────────────────────────────────
+const { useState } = React;
+
+function App() {
+  const [page, setPage] = useState('home');
+  const [activeProduct, setActiveProduct] = useState(PRODUCTS[0]);
+  const [lang, setLang] = useState('fr');
+  const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+
+  const openProduct = (p) => {
+    setActiveProduct(p);
+    setPage('product');
+    window.scrollTo(0, 0);
+  };
+
+  const addToCart = (product, qty, option) => {
+    const unitPrice = option && option.tier ? option.tier.price : product.price;
+    setCart(c => [...c, { ...product, qty, option, unitPrice }]);
+    setCartOpen(true);
+  };
+  const updateQty = (idx, qty) => setCart(c => c.map((it, i) => i === idx ? { ...it, qty } : it));
+  const removeItem = (idx) => setCart(c => c.filter((_, i) => i !== idx));
+
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  let content;
+  if (page === 'home') content = <Home products={PRODUCTS} setPage={(p) => { setPage(p); window.scrollTo(0,0); }} openProduct={openProduct} />;
+  else if (page === 'shop') content = <Shop products={PRODUCTS} categories={CATEGORIES} openProduct={openProduct} />;
+  else if (page === 'product') content = <ProductDetail product={activeProduct} products={PRODUCTS} addToCart={addToCart} openProduct={openProduct} setPage={(p) => { setPage(p); window.scrollTo(0,0); }} />;
+  else if (page === 'about') content = <About setPage={(p) => { setPage(p); window.scrollTo(0,0); }} />;
+
+  return (
+    <>
+      <UtilityBar lang={lang} setLang={setLang} />
+      <Nav page={page} setPage={(p) => { setPage(p); window.scrollTo(0,0); }} cartCount={cartCount} openCart={() => setCartOpen(true)} />
+      <main data-screen-label={page}>{content}</main>
+      <Footer />
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty} removeItem={removeItem} />
+
+      <div className="page-switcher" role="navigation" aria-label="Aperçu pages">
+        {[
+          { id: 'home', label: 'Accueil' },
+          { id: 'shop', label: 'Boutique' },
+          { id: 'product', label: 'Produit' },
+          { id: 'about', label: 'À propos' },
+        ].map(l => (
+          <button key={l.id} className={page === l.id ? 'active' : ''} onClick={() => {
+            if (l.id === 'product') setActiveProduct(PRODUCTS[0]);
+            setPage(l.id);
+            window.scrollTo(0, 0);
+          }}>{l.label}</button>
+        ))}
+        <button onClick={() => setCartOpen(true)}>Panier{cartCount > 0 ? ' (' + cartCount + ')' : ''}</button>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
