@@ -72,7 +72,7 @@ const PRODUCTS = [
     id: 'poster-vintage',
     name: 'Poster — Vintage moodboard',
     cat: 'Posters',
-    price: 5,
+    price: 4,
     secondary: '3 pour 10 DT',
     desc: 'Poster A4 sur papier mat. Imprimé chez nous.',
     long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Esthétique vintage moodboard. 3 posters au choix pour 10 DT.',
@@ -82,7 +82,7 @@ const PRODUCTS = [
     id: 'poster-aura',
     name: 'Poster — Aura print',
     cat: 'Posters',
-    price: 5,
+    price: 4,
     secondary: '3 pour 10 DT',
     desc: 'Aura colorée, dégradés doux. Format A4.',
     long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d’aura. 3 posters au choix pour 10 DT.',
@@ -156,7 +156,31 @@ const GOUVERNORATS = [
   'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
 ];
 
-window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON, DELIVERY_FEE, GOUVERNORATS };
+// Promotions en cours (affichées dans la section « Grande promotion spéciale »)
+const PROMOS = [
+  {
+    id: 'promo-stickers',
+    title: 'Offre stickers',
+    badge: '5 + 3 offerts',
+    highlight: 'Achète 5 stickers, reçois-en 3 gratuitement',
+    sub: 'Fais ton propre pack !',
+    swatch: 'stickers-pink',
+    cta: 'Voir les stickers',
+    goCat: 'Stickers',
+  },
+  {
+    id: 'promo-posters',
+    title: 'Offre posters',
+    badge: '−2 DT',
+    highlight: 'Les 3 posters à 10 DT',
+    sub: 'Au lieu de 12 DT',
+    swatch: 'poster-vintage',
+    cta: 'Voir les posters',
+    goCat: 'Posters',
+  },
+];
+
+window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON, DELIVERY_FEE, GOUVERNORATS, PROMOS };
 
 // ── swatches.jsx ──────────────────────────────────────────────────────────────
 const SWATCHES = {
@@ -560,6 +584,8 @@ function Home({ products, setPage, openProduct }) {
       )
     ),
 
+    React.createElement(Promos, { setPage: setPage }),
+
     React.createElement('section', { className: 'section' },
       React.createElement('div', { className: 'section-head' },
         React.createElement('div', null,
@@ -912,6 +938,40 @@ function ComingSoon() {
 }
 
 window.ComingSoon = ComingSoon;
+
+// ── promos.jsx ────────────────────────────────────────────────────────────────
+function PromoCard({ promo, setPage }) {
+  return React.createElement('article', { className: 'promo-card' },
+    React.createElement('span', { className: 'promo-badge' }, promo.badge),
+    React.createElement('div', { className: 'promo-art' },
+      React.createElement(ProductSwatch, { name: promo.swatch })
+    ),
+    React.createElement('div', { className: 'promo-eyebrow' }, promo.title),
+    React.createElement('h3', { className: 'promo-highlight' }, promo.highlight),
+    React.createElement('p', { className: 'promo-sub' }, promo.sub),
+    React.createElement('button', { className: 'btn btn-pink', style: { marginTop: 4 }, onClick: () => setPage && setPage('shop') }, promo.cta || 'J’en profite')
+  );
+}
+
+function Promos({ setPage }) {
+  const items = (window.MEYVA_DATA && window.MEYVA_DATA.PROMOS) || [];
+  if (!items.length) return null;
+
+  return React.createElement('section', { className: 'section promos' },
+    React.createElement('div', { className: 'promos-head' },
+      React.createElement('div', { className: 'section-eyebrow', style: { color: 'var(--pink-deep)' } }, 'Offres limitées'),
+      React.createElement('h2', { className: 'section-title' },
+        'Grande promotion ', React.createElement('em', null, 'spéciale'), ' !')
+    ),
+    React.createElement('div', { className: 'promo-grid' },
+      items.map(p => React.createElement(PromoCard, { key: p.id, promo: p, setPage: setPage }))
+    ),
+    React.createElement('p', { className: 'promos-foot' }, 'Offres limitées — profitez-en maintenant !')
+  );
+}
+
+window.Promos = Promos;
+window.PromoCard = PromoCard;
 
 // ── orders + mescolis export ──────────────────────────────────────────────────
 const ORDERS_KEY = 'meyva_orders_v1';

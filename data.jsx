@@ -54,7 +54,7 @@ const PRODUCTS = [
     id: 'poster-vintage',
     name: 'Poster — Vintage moodboard',
     cat: 'Posters',
-    price: 5,
+    price: 4,
     secondary: '3 pour 10 DT',
     desc: 'Poster A4 sur papier mat. Imprimé chez nous.',
     long: 'Poster A4 (21 × 29,7 cm) imprimé sur papier mat 200g. Esthétique vintage moodboard. 3 posters au choix pour 10 DT.',
@@ -64,7 +64,7 @@ const PRODUCTS = [
     id: 'poster-aura',
     name: 'Poster — Aura print',
     cat: 'Posters',
-    price: 5,
+    price: 4,
     secondary: '3 pour 10 DT',
     desc: 'Aura colorée, dégradés doux. Format A4.',
     long: 'Poster A4 imprimé sur papier mat 200g. Dégradés aura inspirés des tests d\u2019aura. 3 posters au choix pour 10 DT.',
@@ -138,4 +138,28 @@ const GOUVERNORATS = [
   'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
 ];
 
-window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON, DELIVERY_FEE, GOUVERNORATS };
+// Promotions en cours (section « Grande promotion spéciale »)
+const PROMOS = [
+  {
+    id: 'promo-stickers',
+    title: 'Offre stickers',
+    badge: '5 + 3 offerts',
+    highlight: 'Achète 5 stickers, reçois-en 3 gratuitement',
+    sub: 'Fais ton propre pack !',
+    swatch: 'stickers-pink',
+    cta: 'Voir les stickers',
+    goCat: 'Stickers',
+  },
+  {
+    id: 'promo-posters',
+    title: 'Offre posters',
+    badge: '−2 DT',
+    highlight: 'Les 3 posters à 10 DT',
+    sub: 'Au lieu de 12 DT',
+    swatch: 'poster-vintage',
+    cta: 'Voir les posters',
+    goCat: 'Posters',
+  },
+];
+
+window.MEYVA_DATA = { PRODUCTS, CATEGORIES, PHOTO_TIERS, COMING_SOON, DELIVERY_FEE, GOUVERNORATS, PROMOS };
