@@ -1105,3 +1105,54 @@ textarea.inp { resize: vertical; }
   .section { padding: 56px 20px; }
   .utility-bar { padding: 0 20px; font-size: 12px; }
 }
+
+/* ============ PHONES (<= 600px) ============ */
+@media (max-width: 600px) {
+  /* keep fixed bottom nav from hiding page content */
+  body { padding-bottom: 72px; }
+
+  /* hero */
+  .hero-text { padding: 40px 22px; }
+  .hero-title { font-size: 38px; line-height: 1.04; }
+  .hero-text p { font-size: 15px; }
+
+  /* section headings */
+  .section { padding: 44px 18px; }
+  .section-title { font-size: 34px; }
+
+  /* product grid: 2 tidy columns */
+  .product-grid, .product-grid.cols-3 { grid-template-columns: repeat(2, 1fr); gap: 22px 14px; }
+  /* stack name above price so neither gets squeezed in a narrow card */
+  .product-meta { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .product-name { font-size: 17px; }
+
+  /* PROMOS — stack the cards (was overflowing off-screen) */
+  .promo-grid { grid-template-columns: 1fr; gap: 34px; max-width: 420px; }
+  .promos-head { margin-bottom: 32px; }
+  .promo-card { padding: 30px 22px 24px; }
+  .promo-highlight { font-size: 22px; }
+  .promo-art { width: 104px; height: 104px; }
+
+  /* coming-soon / footer */
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+
+  /* checkout */
+  .checkout { padding: 32px 18px 80px; }
+  .checkout-title { font-size: 30px; }
+
+  /* admin table scrolls horizontally instead of breaking layout */
+  .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .admin-table { min-width: 640px; }
+
+  /* bottom nav: full-width bar, centered, no horizontal cut-off */
+  .page-switcher {
+    left: 0; right: 0; bottom: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    border-radius: 0;
+    padding: 8px 6px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    gap: 2px;
+  }
+  .page-switcher button { padding: 8px 10px; }
+}
