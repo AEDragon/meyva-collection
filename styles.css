@@ -1003,9 +1003,13 @@ textarea.inp { resize: vertical; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .admin { max-width: 1280px; margin: 0 auto; padding: 56px 40px 96px; }
+.admin-keybar {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  margin: 24px 0 6px; padding: 16px; background: var(--cream-deep);
+}
 .admin-bar {
   display: flex; justify-content: space-between; align-items: center;
-  gap: 16px; flex-wrap: wrap; margin: 24px 0 16px;
+  gap: 16px; flex-wrap: wrap; margin: 16px 0 16px;
 }
 .admin-stats { display: flex; gap: 24px; font-size: 15px; }
 .admin-empty {

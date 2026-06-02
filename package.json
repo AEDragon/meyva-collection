@@ -1,0 +1,10 @@
+{
+  "name": "meyva-collection",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "meyva collection storefront — static site + order API (Vercel)",
+  "dependencies": {
+    "@vercel/blob": "^2.4.0"
+  }
+}

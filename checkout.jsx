@@ -1,7 +1,7 @@
 /* global React, Icon */
 
-// Commande client → enregistrement local → export au format mescolis.tn.
-// Paiement en espèces à la livraison : aucune passerelle de paiement en ligne.
+// Commande client → enregistrement central (API /api/orders + Vercel Blob)
+// → export au format mescolis.tn. Paiement en espèces à la livraison.
 // NOTE : index.html est la version exécutée. Ce fichier est un miroir source.
 
 const ORDERS_KEY = 'meyva_orders_v1';
@@ -52,6 +52,7 @@ function Checkout({ cart, onPlaced, setPage }) {
   const [f, setF] = React.useState({ nom: '', telephone: '', telephone2: '', gouvernorat: '', ville: '', adresse: '', note: '' });
   const [errors, setErrors] = React.useState({});
   const [placed, setPlaced] = React.useState(null);
+  const [sending, setSending] = React.useState(false);
   const set = (k, v) => setF(s => Object.assign({}, s, { [k]: v }));
 
   if (placed) {
@@ -85,8 +86,9 @@ function Checkout({ cart, onPlaced, setPage }) {
     setErrors(e);
     return Object.keys(e).length === 0;
   };
-  const submit = () => {
+  const submit = async () => {
     if (!validate()) { window.scrollTo(0, 0); return; }
+    if (sending) return;
     const order = {
       id: 'CMD-' + Date.now(),
       createdAt: new Date().toISOString(),
@@ -95,7 +97,12 @@ function Checkout({ cart, onPlaced, setPage }) {
       items: cart.map(i => ({ name: i.name, qty: i.qty, option: i.option, unitPrice: i.unitPrice, cat: i.cat })),
       subtotal: subtotal, shipping: shipping, total: total, colis: 1, status: 'nouveau',
     };
-    const list = loadOrders(); list.push(order); saveOrders(list);
+    const list = loadOrders(); list.push(order); saveOrders(list); // sauvegarde locale de secours
+    setSending(true);
+    try {
+      await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });
+    } catch (e) { /* fallback: commande conservée localement */ }
+    setSending(false);
     onPlaced && onPlaced();
     setPlaced(order);
     window.scrollTo(0, 0);
@@ -136,36 +143,59 @@ function Checkout({ cart, onPlaced, setPage }) {
       React.createElement('div', { className: 'sum-line muted' }, React.createElement('span', null, 'Sous-total'), React.createElement('span', null, subtotal + ' DT')),
       React.createElement('div', { className: 'sum-line muted' }, React.createElement('span', null, 'Livraison'), React.createElement('span', null, shipping + ' DT')),
       React.createElement('div', { className: 'sum-total' }, React.createElement('span', null, 'Total'), React.createElement('span', null, total + ' DT')),
-      React.createElement('button', { className: 'btn btn-pink', style: { width: '100%', marginTop: 16 }, onClick: submit }, 'Confirmer la commande'),
+      React.createElement('button', { className: 'btn btn-pink', style: { width: '100%', marginTop: 16 }, onClick: submit, disabled: sending },
+        sending ? 'Envoi…' : 'Confirmer la commande'),
       React.createElement('p', { className: 'muted', style: { fontSize: 12, marginTop: 10, textAlign: 'center' } }, 'Aucun paiement en ligne — tu payes en espèces à la réception.')
     )
   );
 }
 
 function OrderAdmin() {
-  const [orders, setOrders] = React.useState(loadOrders());
-  const refresh = () => setOrders(loadOrders());
+  const [orders, setOrders] = React.useState([]);
+  const [adminKey, setAdminKey] = React.useState(localStorage.getItem('meyva_admin_key') || '');
+  const [status, setStatus] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
   const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+
+  const loadServer = async (k) => {
+    const key = (k != null ? k : adminKey).trim();
+    if (!key) { setStatus('Entre la clé admin pour charger les commandes du serveur.'); return; }
+    localStorage.setItem('meyva_admin_key', key);
+    setLoading(true); setStatus('Chargement depuis le serveur…');
+    try {
+      const r = await fetch('/api/orders?key=' + encodeURIComponent(key));
+      if (r.status === 401) { setStatus('Clé admin incorrecte.'); setLoading(false); return; }
+      if (!r.ok) { setStatus('Erreur serveur (' + r.status + ').'); setLoading(false); return; }
+      const j = await r.json();
+      setOrders(j.orders || []);
+      setStatus((j.orders || []).length + ' commande(s) chargée(s) depuis le serveur.');
+    } catch (e) { setStatus('Impossible de joindre le serveur (disponible uniquement sur le site en ligne).'); }
+    setLoading(false);
+  };
+  const loadLocal = () => { setOrders(loadOrders()); setStatus('Commandes locales (cet appareil uniquement).'); };
   const exportCSV = () => { if (!orders.length) return; downloadFile('commandes-mescolis-' + stamp() + '.csv', buildMescolisCSV(orders), 'text/csv;charset=utf-8'); };
-  const clearAll = () => { if (window.confirm('Supprimer toutes les commandes enregistrées sur cet appareil ?')) { saveOrders([]); refresh(); } };
+
+  React.useEffect(() => { if (adminKey) loadServer(adminKey); }, []);
 
   return React.createElement('section', { className: 'admin' },
     React.createElement('div', { className: 'section-eyebrow' }, 'Espace boutique'),
     React.createElement('h1', { className: 'serif checkout-title' }, 'Commandes ', React.createElement('em', { className: 'serif-italic' }, 'reçues')),
+    React.createElement('div', { className: 'admin-keybar' },
+      React.createElement('input', { className: 'inp', style: { maxWidth: 280 }, type: 'password', placeholder: 'Clé admin', value: adminKey, onChange: e => setAdminKey(e.target.value) }),
+      React.createElement('button', { className: 'btn btn-pink', onClick: () => loadServer(), disabled: loading }, loading ? 'Chargement…' : 'Charger les commandes'),
+      React.createElement('button', { className: 'btn btn-outline', onClick: loadLocal }, 'Cet appareil')
+    ),
+    status && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, status),
     React.createElement('div', { className: 'admin-bar' },
       React.createElement('div', { className: 'admin-stats' },
         React.createElement('span', null, React.createElement('strong', null, orders.length), ' commande' + (orders.length > 1 ? 's' : '')),
         React.createElement('span', null, 'Total : ', React.createElement('strong', null, revenue + ' DT'))
       ),
-      React.createElement('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-        React.createElement('button', { className: 'btn btn-pink', onClick: exportCSV, disabled: !orders.length }, 'Exporter pour mescolis.tn (CSV)'),
-        React.createElement('button', { className: 'btn btn-outline', onClick: refresh }, 'Actualiser'),
-        React.createElement('button', { className: 'btn btn-ghost', onClick: clearAll, disabled: !orders.length }, 'Vider')
-      )
+      React.createElement('button', { className: 'btn btn-pink', onClick: exportCSV, disabled: !orders.length }, 'Exporter pour mescolis.tn (CSV)')
     ),
-    React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, 'Le fichier CSV reprend exactement les colonnes du modèle mescolis.tn.'),
+    React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, 'Le fichier CSV reprend exactement les colonnes du modèle mescolis.tn : destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.'),
     orders.length === 0
-      ? React.createElement('div', { className: 'admin-empty' }, 'Aucune commande pour le moment.')
+      ? React.createElement('div', { className: 'admin-empty' }, 'Aucune commande chargée. Entre ta clé admin puis clique « Charger les commandes » pour voir les commandes reçues sur le site.')
       : React.createElement('div', { className: 'admin-table-wrap' },
           React.createElement('table', { className: 'admin-table' },
             React.createElement('thead', null, React.createElement('tr', null,
@@ -173,7 +203,7 @@ function OrderAdmin() {
             )),
             React.createElement('tbody', null,
               orders.slice().reverse().map(o => React.createElement('tr', { key: o.id },
-                React.createElement('td', null, o.id.replace('CMD-', '#')),
+                React.createElement('td', null, (o.id || '').replace('CMD-', '#')),
                 React.createElement('td', null, (o.createdAt || '').slice(0, 10)),
                 React.createElement('td', null, o.nom),
                 React.createElement('td', null, o.telephone),
