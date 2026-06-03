@@ -1208,15 +1208,19 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
     setSlotPreviews(urls);
     return () => urls.forEach(u => { if (u) URL.revokeObjectURL(u); });
   }, [files, product.id]);
-  const firstPreview = slotPreviews.find(u => u) || null;
-  const showUpload = !!(product.upload && firstPreview);
+  const uploadedPreviews = slotPreviews.filter(Boolean);
+  const showUpload = !!(product.upload && uploadedPreviews.length);
+  const [previewIdx, setPreviewIdx] = React.useState(0);
+  React.useEffect(() => { setPreviewIdx(0); }, [product.id]);
+  const upIdx = Math.min(previewIdx, Math.max(0, uploadedPreviews.length - 1));
+  const stepPreview = (d) => { const n = uploadedPreviews.length; if (n) setPreviewIdx((upIdx + d + n) % n); };
   const gallery = (product.gallery && product.gallery.length) ? product.gallery : (product.image ? [product.image] : []);
   // Avec modèles : l'image principale suit le modèle prévisualisé + flèches
   const modelIdx = hasModels && model ? product.models.findIndex(m => m.label === model.label) : -1;
   const stepModel = (d) => { if (!hasModels) return; const n = product.models.length; const cur = modelIdx < 0 ? 0 : modelIdx; setModel(product.models[(cur + d + n) % n]); };
   const addSelected = (m) => { setModel(m); if (selected.length < 30) setSelected(prev => prev.concat([m])); };
   const removeSelected = (i) => setSelected(prev => prev.filter((_, k) => k !== i));
-  const mainImg = showUpload ? firstPreview : (hasModels && model ? model.img : gallery[Math.min(activeImg, gallery.length - 1)]);
+  const mainImg = showUpload ? uploadedPreviews[upIdx] : (hasModels && model ? model.img : gallery[Math.min(activeImg, gallery.length - 1)]);
   const tiers = window.MEYVA_DATA.tiersFor(product);
   const activeTier = tiers.find(t => t.qty === tier);
   const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
@@ -1283,6 +1287,11 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           React.createElement('button', { type: 'button', className: 'pdp-nav-btn', onClick: () => stepModel(-1), 'aria-label': 'Précédent' }, '‹'),
           React.createElement('span', { className: 'pdp-nav-pos' }, (modelIdx < 0 ? 1 : modelIdx + 1) + ' / ' + product.models.length),
           React.createElement('button', { type: 'button', className: 'pdp-nav-btn', onClick: () => stepModel(1), 'aria-label': 'Suivant' }, '›')
+        ),
+        showUpload && uploadedPreviews.length > 1 && React.createElement('div', { className: 'pdp-nav' },
+          React.createElement('button', { type: 'button', className: 'pdp-nav-btn', onClick: () => stepPreview(-1), 'aria-label': 'Précédent' }, '‹'),
+          React.createElement('span', { className: 'pdp-nav-pos' }, (upIdx + 1) + ' / ' + uploadedPreviews.length),
+          React.createElement('button', { type: 'button', className: 'pdp-nav-btn', onClick: () => stepPreview(1), 'aria-label': 'Suivant' }, '›')
         ),
         // Galerie de vignettes (produits sans sélecteur de modèle)
         !hasModels && !showUpload && gallery.length > 1 && React.createElement('div', { className: 'pdp-thumbs' },
