@@ -1160,12 +1160,46 @@ textarea.inp { resize: vertical; }
 }
 .btn-delete:hover { background: var(--pink-deep); color: #fff; }
 .btn-delete:disabled { opacity: 0.5; cursor: default; }
+/* ===== admin analytics dashboard ===== */
+.admin-analytics { margin: 20px 0 8px; }
+.an-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.an-card { background: var(--cream-deep); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.an-card-val { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; color: var(--pink-deep); line-height: 1.1; }
+.an-card-lbl { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; }
+.an-chart { margin-top: 16px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+.an-chart h4 { margin: 0 0 12px; font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; }
+.an-bar-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+.an-bar-name { width: 230px; flex: 0 0 auto; font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.an-bar-track { flex: 1; height: 16px; background: var(--pink-pale); border-radius: 999px; overflow: hidden; }
+.an-bar-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--pink), var(--pink-deep)); border-radius: 999px; }
+.an-bar-val { width: 32px; flex: 0 0 auto; text-align: right; font-weight: 600; font-size: 13px; color: var(--pink-deep); }
+.badge-status {
+  border: 1px solid var(--line); background: #fff; border-radius: 999px;
+  padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
+  color: var(--ink-soft); white-space: nowrap;
+}
+.badge-status:hover { border-color: var(--pink-deep); }
+.badge-status.paid { background: #e8f6ec; border-color: #9ed1ad; color: #2a7a3a; }
+.badge-status:disabled { opacity: 0.6; cursor: default; }
+@media (max-width: 600px) {
+  .an-cards { grid-template-columns: 1fr 1fr; }
+  .an-bar-name { width: 120px; }
+}
 .btn-file {
   background: var(--pink-pale); border: 1px solid var(--pink); color: var(--pink-deep);
   font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px;
   border-radius: 999px; cursor: pointer; white-space: nowrap; margin: 2px;
 }
 .btn-file:hover { background: var(--pink); color: #fff; }
+/* chosen design previews + uploaded files in the admin "Files" column */
+.admin-files-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.admin-design-thumb {
+  display: inline-block; width: 44px; height: 44px; border-radius: 8px;
+  overflow: hidden; border: 1px solid var(--pink); background: var(--pink-pale);
+  flex: 0 0 auto;
+}
+.admin-design-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.admin-design-thumb:hover { border-color: var(--pink-deep); }
 /* file dropzone on custom products */
 .filedrop {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
