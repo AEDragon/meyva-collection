@@ -1269,6 +1269,50 @@ textarea.inp { resize: vertical; }
 .admin-design-thumb.loading { display: grid; place-items: center; }
 .admin-design-thumb .thumb-load { font-size: 15px; opacity: 0.6; }
 .files-more { font-size: 12px; color: var(--ink-soft); align-self: center; }
+
+/* ====== Commandes admin en fiches (une commande par carte) ====== */
+.admin-orders { display: flex; flex-direction: column; gap: 18px; margin-top: 16px; }
+.admin-order-card {
+  border: 1px solid var(--line); border-radius: 16px; background: var(--surface);
+  overflow: hidden; box-shadow: 0 2px 12px rgba(42,36,34,0.06);
+}
+.admin-order-card.is-paid { border-color: #9ed1ad; }
+.admin-order-head {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 13px 18px; background: var(--cream-deep); border-bottom: 1px solid var(--line);
+}
+.admin-order-id { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--ink); }
+.admin-order-date { font-size: 13px; color: var(--ink-soft); }
+.admin-order-spacer { flex: 1 1 auto; }
+.admin-order-total { font-size: 17px; font-weight: 700; color: var(--pink-deep); white-space: nowrap; }
+.admin-order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding: 18px; }
+.admin-order-block h4 {
+  margin: 0 0 10px; font-family: 'Fraunces', serif; font-size: 14.5px; font-weight: 600; color: var(--ink);
+}
+.admin-kv { margin: 0; display: flex; flex-direction: column; gap: 7px; }
+.admin-kv-row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: start; font-size: 13.5px; }
+.admin-kv-row dt { color: var(--ink-soft); }
+.admin-kv-row dd { margin: 0; color: var(--ink); word-break: break-word; }
+.admin-art-list { display: flex; flex-direction: column; }
+.admin-art-row {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  font-size: 13.5px; padding: 8px 0; border-bottom: 1px dashed var(--line);
+}
+.admin-art-row:last-child { border-bottom: none; }
+.admin-art-qty { font-weight: 700; color: var(--pink-deep); min-width: 30px; }
+.admin-art-name { color: var(--ink); }
+.admin-art-price { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.admin-order-files { padding: 0 18px 18px; }
+.admin-order-card .admin-files-groups { flex-direction: row; flex-wrap: wrap; min-width: 0; gap: 14px; }
+.admin-order-card .admin-file-group { flex: 1 1 260px; min-width: 230px; }
+.admin-order-card .admin-file-group-h { font-size: 12.5px; max-width: none; white-space: normal; }
+.admin-order-card .admin-files-cell { gap: 8px; }
+.admin-order-card .admin-design-thumb { width: 76px; height: 76px; }
+.admin-order-foot { padding: 12px 18px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; }
+@media (max-width: 700px) {
+  .admin-order-grid { grid-template-columns: 1fr; gap: 16px; }
+  .admin-order-card .admin-design-thumb { width: 64px; height: 64px; }
+}
 /* photo upload (polaroid) — multi-photo picker on the product page */
 .photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .photo-thumb {

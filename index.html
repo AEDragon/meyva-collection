@@ -441,7 +441,7 @@ const I18N = {
     model_pick_multi: 'Choisis tes modèles', model_pick_hint: 'Clique sur les modèles pour les ajouter (un par article).', model_pick_deal: ' Offre : 3 pour 10 DT !', model_pick_cta: 'Choisis au moins un modèle',
     styles_choose: 'Choisis tes styles', styles_hint: 'Clique sur les styles que tu veux dans ton pack — on adapte le mix.',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
-    ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres', ad_other_files: 'Autres fichiers',
+    ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres', ad_other_files: 'Autres fichiers', ad_customer: 'Client',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
     ad_loading: 'Chargement de l’espace sécurisé…',
     ad_error: 'Connexion sécurisée indisponible. Réessaie en rechargeant la page (le module de connexion ne fonctionne que sur le site en ligne).',
@@ -559,7 +559,7 @@ const I18N = {
     model_pick_multi: 'Choose your designs', model_pick_hint: 'Click designs to add (one each).', model_pick_deal: ' Deal: 3 for 10 DT!', model_pick_cta: 'Pick at least one design',
     styles_choose: 'Pick your styles', styles_hint: 'Tap the styles you want in your pack — we tailor the mix.',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
-    ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more', ad_other_files: 'Other files',
+    ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more', ad_other_files: 'Other files', ad_customer: 'Customer',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
     ad_loading: 'Loading secure area…',
     ad_error: 'Secure sign-in unavailable. Try reloading the page (the sign-in module only works on the live site).',
@@ -2273,87 +2273,96 @@ function OrderAdmin() {
     orders.length === 0
       ? React.createElement('div', { className: 'admin-empty' }, t(lang, 'ad_empty'))
       : React.createElement(React.Fragment, null,
-        React.createElement('div', { className: 'admin-table-wrap' },
-          React.createElement('table', { className: 'admin-table' },
-            React.createElement('thead', null, React.createElement('tr', null,
-              ['#', t(lang, 'ad_h_date'), t(lang, 'ad_h_name'), t(lang, 'ad_h_tel'), t(lang, 'ad_h_gov'), t(lang, 'ad_h_city'), t(lang, 'ad_h_addr'), t(lang, 'ad_h_items'), t(lang, 'ad_h_note'), t(lang, 'ad_h_total'), t(lang, 'ad_h_status'), t(lang, 'ad_h_files'), t(lang, 'ad_h_action')].map((h, hi) => React.createElement('th', { key: hi }, h))
-            )),
-            React.createElement('tbody', null,
-              orders.slice().reverse().slice((Math.min(pageNum, Math.max(1, Math.ceil(orders.length / PER_PAGE))) - 1) * PER_PAGE, Math.min(pageNum, Math.max(1, Math.ceil(orders.length / PER_PAGE))) * PER_PAGE).map((o, i) => React.createElement('tr', { key: o.id },
-                React.createElement('td', null, o.id.replace('CMD-', '#')),
-                React.createElement('td', null, (o.createdAt || '').slice(0, 10)),
-                React.createElement('td', null, o.nom),
-                React.createElement('td', null, o.telephone),
-                React.createElement('td', null, o.gouvernorat),
-                React.createElement('td', null, o.ville),
-                React.createElement('td', null, o.adresse),
-                React.createElement('td', null, orderDesignation(o)),
-                React.createElement('td', { className: 'admin-note' }, o.note ? o.note : React.createElement('span', { className: 'muted' }, '—')),
-                React.createElement('td', null, window.money(o.total)),
-                React.createElement('td', null,
-                  React.createElement('button', {
-                    className: 'badge-status' + (o.status === 'payé' ? ' paid' : ''),
-                    onClick: () => setPaid(o.id, o.status !== 'payé'),
-                    disabled: updating === o.id,
-                  }, updating === o.id ? '…' : (o.status === 'payé' ? t(lang, 'st_paid') : t(lang, 'st_new')))
+        React.createElement('div', { className: 'admin-orders' },
+          orders.slice().reverse().slice((Math.min(pageNum, Math.max(1, Math.ceil(orders.length / PER_PAGE))) - 1) * PER_PAGE, Math.min(pageNum, Math.max(1, Math.ceil(orders.length / PER_PAGE))) * PER_PAGE).map((o) => {
+            // Groupes de visuels / fichiers par article (un encadré par produit)
+            const items = o.items || [];
+            const allFiles = o.files || [];
+            const isDesign = (fl) => /^design-/.test(String(fl && fl.name || ''));
+            const groups = [];
+            items.forEach((it, idx) => {
+              const opt = it.option || {};
+              const designImgs = [];
+              if (opt.model && opt.model.img) designImgs.push({ img: opt.model.img, label: opt.model.label });
+              if (Array.isArray(opt.posters)) opt.posters.forEach(p => { if (p && p.img) designImgs.push({ img: p.img, label: p.label }); });
+              const upFiles = allFiles.filter(fl => !isDesign(fl) && (fl.itemIdx === idx || (fl.itemIdx == null && fl.item && fl.item === it.name)));
+              if (designImgs.length || upFiles.length) groups.push({ label: it.name, designImgs: designImgs, upFiles: upFiles, idx: idx });
+            });
+            const claimed = {};
+            groups.forEach(g => g.upFiles.forEach(fl => { claimed[fl.path] = 1; }));
+            const orphan = allFiles.filter(fl => !isDesign(fl) && !claimed[fl.path]);
+            if (orphan.length) groups.push({ label: t(lang, 'ad_other_files'), designImgs: [], upFiles: orphan, idx: 'x' });
+            const paid = o.status === 'payé';
+            return React.createElement('div', { key: o.id, className: 'admin-order-card' + (paid ? ' is-paid' : '') },
+              // En-tête : numéro · date · statut · total
+              React.createElement('div', { className: 'admin-order-head' },
+                React.createElement('span', { className: 'admin-order-id' }, o.id.replace('CMD-', '#')),
+                React.createElement('span', { className: 'admin-order-date' }, '🗓 ' + (o.createdAt || '').slice(0, 10)),
+                React.createElement('span', { className: 'admin-order-spacer' }),
+                React.createElement('button', {
+                  className: 'badge-status' + (paid ? ' paid' : ''),
+                  onClick: () => setPaid(o.id, !paid), disabled: updating === o.id,
+                }, updating === o.id ? '…' : (paid ? t(lang, 'st_paid') : t(lang, 'st_new'))),
+                React.createElement('span', { className: 'admin-order-total' }, window.money(o.total))
+              ),
+              // Corps : client + articles côte à côte
+              React.createElement('div', { className: 'admin-order-grid' },
+                React.createElement('div', { className: 'admin-order-block' },
+                  React.createElement('h4', null, t(lang, 'ad_customer')),
+                  React.createElement('dl', { className: 'admin-kv' },
+                    [['ad_h_name', o.nom], ['ad_h_tel', (o.telephone || '') + (o.telephone2 ? ' / ' + o.telephone2 : '')], ['ad_h_gov', o.gouvernorat], ['ad_h_city', o.ville], ['ad_h_addr', o.adresse], ['ad_h_note', o.note]].map((kv, ki) =>
+                      React.createElement('div', { key: ki, className: 'admin-kv-row' },
+                        React.createElement('dt', null, t(lang, kv[0])),
+                        React.createElement('dd', null, kv[1] ? kv[1] : React.createElement('span', { className: 'muted' }, '—'))
+                      )
+                    )
+                  )
                 ),
-                React.createElement('td', null,
-                  (function () {
-                    const items = o.items || [];
-                    const allFiles = o.files || [];
-                    const isDesign = (fl) => /^design-/.test(String(fl && fl.name || ''));
-                    const SHOWN = 6;
-                    // Un groupe par article : on rattache ses visuels choisis et ses fichiers importés.
-                    const groups = [];
-                    items.forEach((it, idx) => {
-                      const opt = it.option || {};
-                      const designImgs = [];
-                      if (opt.model && opt.model.img) designImgs.push({ img: opt.model.img, label: opt.model.label });
-                      if (Array.isArray(opt.posters)) opt.posters.forEach(p => { if (p && p.img) designImgs.push({ img: p.img, label: p.label }); });
-                      const upFiles = allFiles.filter(fl => !isDesign(fl) && (fl.itemIdx === idx || (fl.itemIdx == null && fl.item && fl.item === it.name)));
-                      if (designImgs.length || upFiles.length) groups.push({ label: it.name, designImgs: designImgs, upFiles: upFiles, idx: idx });
-                    });
-                    // Commandes anciennes : fichiers sans rattachement → groupe « autres ».
-                    const claimed = {};
-                    groups.forEach(g => g.upFiles.forEach(fl => { claimed[fl.path] = 1; }));
-                    const orphan = allFiles.filter(fl => !isDesign(fl) && !claimed[fl.path]);
-                    if (orphan.length) groups.push({ label: t(lang, 'ad_other_files'), designImgs: [], upFiles: orphan, idx: 'x' });
-                    if (!groups.length) return React.createElement('span', { className: 'muted' }, '—');
-                    return React.createElement('div', { className: 'admin-files-groups' },
-                      groups.map((g, gi) => {
-                        const shown = g.upFiles.slice(0, SHOWN);
-                        const extra = g.upFiles.length - shown.length;
-                        const zipId = o.id + ':' + g.idx;
-                        return React.createElement('div', { key: gi, className: 'admin-file-group' },
-                          React.createElement('div', { className: 'admin-file-group-h', title: g.label }, g.label),
-                          React.createElement('div', { className: 'admin-files-cell' },
-                            g.designImgs.map((d, di) => React.createElement('a', {
-                              key: 'd' + di, href: d.img, target: '_blank', rel: 'noopener',
-                              className: 'admin-design-thumb', title: d.label || '',
-                            }, React.createElement('img', { src: d.img, alt: d.label || '', loading: 'lazy' }))),
-                            shown.map((fl, fi) => React.createElement(AdminFileThumb, {
-                              key: 'f' + fi, file: fl, adminKey: adminKey, openFile: openFile,
-                            })),
-                            extra > 0 && React.createElement('span', { key: 'more', className: 'files-more' }, '+' + extra + ' ' + t(lang, 'ad_more')),
-                            g.upFiles.length > 1 && React.createElement('button', {
-                              key: 'zip', className: 'btn-file', onClick: () => downloadOrderZip(o, g.upFiles, String(g.idx)), disabled: zipping === zipId,
-                            }, zipping === zipId ? t(lang, 'ad_zipping') : '📦 ' + t(lang, 'ad_zip') + ' (' + g.upFiles.length + ')')
-                          )
-                        );
-                      })
-                    );
-                  })()
-                ),
-                React.createElement('td', null,
-                  React.createElement('button', {
-                    className: 'btn-delete',
-                    onClick: () => deleteOrder(o.id),
-                    disabled: deleting === o.id,
-                  }, deleting === o.id ? t(lang, 'ad_deleting') : t(lang, 'ad_delete'))
+                React.createElement('div', { className: 'admin-order-block' },
+                  React.createElement('h4', null, t(lang, 'ad_h_items')),
+                  items.length
+                    ? React.createElement('div', { className: 'admin-art-list' },
+                        items.map((it, ii) => React.createElement('div', { key: ii, className: 'admin-art-row' },
+                          React.createElement('span', { className: 'admin-art-qty' }, '×' + (it.qty || 1)),
+                          React.createElement('span', { className: 'admin-art-name' }, it.name),
+                          React.createElement('span', { className: 'admin-art-price' }, window.money((it.unitPrice || 0) * (it.qty || 1)))
+                        ))
+                      )
+                    : React.createElement('span', { className: 'muted' }, '—')
                 )
-              ))
-            )
-          )
+              ),
+              // Visuels / fichiers : un encadré par article, pleine largeur, toutes les photos visibles
+              groups.length > 0 && React.createElement('div', { className: 'admin-order-block admin-order-files' },
+                React.createElement('h4', null, t(lang, 'ad_h_files')),
+                React.createElement('div', { className: 'admin-files-groups' },
+                  groups.map((g, gi) => {
+                    const zipId = o.id + ':' + g.idx;
+                    return React.createElement('div', { key: gi, className: 'admin-file-group' },
+                      React.createElement('div', { className: 'admin-file-group-h', title: g.label }, g.label),
+                      React.createElement('div', { className: 'admin-files-cell' },
+                        g.designImgs.map((d, di) => React.createElement('a', {
+                          key: 'd' + di, href: d.img, target: '_blank', rel: 'noopener',
+                          className: 'admin-design-thumb', title: d.label || '',
+                        }, React.createElement('img', { src: d.img, alt: d.label || '', loading: 'lazy' }))),
+                        g.upFiles.map((fl, fi) => React.createElement(AdminFileThumb, {
+                          key: 'f' + fi, file: fl, adminKey: adminKey, openFile: openFile,
+                        })),
+                        g.upFiles.length > 1 && React.createElement('button', {
+                          key: 'zip', className: 'btn-file', onClick: () => downloadOrderZip(o, g.upFiles, String(g.idx)), disabled: zipping === zipId,
+                        }, zipping === zipId ? t(lang, 'ad_zipping') : '📦 ' + t(lang, 'ad_zip') + ' (' + g.upFiles.length + ')')
+                      )
+                    );
+                  })
+                )
+              ),
+              // Pied : suppression
+              React.createElement('div', { className: 'admin-order-foot' },
+                React.createElement('button', {
+                  className: 'btn-delete', onClick: () => deleteOrder(o.id), disabled: deleting === o.id,
+                }, deleting === o.id ? t(lang, 'ad_deleting') : t(lang, 'ad_delete'))
+              )
+            );
+          })
         ),
         (function () {
           const totalPages = Math.max(1, Math.ceil(orders.length / PER_PAGE));
