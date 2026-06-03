@@ -9,6 +9,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
+<script>
+  /* Applique le mode sombre avant le rendu pour éviter tout clignotement */
+  (function () {
+    try {
+      var th = localStorage.getItem('meyva_theme') === 'dark' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', th);
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 <div id="root"></div>
@@ -341,6 +350,7 @@ const LangContext = React.createContext('fr');
 const I18N = {
   fr: {
     ub_delivery: 'Frais de livraison : 8 DT partout en Tunisie',
+    theme_dark: 'Mode sombre', theme_light: 'Mode clair',
     nav_home: 'Accueil', nav_shop: 'Boutique', nav_pack: 'Pack Polaroïd', nav_about: 'À propos', nav_back: 'Précédent', nav_fwd: 'Suivant',
     nav_product: 'Produit', nav_admin: 'Admin', nav_cart: 'Panier',
     aria_search: 'Recherche', aria_cart: 'Panier', aria_close: 'Fermer',
@@ -458,6 +468,7 @@ const I18N = {
   },
   en: {
     ub_delivery: 'Delivery: 8 DT anywhere in Tunisia',
+    theme_dark: 'Dark mode', theme_light: 'Light mode',
     nav_home: 'Home', nav_shop: 'Shop', nav_pack: 'Polaroïd Pack', nav_about: 'About', nav_back: 'Back', nav_fwd: 'Forward',
     nav_product: 'Product', nav_admin: 'Admin', nav_cart: 'Cart',
     aria_search: 'Search', aria_cart: 'Cart', aria_close: 'Close',
@@ -848,12 +859,20 @@ const Icon = {
   ),
 };
 
-function UtilityBar({ lang, setLang }) {
+function UtilityBar({ lang, setLang, theme, toggleTheme }) {
+  const dark = theme === 'dark';
   return React.createElement('div', { className: 'utility-bar' },
-    React.createElement('div', { className: 'lang-toggle' },
-      React.createElement('button', { className: lang === 'fr' ? 'active' : '', onClick: () => setLang('fr') }, 'FR'),
-      React.createElement('span', { className: 'sep' }, '|'),
-      React.createElement('button', { className: lang === 'en' ? 'active' : '', onClick: () => setLang('en') }, 'EN')
+    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+      React.createElement('div', { className: 'lang-toggle' },
+        React.createElement('button', { className: lang === 'fr' ? 'active' : '', onClick: () => setLang('fr') }, 'FR'),
+        React.createElement('span', { className: 'sep' }, '|'),
+        React.createElement('button', { className: lang === 'en' ? 'active' : '', onClick: () => setLang('en') }, 'EN')
+      ),
+      React.createElement('button', {
+        className: 'theme-toggle', onClick: toggleTheme,
+        'aria-label': t(lang, dark ? 'theme_light' : 'theme_dark'),
+        title: t(lang, dark ? 'theme_light' : 'theme_dark'),
+      }, dark ? '☀️' : '🌙')
     ),
     React.createElement('div', null, t(lang, 'ub_delivery'))
   );
@@ -2416,6 +2435,21 @@ function App() {
   };
   React.useEffect(() => { try { document.documentElement.lang = lang; } catch (e) {} }, [lang]);
 
+  // Mode sombre (clair par défaut), mémorisé sur l'appareil
+  const [theme, setThemeState] = useState(() => {
+    try { return localStorage.getItem('meyva_theme') === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; }
+  });
+  const toggleTheme = () => {
+    setThemeState(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('meyva_theme', next); } catch (e) {}
+      return next;
+    });
+  };
+  React.useEffect(() => {
+    try { document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light'); } catch (e) {}
+  }, [theme]);
+
   // Admin masqué pour les clients : accessible via le lien secret #admin (ou si
   // le code d'accès est déjà mémorisé sur cet appareil).
   const [showAdmin, setShowAdmin] = useState(() => {
@@ -2503,7 +2537,7 @@ function App() {
 
   return (
     <LangContext.Provider value={lang}>
-      <UtilityBar lang={lang} setLang={setLang} />
+      <UtilityBar lang={lang} setLang={setLang} theme={theme} toggleTheme={toggleTheme} />
       <Nav page={page} setPage={navPage} cartCount={cartCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} goBack={goBack} goForward={goForward} canBack={canBack} canForward={canForward} />
       <main data-screen-label={page}>{content}</main>
       <Footer goShop={goShop} goHelp={goHelp} openProduct={openProduct} products={PRODUCTS} />
