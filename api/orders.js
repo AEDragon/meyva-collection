@@ -60,6 +60,9 @@ function cleanItem(it) {
         return { label: clean(p, 80) };
       });
     }
+    if (Array.isArray(opt.styles)) {
+      option.styles = opt.styles.slice(0, 20).map((s) => clean(s, 40)).filter(Boolean);
+    }
   }
   return {
     name: clean(it.name, 120),
