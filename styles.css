@@ -237,6 +237,15 @@ a { color: inherit; text-decoration: none; }
 }
 .pdp-arrow:hover { background: #fff; color: var(--pink-deep); }
 .pdp-arrow-l { left: 8px; } .pdp-arrow-r { right: 8px; }
+/* navigation des modèles SOUS l'image (pas de flèche sur la photo) */
+.pdp-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 12px; }
+.pdp-nav-btn {
+  width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--line);
+  background: #fff; color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer;
+  display: grid; place-items: center;
+}
+.pdp-nav-btn:hover { background: var(--pink-deep); color: #fff; border-color: var(--pink-deep); }
+.pdp-nav-pos { font-size: 13px; color: var(--ink-soft); font-weight: 600; min-width: 48px; text-align: center; }
 /* posters choisis (un par poster) */
 .selected-tray { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .selected-chip {

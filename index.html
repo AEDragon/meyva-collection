@@ -1220,6 +1220,11 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
             : React.createElement(ProductSwatch, { name: product.swatch }),
           hasModels && model && React.createElement('span', { className: 'pdp-modeltag' }, model.label)
         ),
+        hasModels && product.models.length > 1 && React.createElement('div', { className: 'pdp-nav' },
+          React.createElement('button', { type: 'button', className: 'pdp-nav-btn', onClick: () => stepModel(-1), 'aria-label': 'Précédent' }, '‹'),
+          React.createElement('span', { className: 'pdp-nav-pos' }, (modelIdx < 0 ? 1 : modelIdx + 1) + ' / ' + product.models.length),
+          React.createElement('button', { type: 'button', className: 'pdp-nav-btn', onClick: () => stepModel(1), 'aria-label': 'Suivant' }, '›')
+        ),
         // Galerie de vignettes (produits sans sélecteur de modèle)
         !hasModels && gallery.length > 1 && React.createElement('div', { className: 'pdp-thumbs' },
           gallery.map((src, i) =>
