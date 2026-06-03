@@ -441,6 +441,7 @@ const I18N = {
     an_byday: 'Commandes (14 derniers jours)', an_bymonth: 'Revenu par mois (DT)', an_bygov: 'Par gouvernorat',
     ad_order: 'commande', ad_orders: 'commandes', ad_total: 'Total : ',
     ad_export: 'Exporter pour mescolis.tn (CSV)',
+    ad_prev: 'Précédent', ad_next: 'Suivant', ad_page: 'Page',
     ad_csvnote: 'Le fichier CSV reprend exactement les colonnes du modèle mescolis.tn : destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
     ad_empty: 'Aucune commande pour le moment. Les nouvelles commandes passées sur le site apparaîtront ici automatiquement.',
     ad_h_date: 'Date', ad_h_name: 'Nom', ad_h_tel: 'Tél', ad_h_gov: 'Gouvernorat', ad_h_city: 'Ville', ad_h_addr: 'Adresse', ad_h_items: 'Articles', ad_h_total: 'Total', ad_h_action: 'Action',
@@ -556,6 +557,7 @@ const I18N = {
     an_byday: 'Orders (last 14 days)', an_bymonth: 'Revenue by month (DT)', an_bygov: 'By governorate',
     ad_order: 'order', ad_orders: 'orders', ad_total: 'Total: ',
     ad_export: 'Export for mescolis.tn (CSV)',
+    ad_prev: 'Previous', ad_next: 'Next', ad_page: 'Page',
     ad_csvnote: 'The CSV uses exactly the mescolis.tn template columns: destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
     ad_empty: 'No orders yet. New orders placed on the site will appear here automatically.',
     ad_h_date: 'Date', ad_h_name: 'Name', ad_h_tel: 'Phone', ad_h_gov: 'Governorate', ad_h_city: 'City', ad_h_addr: 'Address', ad_h_items: 'Items', ad_h_total: 'Total', ad_h_action: 'Action',
@@ -1970,6 +1972,8 @@ function OrderAdmin() {
   const [zipping, setZipping] = React.useState('');
   const [adminKey, setAdminKey] = React.useState(() => { try { return localStorage.getItem('meyva_admin_key') || ''; } catch (e) { return ''; } });
   const [keyMode, setKeyMode] = React.useState(false);
+  const [pageNum, setPageNum] = React.useState(1);
+  const PER_PAGE = 25;
   const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
   const signedIn = keyMode;
 
@@ -2014,6 +2018,7 @@ function OrderAdmin() {
       if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); setLoading(false); return false; }
       const j = await r.json();
       setOrders(j.orders || []);
+      setPageNum(1);
       setStatus((j.orders || []).length + ' ' + t(lang, 'ad_st_loaded1'));
       setLoading(false); return true;
     } catch (e) { setStatus(t(lang, 'ad_st_unreach')); setLoading(false); return false; }
@@ -2212,13 +2217,14 @@ function OrderAdmin() {
     React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, t(lang, 'ad_csvnote')),
     orders.length === 0
       ? React.createElement('div', { className: 'admin-empty' }, t(lang, 'ad_empty'))
-      : React.createElement('div', { className: 'admin-table-wrap' },
+      : React.createElement(React.Fragment, null,
+        React.createElement('div', { className: 'admin-table-wrap' },
           React.createElement('table', { className: 'admin-table' },
             React.createElement('thead', null, React.createElement('tr', null,
               ['#', t(lang, 'ad_h_date'), t(lang, 'ad_h_name'), t(lang, 'ad_h_tel'), t(lang, 'ad_h_gov'), t(lang, 'ad_h_city'), t(lang, 'ad_h_addr'), t(lang, 'ad_h_items'), t(lang, 'ad_h_total'), t(lang, 'ad_h_status'), t(lang, 'ad_h_files'), t(lang, 'ad_h_action')].map((h, hi) => React.createElement('th', { key: hi }, h))
             )),
             React.createElement('tbody', null,
-              orders.slice().reverse().map((o, i) => React.createElement('tr', { key: o.id },
+              orders.slice().reverse().slice((Math.min(pageNum, Math.max(1, Math.ceil(orders.length / PER_PAGE))) - 1) * PER_PAGE, Math.min(pageNum, Math.max(1, Math.ceil(orders.length / PER_PAGE))) * PER_PAGE).map((o, i) => React.createElement('tr', { key: o.id },
                 React.createElement('td', null, o.id.replace('CMD-', '#')),
                 React.createElement('td', null, (o.createdAt || '').slice(0, 10)),
                 React.createElement('td', null, o.nom),
@@ -2274,7 +2280,27 @@ function OrderAdmin() {
               ))
             )
           )
-        )
+        ),
+        (function () {
+          const totalPages = Math.max(1, Math.ceil(orders.length / PER_PAGE));
+          const cur = Math.min(pageNum, totalPages);
+          if (totalPages <= 1) return null;
+          const from = (cur - 1) * PER_PAGE + 1;
+          const to = Math.min(cur * PER_PAGE, orders.length);
+          return React.createElement('div', { className: 'admin-pager' },
+            React.createElement('button', {
+              className: 'btn btn-outline', disabled: cur <= 1,
+              onClick: () => setPageNum(Math.max(1, cur - 1)),
+            }, '‹ ' + t(lang, 'ad_prev')),
+            React.createElement('span', { className: 'admin-pager-info' },
+              from + '–' + to + ' / ' + orders.length + '  ·  ' + t(lang, 'ad_page') + ' ' + cur + '/' + totalPages),
+            React.createElement('button', {
+              className: 'btn btn-outline', disabled: cur >= totalPages,
+              onClick: () => setPageNum(Math.min(totalPages, cur + 1)),
+            }, t(lang, 'ad_next') + ' ›')
+          );
+        })()
+      )
   );
 }
 

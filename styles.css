@@ -1155,6 +1155,9 @@ textarea.inp { resize: vertical; }
   color: var(--ink-soft); margin-top: 24px;
 }
 .admin-table-wrap { overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); }
+.admin-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+.admin-pager .btn { padding: 8px 16px; }
+.admin-pager-info { font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
 .admin-table th {
   text-align: left; background: var(--pink-pale); color: var(--ink);
