@@ -1726,15 +1726,15 @@ function AdminFileThumb({ file, adminKey, openFile }) {
   }, [isImage, file && file.path, adminKey]);
   if (isImage) {
     return React.createElement('a', {
-      href: url || undefined, target: '_blank', rel: 'noopener',
+      href: url || undefined, download: name || true,
       className: 'admin-design-thumb' + (url ? '' : ' loading'), title: name,
-      onClick: url ? undefined : (e) => { e.preventDefault(); openFile(file.path); },
+      onClick: (e) => { e.preventDefault(); openFile(file.path, name); },
     }, url
       ? React.createElement('img', { src: url, alt: name, loading: 'lazy' })
       : React.createElement('span', { className: 'thumb-load' }, '⏳'));
   }
   return React.createElement('button', {
-    className: 'btn-file', onClick: () => openFile(file.path), title: name,
+    className: 'btn-file', onClick: () => openFile(file.path, name), title: name,
   }, '📎 ' + t(lang, 'ad_file'));
 }
 
@@ -1844,14 +1844,23 @@ function OrderAdmin() {
     setDeleting('');
   };
 
-  const openFile = async (path) => {
+  const openFile = async (path, name) => {
     try {
       const h = await authHeaders();
       const r = await fetch('/api/orders?file=' + encodeURIComponent(path), { headers: h || {} });
       if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); return; }
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      // nom de fichier avec sa vraie extension (depuis le nom ou le chemin)
+      let fname = (name && String(name).trim()) || String(path).split('-').slice(2).join('-') || 'fichier';
+      if (!/\.[a-z0-9]{2,5}$/i.test(fname)) {
+        const tp = (blob.type || '').toLowerCase();
+        const ext = tp.indexOf('pdf') !== -1 ? '.pdf' : tp.indexOf('png') !== -1 ? '.png' : tp.indexOf('webp') !== -1 ? '.webp' : (tp.indexOf('jpeg') !== -1 || tp.indexOf('jpg') !== -1) ? '.jpg' : '';
+        fname += ext;
+      }
+      const a = document.createElement('a');
+      a.href = url; a.download = fname;
+      document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (e) { setStatus(t(lang, 'ad_st_unreach')); }
   };
