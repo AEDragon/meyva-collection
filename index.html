@@ -428,7 +428,7 @@ const I18N = {
     model_choose: 'Choisis ton modèle',
     model_pick_multi: 'Choisis tes modèles', model_pick_hint: 'Clique sur les modèles pour les ajouter (un par article).', model_pick_deal: ' Offre : 3 pour 10 DT !', model_pick_cta: 'Choisis au moins un modèle',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
-    ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres',
+    ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres', ad_other_files: 'Autres fichiers',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
     ad_loading: 'Chargement de l’espace sécurisé…',
     ad_error: 'Connexion sécurisée indisponible. Réessaie en rechargeant la page (le module de connexion ne fonctionne que sur le site en ligne).',
@@ -544,7 +544,7 @@ const I18N = {
     model_choose: 'Choose your design',
     model_pick_multi: 'Choose your designs', model_pick_hint: 'Click designs to add (one each).', model_pick_deal: ' Deal: 3 for 10 DT!', model_pick_cta: 'Pick at least one design',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
-    ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more',
+    ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more', ad_other_files: 'Other files',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
     ad_loading: 'Loading secure area…',
     ad_error: 'Secure sign-in unavailable. Try reloading the page (the sign-in module only works on the live site).',
@@ -1808,9 +1808,11 @@ function Checkout({ cart, onPlaced, setPage }) {
     if (!validate()) { window.scrollTo(0, 0); return; }
     if (sending) return;
     setSending(true);
-    // 1) Upload any customer files (custom stickers, certificate…) — one per unit
+    // 1) Upload any customer files (custom stickers, certificate…) — one per unit,
+    //    en marquant chaque fichier avec l'article auquel il appartient (item / itemIdx).
     const files = [];
-    for (const it of cart) {
+    for (let ci = 0; ci < cart.length; ci++) {
+      const it = cart[ci];
       const fls = (it.option && it.option.files) || (it.option && it.option.file ? [it.option.file] : []);
       for (const fl of fls) {
         if (!fl) continue;
@@ -1825,34 +1827,35 @@ function Checkout({ cart, onPlaced, setPage }) {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: fl.name, type: fl.type, dataBase64: b64 }),
           });
-          if (r.ok) { const j = await r.json(); files.push({ path: j.path, name: j.name || fl.name }); }
+          if (r.ok) { const j = await r.json(); files.push({ path: j.path, name: j.name || fl.name, item: it.name, itemIdx: ci }); }
         } catch (e) { /* le fichier pourra être renvoyé via Instagram */ }
       }
     }
     // 1b) Joindre aussi le visuel choisi (certificat / poster) comme fichier
-    //     téléchargeable, pour que la propriétaire reçoive l'image exacte.
-    const designs = [];
-    for (const it of cart) {
+    //     téléchargeable, marqué avec son article, pour que la propriétaire reçoive l'image exacte.
+    for (let ci = 0; ci < cart.length; ci++) {
+      const it = cart[ci];
       if (!it.option) continue;
-      if (it.option.model && it.option.model.img) designs.push(it.option.model.img);
-      if (Array.isArray(it.option.posters)) it.option.posters.forEach(p => { if (p && p.img) designs.push(p.img); });
-    }
-    for (const src of designs) {
-      try {
-        const blob = await fetch(src).then(r => r.blob());
-        const b64 = await new Promise((res, rej) => {
-          const fr = new FileReader();
-          fr.onload = () => res(String(fr.result).split(',')[1]);
-          fr.onerror = rej;
-          fr.readAsDataURL(blob);
-        });
-        const base = String(src).split('/').pop() || 'design.jpg';
-        const r = await fetch('/api/upload', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: 'design-' + base, type: blob.type, dataBase64: b64 }),
-        });
-        if (r.ok) { const j = await r.json(); files.push({ path: j.path, name: j.name || base }); }
-      } catch (e) { /* le visuel reste visible en miniature côté admin */ }
+      const srcs = [];
+      if (it.option.model && it.option.model.img) srcs.push(it.option.model.img);
+      if (Array.isArray(it.option.posters)) it.option.posters.forEach(p => { if (p && p.img) srcs.push(p.img); });
+      for (const src of srcs) {
+        try {
+          const blob = await fetch(src).then(r => r.blob());
+          const b64 = await new Promise((res, rej) => {
+            const fr = new FileReader();
+            fr.onload = () => res(String(fr.result).split(',')[1]);
+            fr.onerror = rej;
+            fr.readAsDataURL(blob);
+          });
+          const base = String(src).split('/').pop() || 'design.jpg';
+          const r = await fetch('/api/upload', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'design-' + base, type: blob.type, dataBase64: b64 }),
+          });
+          if (r.ok) { const j = await r.json(); files.push({ path: j.path, name: j.name || base, item: it.name, itemIdx: ci }); }
+        } catch (e) { /* le visuel reste visible en miniature côté admin */ }
+      }
     }
     const order = {
       id: 'CMD-' + Date.now(),
@@ -2094,11 +2097,12 @@ function OrderAdmin() {
   };
 
   // Regroupe toutes les images d'une commande dans un seul .zip (téléchargement local).
-  const downloadOrderZip = async (o) => {
+  const downloadOrderZip = async (o, subset, suffix) => {
     if (!window.JSZip) { setStatus('ZIP ' + t(lang, 'ad_st_unreach')); return; }
-    const imgs = (o.files || []).filter(fl => !/^design-/.test(String(fl && fl.name || '')));
+    const imgs = (subset || o.files || []).filter(fl => !/^design-/.test(String(fl && fl.name || '')));
     if (!imgs.length) return;
-    setZipping(o.id); setStatus(t(lang, 'ad_zipping'));
+    const zid = (suffix != null && suffix !== '') ? (o.id + ':' + suffix) : o.id;
+    setZipping(zid); setStatus(t(lang, 'ad_zipping'));
     try {
       const zip = new window.JSZip();
       const h = await authHeaders();
@@ -2117,7 +2121,7 @@ function OrderAdmin() {
       const out = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(out);
       const a = document.createElement('a');
-      a.href = url; a.download = o.id + '-photos.zip';
+      a.href = url; a.download = o.id + ((suffix != null && suffix !== '') ? '-' + suffix : '') + '-photos.zip';
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
       setStatus(n + ' ' + t(lang, 'photos'));
@@ -2243,30 +2247,48 @@ function OrderAdmin() {
                 ),
                 React.createElement('td', null,
                   (function () {
-                    const designImgs = (o.items || []).reduce((acc, it) => {
-                      const opt = it.option || {};
-                      if (opt.model && opt.model.img) acc.push({ img: opt.model.img, label: opt.model.label });
-                      if (Array.isArray(opt.posters)) opt.posters.forEach(p => { if (p && p.img) acc.push({ img: p.img, label: p.label }); });
-                      return acc;
-                    }, []);
-                    // On masque les copies "design-" : déjà affichées via la vignette d'asset ci-dessus.
-                    const upFiles = (o.files || []).filter(fl => !/^design-/.test(String(fl && fl.name || '')));
-                    if (!designImgs.length && !upFiles.length) return React.createElement('span', { className: 'muted' }, '—');
+                    const items = o.items || [];
+                    const allFiles = o.files || [];
+                    const isDesign = (fl) => /^design-/.test(String(fl && fl.name || ''));
                     const SHOWN = 6;
-                    const shown = upFiles.slice(0, SHOWN);
-                    const extra = upFiles.length - shown.length;
-                    return React.createElement('div', { className: 'admin-files-cell' },
-                      designImgs.map((d, di) => React.createElement('a', {
-                        key: 'd' + di, href: d.img, target: '_blank', rel: 'noopener',
-                        className: 'admin-design-thumb', title: d.label || '',
-                      }, React.createElement('img', { src: d.img, alt: d.label || '', loading: 'lazy' }))),
-                      shown.map((fl, fi) => React.createElement(AdminFileThumb, {
-                        key: 'f' + fi, file: fl, adminKey: adminKey, openFile: openFile,
-                      })),
-                      extra > 0 && React.createElement('span', { key: 'more', className: 'files-more' }, '+' + extra + ' ' + t(lang, 'ad_more')),
-                      upFiles.length > 1 && React.createElement('button', {
-                        key: 'zip', className: 'btn-file', onClick: () => downloadOrderZip(o), disabled: zipping === o.id,
-                      }, zipping === o.id ? t(lang, 'ad_zipping') : '📦 ' + t(lang, 'ad_zip') + ' (' + upFiles.length + ')')
+                    // Un groupe par article : on rattache ses visuels choisis et ses fichiers importés.
+                    const groups = [];
+                    items.forEach((it, idx) => {
+                      const opt = it.option || {};
+                      const designImgs = [];
+                      if (opt.model && opt.model.img) designImgs.push({ img: opt.model.img, label: opt.model.label });
+                      if (Array.isArray(opt.posters)) opt.posters.forEach(p => { if (p && p.img) designImgs.push({ img: p.img, label: p.label }); });
+                      const upFiles = allFiles.filter(fl => !isDesign(fl) && (fl.itemIdx === idx || (fl.itemIdx == null && fl.item && fl.item === it.name)));
+                      if (designImgs.length || upFiles.length) groups.push({ label: it.name, designImgs: designImgs, upFiles: upFiles, idx: idx });
+                    });
+                    // Commandes anciennes : fichiers sans rattachement → groupe « autres ».
+                    const claimed = {};
+                    groups.forEach(g => g.upFiles.forEach(fl => { claimed[fl.path] = 1; }));
+                    const orphan = allFiles.filter(fl => !isDesign(fl) && !claimed[fl.path]);
+                    if (orphan.length) groups.push({ label: t(lang, 'ad_other_files'), designImgs: [], upFiles: orphan, idx: 'x' });
+                    if (!groups.length) return React.createElement('span', { className: 'muted' }, '—');
+                    return React.createElement('div', { className: 'admin-files-groups' },
+                      groups.map((g, gi) => {
+                        const shown = g.upFiles.slice(0, SHOWN);
+                        const extra = g.upFiles.length - shown.length;
+                        const zipId = o.id + ':' + g.idx;
+                        return React.createElement('div', { key: gi, className: 'admin-file-group' },
+                          React.createElement('div', { className: 'admin-file-group-h', title: g.label }, g.label),
+                          React.createElement('div', { className: 'admin-files-cell' },
+                            g.designImgs.map((d, di) => React.createElement('a', {
+                              key: 'd' + di, href: d.img, target: '_blank', rel: 'noopener',
+                              className: 'admin-design-thumb', title: d.label || '',
+                            }, React.createElement('img', { src: d.img, alt: d.label || '', loading: 'lazy' }))),
+                            shown.map((fl, fi) => React.createElement(AdminFileThumb, {
+                              key: 'f' + fi, file: fl, adminKey: adminKey, openFile: openFile,
+                            })),
+                            extra > 0 && React.createElement('span', { key: 'more', className: 'files-more' }, '+' + extra + ' ' + t(lang, 'ad_more')),
+                            g.upFiles.length > 1 && React.createElement('button', {
+                              key: 'zip', className: 'btn-file', onClick: () => downloadOrderZip(o, g.upFiles, String(g.idx)), disabled: zipping === zipId,
+                            }, zipping === zipId ? t(lang, 'ad_zipping') : '📦 ' + t(lang, 'ad_zip') + ' (' + g.upFiles.length + ')')
+                          )
+                        );
+                      })
                     );
                   })()
                 ),
