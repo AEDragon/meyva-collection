@@ -15,6 +15,8 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<!-- JSZip : regroupe les photos d'une commande en un seul fichier .zip téléchargeable côté admin -->
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js" crossorigin="anonymous"></script>
 
 <script type="text/babel">
 // ── data.jsx ──────────────────────────────────────────────────────────────────
@@ -77,6 +79,7 @@ const PRODUCTS = [
     swatch: 'pack',
     tiers: true,
     tierSet: 'kit',
+    photoUpload: true,
     kitNote: 'Le pack inclut : photos imprimées + pinces (clips en bois) + guirlande LED lumineuse 10 m.',
   },
   {
@@ -92,6 +95,7 @@ const PRODUCTS = [
     swatch: 'photos',
     tiers: true,
     tierSet: 'prints',
+    photoUpload: true,
     kitNote: 'Photos imprimées seules (sans pinces ni ficelle).',
   },
   {
@@ -393,10 +397,14 @@ const I18N = {
     up_title: 'Tes fichiers / designs', up_drop: 'Dépose ton fichier ici', up_or: 'ou clique pour choisir', up_optional: '(facultatif)',
     up_hint: 'Un emplacement par sticker — ajoute une image pour chacun. Le nombre suit la quantité.',
     up_slot: 'image', up_more_ig: 'Pour plus de 30 images, envoie le reste par message Instagram.',
+    phup_title: 'Tes photos à imprimer', phup_optional: '(recommandé)',
+    phup_hint: 'Ajoute tes photos ici — autant que de tirages. Elles sont compressées puis envoyées avec ta commande.',
+    phup_add: 'Ajouter des photos', phup_count: 'ajoutées', phup_max: 'Limite atteinte pour cette quantité.',
+    phup_compress: 'Optimisation des photos…',
     model_choose: 'Choisis ton modèle',
     model_pick_multi: 'Choisis tes posters', model_pick_hint: 'Clique sur les modèles à ajouter — un par poster. 3 posters = 10 DT.', model_pick_cta: 'Choisis au moins un poster',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
-    ad_h_files: 'Fichiers', ad_file: 'Fichier',
+    ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
     ad_loading: 'Chargement de l’espace sécurisé…',
     ad_error: 'Connexion sécurisée indisponible. Réessaie en rechargeant la page (le module de connexion ne fonctionne que sur le site en ligne).',
@@ -482,10 +490,14 @@ const I18N = {
     up_title: 'Your files / designs', up_drop: 'Drop your file here', up_or: 'or click to choose', up_optional: '(optional)',
     up_hint: 'One slot per sticker — add an image for each. The number follows the quantity.',
     up_slot: 'image', up_more_ig: 'For more than 30 images, send the rest by Instagram message.',
+    phup_title: 'Your photos to print', phup_optional: '(recommended)',
+    phup_hint: 'Add your photos here — as many as your prints. They are compressed and sent with your order.',
+    phup_add: 'Add photos', phup_count: 'added', phup_max: 'Limit reached for this quantity.',
+    phup_compress: 'Optimizing photos…',
     model_choose: 'Choose your design',
     model_pick_multi: 'Choose your posters', model_pick_hint: 'Click designs to add — one per poster. 3 posters = 10 DT.', model_pick_cta: 'Pick at least one poster',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
-    ad_h_files: 'Files', ad_file: 'File',
+    ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
     ad_loading: 'Loading secure area…',
     ad_error: 'Secure sign-in unavailable. Try reloading the page (the sign-in module only works on the live site).',
@@ -1097,6 +1109,35 @@ function Shop({ products, categories, openProduct }) {
   );
 }
 
+// Réduit une image (redimension + JPEG) avant l'envoi — indispensable pour les
+// commandes de nombreuses photos (téléphone = 3–8 Mo chacune → ~200–400 Ko ici).
+async function compressImage(file, maxDim, quality) {
+  if (!file || !/^image\//.test(file.type)) return file;
+  try {
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    let w = bmp.width, h = bmp.height;
+    const scale = Math.min(1, maxDim / Math.max(w, h));
+    w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
+    const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
+    if (bmp.close) bmp.close();
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+    if (!blob) return file;
+    const base = (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg';
+    return new File([blob], base, { type: 'image/jpeg' });
+  } catch (e) { return file; }
+}
+
+// Vignette d'un fichier sélectionné (aperçu local avant envoi).
+function PhotoPreview({ file, onRemove }) {
+  const [url, setUrl] = React.useState('');
+  React.useEffect(() => { const u = URL.createObjectURL(file); setUrl(u); return () => URL.revokeObjectURL(u); }, [file]);
+  return React.createElement('div', { className: 'photo-thumb' },
+    url && React.createElement('img', { src: url, alt: '', loading: 'lazy' }),
+    React.createElement('button', { type: 'button', className: 'photo-thumb-x', onClick: onRemove, 'aria-label': '×' }, '×')
+  );
+}
+
 function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const lang = useLang();
   const [qty, setQty] = React.useState(1);
@@ -1108,7 +1149,8 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const pickPerUnit = !!product.pickPerUnit;
   const [model, setModel] = React.useState(hasModels ? product.models[0] : null);
   const [selected, setSelected] = React.useState([]); // posters choisis (pickPerUnit)
-  React.useEffect(() => { setActiveImg(0); setSelected([]); setModel(hasModels ? product.models[0] : null); }, [product.id]);
+  const [compressing, setCompressing] = React.useState(false);
+  React.useEffect(() => { setActiveImg(0); setSelected([]); setFiles([]); setModel(hasModels ? product.models[0] : null); }, [product.id]);
   const gallery = (product.gallery && product.gallery.length) ? product.gallery : (product.image ? [product.image] : []);
   // Avec modèles : l'image principale suit le modèle prévisualisé + flèches
   const modelIdx = hasModels && model ? product.models.findIndex(m => m.label === model.label) : -1;
@@ -1128,11 +1170,31 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const slotCount = product.slots ? product.slots : (product.upload ? Math.min(qty, 30) : 0);
   const setSlot = (i, fl) => setFiles(prev => { const n = prev.slice(); n[i] = fl || undefined; return n; });
 
+  // Téléversement de photos (polaroïd) : autant de photos que de tirages (palier × quantité)
+  const photoUpload = !!product.photoUpload;
+  const photoMax = photoUpload ? (tier || 0) * (qty || 1) : 0;
+  // Si la quantité de tirages baisse, on retire les photos en trop
+  React.useEffect(() => { if (photoUpload) setFiles(prev => prev.slice(0, photoMax)); }, [tier, qty, photoUpload, photoMax]);
+  const addPhotos = async (fileList) => {
+    const incoming = Array.from(fileList || []).filter(f => /^image\//.test(f.type));
+    const room = Math.max(0, photoMax - files.length);
+    if (!incoming.length || room <= 0) return;
+    const take = incoming.slice(0, room);
+    setCompressing(true);
+    try {
+      const out = [];
+      for (const f of take) { out.push(await compressImage(f, 2000, 0.85)); }
+      setFiles(prev => prev.concat(out).slice(0, photoMax));
+    } finally { setCompressing(false); }
+  };
+  const removePhoto = (i) => setFiles(prev => prev.filter((_, k) => k !== i));
+
   const onAdd = () => {
     if (pickPerUnit && !selected.length) return;
     const opt = {};
     if (product.tiers) opt.tier = activeTier;
     if (product.upload) { const fs = files.slice(0, slotCount).filter(Boolean); if (fs.length) opt.files = fs; }
+    else if (photoUpload) { const fs = files.slice(0, photoMax).filter(Boolean); if (fs.length) opt.files = fs; }
     if (pickPerUnit) opt.posters = selected.map(m => ({ label: m.label, img: m.img }));
     else if (product.models && model) opt.model = { label: model.label, img: model.img };
     const q = pickPerUnit ? selected.length : qty;
@@ -1220,6 +1282,26 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           React.createElement('div', { style: { fontSize: 12, color: 'var(--ink-soft)', marginTop: 10, lineHeight: 1.5 } },
             (pField(product, 'kitNote', lang) || '') + ' ',
             t(lang, 'pdp_send'))
+        ),
+
+        photoUpload && React.createElement('div', { className: 'pdp-section' },
+          React.createElement('h4', null, t(lang, 'phup_title'), ' ',
+            React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'phup_optional')),
+            React.createElement('span', { style: { color: 'var(--pink-deep)', fontWeight: 400, fontSize: 14 } }, ' · ' + files.length + ' / ' + photoMax)),
+          React.createElement('p', { style: { fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 10px' } }, t(lang, 'phup_hint')),
+          React.createElement('div', { className: 'photo-grid' },
+            files.map((fl, i) => React.createElement(PhotoPreview, { key: i, file: fl, onRemove: () => removePhoto(i) })),
+            files.length < photoMax && React.createElement('label', { className: 'photo-add' },
+              React.createElement('input', {
+                type: 'file', accept: 'image/*', multiple: true, style: { display: 'none' },
+                onChange: e => { addPhotos(e.target.files); e.target.value = ''; },
+              }),
+              React.createElement('span', { className: 'photo-add-plus' }, '+'),
+              React.createElement('span', { className: 'photo-add-lbl' }, t(lang, 'phup_add'))
+            )
+          ),
+          compressing && React.createElement('p', { className: 'muted', style: { fontSize: 12, marginTop: 8 } }, t(lang, 'phup_compress')),
+          files.length >= photoMax && photoMax > 0 && React.createElement('p', { className: 'muted', style: { fontSize: 12, marginTop: 8 } }, t(lang, 'phup_max'))
         ),
 
         product.upload && React.createElement('div', { className: 'pdp-section' },
@@ -1745,6 +1827,7 @@ function OrderAdmin() {
   const [loading, setLoading] = React.useState(false);
   const [deleting, setDeleting] = React.useState('');
   const [updating, setUpdating] = React.useState('');
+  const [zipping, setZipping] = React.useState('');
   const [adminKey, setAdminKey] = React.useState(() => { try { return localStorage.getItem('meyva_admin_key') || ''; } catch (e) { return ''; } });
   const [keyMode, setKeyMode] = React.useState(false);
   const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
@@ -1863,6 +1946,38 @@ function OrderAdmin() {
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (e) { setStatus(t(lang, 'ad_st_unreach')); }
+  };
+
+  // Regroupe toutes les images d'une commande dans un seul .zip (téléchargement local).
+  const downloadOrderZip = async (o) => {
+    if (!window.JSZip) { setStatus('ZIP ' + t(lang, 'ad_st_unreach')); return; }
+    const imgs = (o.files || []).filter(fl => !/^design-/.test(String(fl && fl.name || '')));
+    if (!imgs.length) return;
+    setZipping(o.id); setStatus(t(lang, 'ad_zipping'));
+    try {
+      const zip = new window.JSZip();
+      const h = await authHeaders();
+      let n = 0;
+      for (let i = 0; i < imgs.length; i++) {
+        const fl = imgs[i];
+        try {
+          const r = await fetch('/api/orders?file=' + encodeURIComponent(fl.path), { headers: h || {} });
+          if (!r.ok) continue;
+          const blob = await r.blob();
+          const nm = String(i + 1).padStart(3, '0') + '-' + (fl.name || ('photo-' + (i + 1) + '.jpg'));
+          zip.file(nm, blob); n++;
+        } catch (e) { /* on saute la photo en échec */ }
+      }
+      if (!n) { setStatus(t(lang, 'ad_st_unreach')); setZipping(''); return; }
+      const out = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(out);
+      const a = document.createElement('a');
+      a.href = url; a.download = o.id + '-photos.zip';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      setStatus(n + ' ' + t(lang, 'photos'));
+    } catch (e) { setStatus(t(lang, 'ad_st_unreach')); }
+    setZipping('');
   };
 
   // Connexion automatique si le code d'accès est déjà mémorisé sur cet appareil
@@ -1991,14 +2106,21 @@ function OrderAdmin() {
                     // On masque les copies "design-" : déjà affichées via la vignette d'asset ci-dessus.
                     const upFiles = (o.files || []).filter(fl => !/^design-/.test(String(fl && fl.name || '')));
                     if (!designImgs.length && !upFiles.length) return React.createElement('span', { className: 'muted' }, '—');
+                    const SHOWN = 6;
+                    const shown = upFiles.slice(0, SHOWN);
+                    const extra = upFiles.length - shown.length;
                     return React.createElement('div', { className: 'admin-files-cell' },
                       designImgs.map((d, di) => React.createElement('a', {
                         key: 'd' + di, href: d.img, target: '_blank', rel: 'noopener',
                         className: 'admin-design-thumb', title: d.label || '',
                       }, React.createElement('img', { src: d.img, alt: d.label || '', loading: 'lazy' }))),
-                      upFiles.map((fl, fi) => React.createElement(AdminFileThumb, {
+                      shown.map((fl, fi) => React.createElement(AdminFileThumb, {
                         key: 'f' + fi, file: fl, adminKey: adminKey, openFile: openFile,
-                      }))
+                      })),
+                      extra > 0 && React.createElement('span', { key: 'more', className: 'files-more' }, '+' + extra + ' ' + t(lang, 'ad_more')),
+                      upFiles.length > 1 && React.createElement('button', {
+                        key: 'zip', className: 'btn-file', onClick: () => downloadOrderZip(o), disabled: zipping === o.id,
+                      }, zipping === o.id ? t(lang, 'ad_zipping') : '📦 ' + t(lang, 'ad_zip') + ' (' + upFiles.length + ')')
                     );
                   })()
                 ),

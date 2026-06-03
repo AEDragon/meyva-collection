@@ -1209,6 +1209,28 @@ textarea.inp { resize: vertical; }
 .admin-design-thumb:hover { border-color: var(--pink-deep); }
 .admin-design-thumb.loading { display: grid; place-items: center; }
 .admin-design-thumb .thumb-load { font-size: 15px; opacity: 0.6; }
+.files-more { font-size: 12px; color: var(--ink-soft); align-self: center; }
+/* photo upload (polaroid) — multi-photo picker on the product page */
+.photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.photo-thumb {
+  position: relative; width: 72px; height: 72px; border-radius: 10px;
+  overflow: hidden; border: 1px solid var(--line); background: var(--cream-deep); flex: 0 0 auto;
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-thumb-x {
+  position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%;
+  border: none; background: rgba(42,36,34,0.7); color: #fff; font-size: 14px; line-height: 1;
+  cursor: pointer; display: grid; place-items: center; padding: 0;
+}
+.photo-thumb-x:hover { background: var(--pink-deep); }
+.photo-add {
+  width: 72px; height: 72px; border-radius: 10px; border: 1.5px dashed var(--pink);
+  background: var(--pink-pale); color: var(--pink-deep); cursor: pointer; flex: 0 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center;
+}
+.photo-add:hover { border-color: var(--pink-deep); }
+.photo-add-plus { font-size: 22px; line-height: 1; }
+.photo-add-lbl { font-size: 10px; font-weight: 600; padding: 0 4px; }
 /* file dropzone on custom products */
 .filedrop {
   display: flex; flex-direction: column; align-items: center; justify-content: center;

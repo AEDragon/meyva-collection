@@ -95,7 +95,7 @@ export default async function handler(req, res) {
         note: clean(body.note, 500),
         items: Array.isArray(body.items) ? body.items.slice(0, 50).map(cleanItem) : [],
         files: Array.isArray(body.files)
-          ? body.files.slice(0, 20).map((fl) => ({ path: clean(fl && fl.path, 200), name: clean(fl && fl.name, 120) })).filter((fl) => fl.path)
+          ? body.files.slice(0, 120).map((fl) => ({ path: clean(fl && fl.path, 200), name: clean(fl && fl.name, 120) })).filter((fl) => fl.path)
           : [],
         subtotal: Number(body.subtotal) || 0,
         shipping: Number(body.shipping) || 0,
