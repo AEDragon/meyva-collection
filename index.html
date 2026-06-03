@@ -1885,10 +1885,7 @@ function App() {
   // Admin masqué pour les clients : accessible via le lien secret #admin (ou si
   // le code d'accès est déjà mémorisé sur cet appareil).
   const [showAdmin, setShowAdmin] = useState(() => {
-    try {
-      if ((window.location.hash || '').replace('#', '').toLowerCase() === 'admin') return true;
-      return !!localStorage.getItem('meyva_admin_key');
-    } catch (e) { return false; }
+    try { return (window.location.hash || '').replace('#', '').toLowerCase() === 'admin'; } catch (e) { return false; }
   });
   React.useEffect(() => {
     const applyHash = () => {
