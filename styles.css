@@ -26,6 +26,11 @@
   --line: #39312c;
   --surface: #26221d;
 }
+/* Barres d'accent (qui utilisent --ink comme fond en clair) : on les garde sombres */
+:root[data-theme="dark"] .utility-bar { background: #100d0b; color: var(--ink); }
+:root[data-theme="dark"] .page-switcher { background: #100d0b; color: var(--ink); }
+:root[data-theme="dark"] .page-switcher button { color: var(--ink); }
+:root[data-theme="dark"] .footer { background: #100d0b; color: var(--ink); }
 
 * { box-sizing: border-box; }
 
