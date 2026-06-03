@@ -1285,7 +1285,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           React.createElement('button', { type: 'button', className: 'pdp-nav-btn', onClick: () => stepModel(1), 'aria-label': 'Suivant' }, '›')
         ),
         // Galerie de vignettes (produits sans sélecteur de modèle)
-        !hasModels && gallery.length > 1 && React.createElement('div', { className: 'pdp-thumbs' },
+        !hasModels && !showUpload && gallery.length > 1 && React.createElement('div', { className: 'pdp-thumbs' },
           gallery.map((src, i) =>
             React.createElement('button', {
               key: i, type: 'button',
