@@ -406,6 +406,7 @@ const I18N = {
     ad_subs_btn: 'Emails newsletter (CSV)', ad_subs_none: 'Aucun inscrit pour le moment.', ad_subs_n: 'email(s) exporté(s).',
     ad_h_status: 'Statut', st_new: 'À livrer', st_paid: 'Payé ✓',
     an_orders: 'Commandes', an_clients: 'Clients', an_paid: 'Payées', an_revenue: 'Chiffre d’affaires', an_cashed: 'encaissé', an_top: 'Articles les plus commandés',
+    an_byday: 'Commandes (14 derniers jours)', an_bymonth: 'Revenu par mois (DT)', an_bygov: 'Par gouvernorat',
     ad_order: 'commande', ad_orders: 'commandes', ad_total: 'Total : ',
     ad_export: 'Exporter pour mescolis.tn (CSV)',
     ad_csvnote: 'Le fichier CSV reprend exactement les colonnes du modèle mescolis.tn : destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
@@ -494,6 +495,7 @@ const I18N = {
     ad_subs_btn: 'Newsletter emails (CSV)', ad_subs_none: 'No subscribers yet.', ad_subs_n: 'email(s) exported.',
     ad_h_status: 'Status', st_new: 'To deliver', st_paid: 'Paid ✓',
     an_orders: 'Orders', an_clients: 'Customers', an_paid: 'Paid', an_revenue: 'Revenue', an_cashed: 'cashed', an_top: 'Most ordered items',
+    an_byday: 'Orders (last 14 days)', an_bymonth: 'Revenue by month (DT)', an_bygov: 'By governorate',
     ad_order: 'order', ad_orders: 'orders', ad_total: 'Total: ',
     ad_export: 'Export for mescolis.tn (CSV)',
     ad_csvnote: 'The CSV uses exactly the mescolis.tn template columns: destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
@@ -1698,6 +1700,44 @@ function Checkout({ cart, onPlaced, setPage }) {
   );
 }
 
+// Miniature d'un fichier client téléversé (poster perso, sticker…).
+// Les blobs sont privés : on récupère l'image avec la clé admin puis on l'affiche.
+// Les PDF (ou images en cours de chargement) gardent le bouton de téléchargement.
+function AdminFileThumb({ file, adminKey, openFile }) {
+  const lang = useLang();
+  const [url, setUrl] = React.useState('');
+  const name = (file && (file.name || file.path)) || '';
+  const isImage = /\.(png|jpe?g|gif|webp|bmp|avif)$/i.test(name);
+  React.useEffect(() => {
+    if (!isImage || !file || !file.path) return undefined;
+    let alive = true; let obj = '';
+    (async () => {
+      try {
+        const r = await fetch('/api/orders?file=' + encodeURIComponent(file.path), {
+          headers: adminKey ? { 'x-admin-key': adminKey } : {},
+        });
+        if (!r.ok) return;
+        const blob = await r.blob();
+        obj = URL.createObjectURL(blob);
+        if (alive) setUrl(obj); else URL.revokeObjectURL(obj);
+      } catch (e) { /* on retombe sur le bouton de téléchargement */ }
+    })();
+    return () => { alive = false; if (obj) URL.revokeObjectURL(obj); };
+  }, [isImage, file && file.path, adminKey]);
+  if (isImage) {
+    return React.createElement('a', {
+      href: url || undefined, target: '_blank', rel: 'noopener',
+      className: 'admin-design-thumb' + (url ? '' : ' loading'), title: name,
+      onClick: url ? undefined : (e) => { e.preventDefault(); openFile(file.path); },
+    }, url
+      ? React.createElement('img', { src: url, alt: name, loading: 'lazy' })
+      : React.createElement('span', { className: 'thumb-load' }, '⏳'));
+  }
+  return React.createElement('button', {
+    className: 'btn-file', onClick: () => openFile(file.path), title: name,
+  }, '📎 ' + t(lang, 'ad_file'));
+}
+
 function OrderAdmin() {
   const lang = useLang();
   const [orders, setOrders] = React.useState([]);
@@ -1719,6 +1759,24 @@ function OrderAdmin() {
   orders.forEach(o => (o.items || []).forEach(it => { const n = it.name || '—'; itemAgg[n] = (itemAgg[n] || 0) + (Number(it.qty) || 1); }));
   const topItems = Object.keys(itemAgg).map(k => [k, itemAgg[k]]).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const maxItem = topItems.length ? topItems[0][1] : 1;
+  // Commandes par jour (14 derniers jours)
+  const dayCounts = {};
+  orders.forEach(o => { const k = (o.createdAt || '').slice(0, 10); if (k) dayCounts[k] = (dayCounts[k] || 0) + 1; });
+  const nowD = new Date();
+  const days = [];
+  for (let i = 13; i >= 0; i--) { const d = new Date(nowD.getTime() - i * 86400000); const k = d.toISOString().slice(0, 10); days.push({ k: k, label: k.slice(8, 10) + '/' + k.slice(5, 7), n: dayCounts[k] || 0 }); }
+  const maxDay = Math.max(1, ...days.map(d => d.n));
+  // Revenu par mois (6 derniers mois)
+  const monthRev = {};
+  orders.forEach(o => { const k = (o.createdAt || '').slice(0, 7); if (k) monthRev[k] = (monthRev[k] || 0) + (o.total || 0); });
+  const months = [];
+  for (let i = 5; i >= 0; i--) { const d = new Date(nowD.getFullYear(), nowD.getMonth() - i, 1); const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); months.push({ k: k, label: k.slice(5, 7) + '/' + k.slice(2, 4), v: monthRev[k] || 0 }); }
+  const maxMonth = Math.max(1, ...months.map(m => m.v));
+  // Par gouvernorat
+  const govAgg = {};
+  orders.forEach(o => { const g = (o.gouvernorat || '—'); govAgg[g] = (govAgg[g] || 0) + 1; });
+  const topGov = Object.keys(govAgg).map(k => [k, govAgg[k]]).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const maxGov = topGov.length ? topGov[0][1] : 1;
 
   // Auth par code d'accès propriétaire
   const authHeaders = () => (adminKey ? { 'x-admin-key': adminKey } : null);
@@ -1843,6 +1901,38 @@ function OrderAdmin() {
           React.createElement('span', { className: 'an-bar-track' }, React.createElement('span', { className: 'an-bar-fill', style: { width: Math.max(6, Math.round(it[1] / maxItem * 100)) + '%' } })),
           React.createElement('span', { className: 'an-bar-val' }, it[1])
         ))
+      ),
+      React.createElement('div', { className: 'an-grid2' },
+        React.createElement('div', { className: 'an-chart' },
+          React.createElement('h4', null, t(lang, 'an_byday')),
+          React.createElement('div', { className: 'an-vchart' },
+            days.map((d, i) => React.createElement('div', { key: i, className: 'an-vbar', title: d.k + ' : ' + d.n },
+              React.createElement('span', { className: 'an-vbar-val' }, d.n || ''),
+              React.createElement('span', { className: 'an-vbar-fill', style: { height: Math.round(d.n / maxDay * 100) + '%' } }),
+              React.createElement('span', { className: 'an-vbar-lbl' }, d.label)
+            ))
+          )
+        ),
+        React.createElement('div', { className: 'an-chart' },
+          React.createElement('h4', null, t(lang, 'an_bygov')),
+          topGov.length > 0
+            ? topGov.map((g, i) => React.createElement('div', { key: i, className: 'an-bar-row' },
+                React.createElement('span', { className: 'an-bar-name', title: g[0] }, g[0]),
+                React.createElement('span', { className: 'an-bar-track' }, React.createElement('span', { className: 'an-bar-fill', style: { width: Math.max(6, Math.round(g[1] / maxGov * 100)) + '%' } })),
+                React.createElement('span', { className: 'an-bar-val' }, g[1])
+              ))
+            : React.createElement('span', { className: 'muted' }, '—')
+        )
+      ),
+      React.createElement('div', { className: 'an-chart', style: { marginTop: 16 } },
+        React.createElement('h4', null, t(lang, 'an_bymonth')),
+        React.createElement('div', { className: 'an-vchart' },
+          months.map((m, i) => React.createElement('div', { key: i, className: 'an-vbar', title: m.label + ' : ' + window.money(m.v) },
+            React.createElement('span', { className: 'an-vbar-val' }, m.v ? Math.round(m.v) : ''),
+            React.createElement('span', { className: 'an-vbar-fill', style: { height: Math.round(m.v / maxMonth * 100) + '%' } }),
+            React.createElement('span', { className: 'an-vbar-lbl' }, m.label)
+          ))
+        )
       )
     ),
     React.createElement('div', { className: 'admin-bar' },
@@ -1889,16 +1979,17 @@ function OrderAdmin() {
                       if (Array.isArray(opt.posters)) opt.posters.forEach(p => { if (p && p.img) acc.push({ img: p.img, label: p.label }); });
                       return acc;
                     }, []);
-                    const hasFiles = !!(o.files && o.files.length);
-                    if (!designImgs.length && !hasFiles) return React.createElement('span', { className: 'muted' }, '—');
+                    // On masque les copies "design-" : déjà affichées via la vignette d'asset ci-dessus.
+                    const upFiles = (o.files || []).filter(fl => !/^design-/.test(String(fl && fl.name || '')));
+                    if (!designImgs.length && !upFiles.length) return React.createElement('span', { className: 'muted' }, '—');
                     return React.createElement('div', { className: 'admin-files-cell' },
                       designImgs.map((d, di) => React.createElement('a', {
                         key: 'd' + di, href: d.img, target: '_blank', rel: 'noopener',
                         className: 'admin-design-thumb', title: d.label || '',
                       }, React.createElement('img', { src: d.img, alt: d.label || '', loading: 'lazy' }))),
-                      hasFiles ? o.files.map((fl, fi) => React.createElement('button', {
-                        key: 'f' + fi, className: 'btn-file', onClick: () => openFile(fl.path), title: fl.name,
-                      }, '📎 ' + t(lang, 'ad_file'))) : null
+                      upFiles.map((fl, fi) => React.createElement(AdminFileThumb, {
+                        key: 'f' + fi, file: fl, adminKey: adminKey, openFile: openFile,
+                      }))
                     );
                   })()
                 ),

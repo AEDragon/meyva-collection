@@ -1173,6 +1173,12 @@ textarea.inp { resize: vertical; }
 .an-bar-track { flex: 1; height: 16px; background: var(--pink-pale); border-radius: 999px; overflow: hidden; }
 .an-bar-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--pink), var(--pink-deep)); border-radius: 999px; }
 .an-bar-val { width: 32px; flex: 0 0 auto; text-align: right; font-weight: 600; font-size: 13px; color: var(--pink-deep); }
+.an-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.an-vchart { display: flex; align-items: flex-end; gap: 5px; height: 130px; padding-top: 6px; }
+.an-vbar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 3px; }
+.an-vbar-fill { width: 100%; max-width: 26px; background: linear-gradient(180deg, var(--pink), var(--pink-deep)); border-radius: 5px 5px 0 0; min-height: 2px; }
+.an-vbar-lbl { font-size: 9px; color: var(--ink-soft); white-space: nowrap; }
+.an-vbar-val { font-size: 9.5px; font-weight: 600; color: var(--pink-deep); min-height: 12px; }
 .badge-status {
   border: 1px solid var(--line); background: #fff; border-radius: 999px;
   padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
@@ -1184,6 +1190,7 @@ textarea.inp { resize: vertical; }
 @media (max-width: 600px) {
   .an-cards { grid-template-columns: 1fr 1fr; }
   .an-bar-name { width: 120px; }
+  .an-grid2 { grid-template-columns: 1fr; }
 }
 .btn-file {
   background: var(--pink-pale); border: 1px solid var(--pink); color: var(--pink-deep);
@@ -1200,6 +1207,8 @@ textarea.inp { resize: vertical; }
 }
 .admin-design-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .admin-design-thumb:hover { border-color: var(--pink-deep); }
+.admin-design-thumb.loading { display: grid; place-items: center; }
+.admin-design-thumb .thumb-load { font-size: 15px; opacity: 0.6; }
 /* file dropzone on custom products */
 .filedrop {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
