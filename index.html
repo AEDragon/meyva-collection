@@ -16,30 +16,6 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<!-- Clerk (admin authentication) — only used to protect the boutique admin page -->
-<script
-  async
-  crossorigin="anonymous"
-  data-clerk-publishable-key="pk_test_dmFsaWQtc2hlZXBkb2ctNS5jbGVyay5hY2NvdW50cy5kZXYk"
-  src="https://valid-sheepdog-5.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
-  type="text/javascript"
-></script>
-<script>
-  // Load Clerk once the SDK script is ready; OrderAdmin awaits window.__clerkReady.
-  window.__clerkReady = new Promise(function (resolve, reject) {
-    var tries = 0;
-    (function wait() {
-      if (window.Clerk) {
-        window.Clerk.load().then(function () { resolve(window.Clerk); }).catch(reject);
-      } else if (tries++ < 150) {
-        setTimeout(wait, 100);
-      } else {
-        reject(new Error('Clerk SDK failed to load'));
-      }
-    })();
-  });
-</script>
-
 <script type="text/babel">
 // ── data.jsx ──────────────────────────────────────────────────────────────────
 // Galeries d'images par produit (plusieurs photos pour voir le rendu)
@@ -437,7 +413,7 @@ const I18N = {
     admin_delete_confirm: 'Supprimer définitivement cette commande ? (à faire seulement après l’avoir exportée / préparée)',
     admin_deleted: 'Commande supprimée.', admin_delete_fail: 'Suppression impossible',
     ad_st_loading: 'Chargement depuis le serveur…', ad_st_expired: 'Session expirée — reconnecte-toi.',
-    ad_st_denied: 'Accès refusé. Vérifie que la clé secrète Clerk est configurée sur Vercel.',
+    ad_st_denied: 'Code d’accès incorrect.',
     ad_st_srverr: 'Erreur serveur', ad_st_loaded1: 'commande(s) chargée(s) depuis le serveur.',
     ad_st_unreach: 'Impossible de joindre le serveur (disponible uniquement sur le site en ligne).',
   },
@@ -523,7 +499,7 @@ const I18N = {
     admin_delete_confirm: 'Permanently delete this order? (only after you’ve exported / prepared it)',
     admin_deleted: 'Order deleted.', admin_delete_fail: 'Could not delete',
     ad_st_loading: 'Loading from the server…', ad_st_expired: 'Session expired — sign in again.',
-    ad_st_denied: 'Access denied. Check that the Clerk secret key is set on Vercel.',
+    ad_st_denied: 'Wrong access code.',
     ad_st_srverr: 'Server error', ad_st_loaded1: 'order(s) loaded from the server.',
     ad_st_unreach: 'Could not reach the server (available only on the live site).',
   },
@@ -1694,21 +1670,14 @@ function OrderAdmin() {
   const [orders, setOrders] = React.useState([]);
   const [status, setStatus] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [authState, setAuthState] = React.useState('loading'); // loading | signedOut | signedIn | error
-  const [userEmail, setUserEmail] = React.useState('');
   const [deleting, setDeleting] = React.useState('');
   const [adminKey, setAdminKey] = React.useState(() => { try { return localStorage.getItem('meyva_admin_key') || ''; } catch (e) { return ''; } });
   const [keyMode, setKeyMode] = React.useState(false);
-  const signInRef = React.useRef(null);
   const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
-  const signedIn = authState === 'signedIn' || keyMode;
+  const signedIn = keyMode;
 
-  // Auth via Clerk si connecté, sinon via la clé d'accès (repli sans Clerk)
-  const authHeaders = async () => {
-    try { const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null; if (tok) return { Authorization: 'Bearer ' + tok }; } catch (e) {}
-    if (adminKey) return { 'x-admin-key': adminKey };
-    return null;
-  };
+  // Auth par code d'accès propriétaire
+  const authHeaders = () => (adminKey ? { 'x-admin-key': adminKey } : null);
 
   const loadServer = async () => {
     setLoading(true); setStatus(t(lang, 'ad_st_loading'));
@@ -1774,52 +1743,16 @@ function OrderAdmin() {
     } catch (e) { setStatus(t(lang, 'ad_st_unreach')); }
   };
 
-  // Initialise Clerk and track sign-in state
-  React.useEffect(() => {
-    let mounted = true, unsub = null;
-    (window.__clerkReady || Promise.reject(new Error('no clerk'))).then((clerk) => {
-      const sync = () => {
-        if (!mounted) return;
-        if (clerk.user) {
-          setAuthState('signedIn');
-          setUserEmail((clerk.user.primaryEmailAddress && clerk.user.primaryEmailAddress.emailAddress) || '');
-        } else {
-          setAuthState('signedOut');
-        }
-      };
-      sync();
-      unsub = clerk.addListener(sync);
-    }).catch(() => { if (mounted) setAuthState('error'); });
-    return () => { mounted = false; if (typeof unsub === 'function') unsub(); };
-  }, []);
-
-  // Mount Clerk's sign-in widget while signed out
-  React.useEffect(() => {
-    if (authState === 'signedOut' && signInRef.current && window.Clerk) {
-      window.Clerk.mountSignIn(signInRef.current);
-      const node = signInRef.current;
-      return () => { try { window.Clerk.unmountSignIn(node); } catch (e) {} };
-    }
-  }, [authState]);
-
-  // Auto-load orders once signed in
-  React.useEffect(() => { if (authState === 'signedIn') loadServer(); }, [authState]);
-
-  // Connexion automatique si la clé d'accès est déjà mémorisée sur cet appareil
+  // Connexion automatique si le code d'accès est déjà mémorisé sur cet appareil
   React.useEffect(() => { const k = (adminKey || '').trim(); if (k && !keyMode) loginWithKey(); }, []);
 
   const Title = React.createElement('h1', { className: 'serif checkout-title' }, t(lang, 'ad_t1'), React.createElement('em', { className: 'serif-italic' }, t(lang, 'ad_em')));
   const Eyebrow = React.createElement('div', { className: 'section-eyebrow' }, t(lang, 'ad_eyebrow'));
 
-  if (!signedIn && authState === 'loading') {
-    return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
-      React.createElement('p', { className: 'muted' }, t(lang, 'ad_loading')));
-  }
   if (!signedIn) {
-    // Connexion : widget Clerk (si configuré) + repli par clé d'accès
+    // Connexion par code d'accès propriétaire
     return React.createElement('section', { className: 'admin' }, Eyebrow, Title,
       React.createElement('p', { className: 'muted', style: { marginBottom: 16 } }, t(lang, 'ad_signin_sub')),
-      (authState === 'signedOut') && React.createElement('div', { className: 'admin-signin', ref: signInRef }),
       React.createElement('div', { className: 'admin-keybar' },
         React.createElement('input', {
           className: 'inp', type: 'password', placeholder: t(lang, 'ad_key_ph'),
@@ -1836,9 +1769,9 @@ function OrderAdmin() {
     Eyebrow,
     Title,
     React.createElement('div', { className: 'admin-userbar' },
-      React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, t(lang, 'ad_connected') + (userEmail ? ' : ' + userEmail : '')),
+      React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, t(lang, 'ad_connected')),
       React.createElement('button', { className: 'btn btn-pink', onClick: () => loadServer(), disabled: loading }, loading ? t(lang, 'ad_loading2') : t(lang, 'ad_refresh')),
-      React.createElement('button', { className: 'btn btn-outline', onClick: () => { try { localStorage.removeItem('meyva_admin_key'); } catch (e) {} setKeyMode(false); setAdminKey(''); setOrders([]); if (window.Clerk && window.Clerk.user) window.Clerk.signOut(); } }, t(lang, 'ad_signout'))
+      React.createElement('button', { className: 'btn btn-outline', onClick: () => { try { localStorage.removeItem('meyva_admin_key'); } catch (e) {} setKeyMode(false); setAdminKey(''); setOrders([]); } }, t(lang, 'ad_signout'))
     ),
     status && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, status),
     React.createElement('div', { className: 'admin-bar' },
@@ -1949,10 +1882,13 @@ function App() {
   };
   React.useEffect(() => { try { document.documentElement.lang = lang; } catch (e) {} }, [lang]);
 
-  // Admin est masqué pour les clients : accessible via #admin (lien secret du
-  // propriétaire) et révélé automatiquement une fois connecté avec Clerk.
+  // Admin masqué pour les clients : accessible via le lien secret #admin (ou si
+  // le code d'accès est déjà mémorisé sur cet appareil).
   const [showAdmin, setShowAdmin] = useState(() => {
-    try { return (window.location.hash || '').replace('#', '').toLowerCase() === 'admin'; } catch (e) { return false; }
+    try {
+      if ((window.location.hash || '').replace('#', '').toLowerCase() === 'admin') return true;
+      return !!localStorage.getItem('meyva_admin_key');
+    } catch (e) { return false; }
   });
   React.useEffect(() => {
     const applyHash = () => {
@@ -1964,13 +1900,7 @@ function App() {
     };
     applyHash();
     window.addEventListener('hashchange', applyHash);
-    let unsub = null;
-    (window.__clerkReady || Promise.reject(new Error('no clerk'))).then((clerk) => {
-      const sync = () => { if (clerk.user) setShowAdmin(true); };
-      sync();
-      unsub = clerk.addListener(sync);
-    }).catch(() => {});
-    return () => { window.removeEventListener('hashchange', applyHash); if (typeof unsub === 'function') unsub(); };
+    return () => { window.removeEventListener('hashchange', applyHash); };
   }, []);
 
   const [cart, setCart] = useState([]);
