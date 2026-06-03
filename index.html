@@ -194,8 +194,9 @@ const PRODUCTS = [
     image: 'assets/products/cert-hottest-friend.jpg',
     gallery: ['assets/products/cert-hottest-friend.jpg', 'assets/products/cert-boyfriend.jpg', 'assets/products/cert-prettiest-boy.jpg', 'assets/products/cert-best-person.jpg', 'assets/products/cert-baddie.jpg'],
     models: CERT_MODELS,
-    desc: 'Diplôme imprimé à offrir. Choisis ton modèle.',
-    long: 'Diplôme A5 imprimé sur papier épais, à offrir avec tendresse. Choisis ton modèle ci-dessous. Tu peux nous envoyer un prénom à ajouter par message Instagram.',
+    pickPerUnit: true,
+    desc: 'Diplôme imprimé à offrir. Choisis les modèles que tu veux.',
+    long: 'Diplôme A5 imprimé sur papier épais, à offrir avec tendresse. Choisis un ou plusieurs modèles ci-dessous (8 DT chacun). Tu peux nous envoyer un prénom à ajouter par message Instagram.',
     swatch: 'certificat',
   },
   // ── Offres (bundles avec remise) — ouvertes depuis la section promotions ──
@@ -402,7 +403,7 @@ const I18N = {
     phup_add: 'Ajouter des photos', phup_count: 'ajoutées', phup_max: 'Limite atteinte pour cette quantité.',
     phup_compress: 'Optimisation des photos…',
     model_choose: 'Choisis ton modèle',
-    model_pick_multi: 'Choisis tes posters', model_pick_hint: 'Clique sur les modèles à ajouter — un par poster. 3 posters = 10 DT.', model_pick_cta: 'Choisis au moins un poster',
+    model_pick_multi: 'Choisis tes modèles', model_pick_hint: 'Clique sur les modèles pour les ajouter (un par article).', model_pick_deal: ' Offre : 3 pour 10 DT !', model_pick_cta: 'Choisis au moins un modèle',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
     ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
@@ -495,7 +496,7 @@ const I18N = {
     phup_add: 'Add photos', phup_count: 'added', phup_max: 'Limit reached for this quantity.',
     phup_compress: 'Optimizing photos…',
     model_choose: 'Choose your design',
-    model_pick_multi: 'Choose your posters', model_pick_hint: 'Click designs to add — one per poster. 3 posters = 10 DT.', model_pick_cta: 'Pick at least one poster',
+    model_pick_multi: 'Choose your designs', model_pick_hint: 'Click designs to add (one each).', model_pick_deal: ' Deal: 3 for 10 DT!', model_pick_cta: 'Pick at least one design',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
     ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
@@ -1217,12 +1218,6 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           mainImg
             ? React.createElement('img', { src: mainImg, alt: (hasModels && model ? model.label : pField(product, 'name', lang)), className: 'pdp-photo' + (hasModels ? ' contain' : '') })
             : React.createElement(ProductSwatch, { name: product.swatch }),
-          hasModels && product.models.length > 1 && React.createElement('button', {
-            type: 'button', className: 'pdp-arrow pdp-arrow-l', onClick: () => stepModel(-1), 'aria-label': '‹',
-          }, '‹'),
-          hasModels && product.models.length > 1 && React.createElement('button', {
-            type: 'button', className: 'pdp-arrow pdp-arrow-r', onClick: () => stepModel(1), 'aria-label': '›',
-          }, '›'),
           hasModels && model && React.createElement('span', { className: 'pdp-modeltag' }, model.label)
         ),
         // Galerie de vignettes (produits sans sélecteur de modèle)
@@ -1254,7 +1249,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
             pickPerUnit
               ? React.createElement('span', { style: { color: 'var(--pink-deep)', fontWeight: 400, fontSize: 14 } }, ' (' + selected.length + ')')
               : (model && React.createElement('span', { style: { color: 'var(--pink-deep)', fontWeight: 400, fontSize: 14 } }, ' · ' + model.label))),
-          pickPerUnit && React.createElement('p', { style: { fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 10px' } }, t(lang, 'model_pick_hint')),
+          pickPerUnit && React.createElement('p', { style: { fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 10px' } }, t(lang, 'model_pick_hint'), product.bundle ? React.createElement('span', { style: { color: 'var(--pink-deep)', fontWeight: 600 } }, t(lang, 'model_pick_deal')) : null),
           React.createElement('div', { className: 'model-grid' },
             product.models.map((m, i) =>
               React.createElement('button', {
