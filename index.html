@@ -428,6 +428,7 @@ const I18N = {
     sort_label: 'Trier :', sort_featured: 'Sélection', sort_asc: 'Prix croissant', sort_desc: 'Prix décroissant',
     pdp_choose: 'Choisis le nombre de photos', pdp_send: 'Envoie-nous tes photos par message Instagram après la commande.',
     pdp_qty: 'Quantité', pdp_add: 'Ajouter — ', pdp_added: '✓ Ajouté au panier',
+    qty_save: 'tu économises ', qty_unit: 'unité',
     pdp_delivery: 'Livraison', pdp_delivery_v: '8 DT · 2–4 j', pdp_payment: 'Paiement', pdp_payment_v: 'À la livraison',
     pdp_confirm: 'Confirmation', pdp_confirm_v: 'Par Instagram', pdp_related: 'Tu aimeras aussi',
     about_eyebrow: 'À propos', about_t1: 'Des petites choses,', about_em: 'beaucoup d’amour.',
@@ -546,6 +547,7 @@ const I18N = {
     sort_label: 'Sort:', sort_featured: 'Featured', sort_asc: 'Price: low to high', sort_desc: 'Price: high to low',
     pdp_choose: 'Choose the number of photos', pdp_send: 'Send us your photos by Instagram message after ordering.',
     pdp_qty: 'Quantity', pdp_add: 'Add — ', pdp_added: '✓ Added to cart',
+    qty_save: 'you save ', qty_unit: 'unit',
     pdp_delivery: 'Delivery', pdp_delivery_v: '8 DT · 2–4 d', pdp_payment: 'Payment', pdp_payment_v: 'On delivery',
     pdp_confirm: 'Confirmation', pdp_confirm_v: 'By Instagram', pdp_related: 'You may also like',
     about_eyebrow: 'About', about_t1: 'Little things,', about_em: 'lots of love.',
@@ -1494,10 +1496,18 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
 
         !pickPerUnit && !product.tiers && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'pdp_qty')),
-          React.createElement('div', { className: 'qty' },
-            React.createElement('button', { onClick: () => setQty(Math.max(1, qty - 1)) }, '−'),
-            React.createElement('span', null, qty),
-            React.createElement('button', { onClick: () => setQty(qty + 1) }, '+')
+          React.createElement('div', { className: 'qty-row' },
+            React.createElement('div', { className: 'qty' },
+              React.createElement('button', { onClick: () => setQty(Math.max(1, qty - 1)) }, '−'),
+              React.createElement('span', null, qty),
+              React.createElement('button', { onClick: () => setQty(qty + 1) }, '+')
+            ),
+            React.createElement('div', { className: 'qty-price' },
+              React.createElement('span', { className: 'qty-price-amount' }, window.money(total)),
+              (product.bundle && (product.price * qty - total) > 0)
+                ? React.createElement('span', { className: 'qty-price-save' }, t(lang, 'qty_save') + window.money(product.price * qty - total))
+                : React.createElement('span', { className: 'qty-price-unit' }, window.money(unitPrice) + ' / ' + t(lang, 'qty_unit'))
+            )
           )
         ),
 
