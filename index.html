@@ -430,7 +430,7 @@ const I18N = {
     co_summary: 'Ta commande', co_confirm: 'Confirmer la commande', co_sending: 'Envoi…',
     co_nopay: 'Aucun paiement en ligne — tu payes en espèces à la réception.',
     photos: 'photos',
-    up_title: 'Tes fichiers / designs', up_drop: 'Dépose ton fichier ici', up_or: 'ou clique pour choisir', up_optional: '(facultatif)', up_preview: 'Aperçu de ton poster',
+    up_title: 'Tes fichiers / designs', up_drop: 'Dépose ton fichier ici', up_or: 'ou clique pour choisir', up_optional: '(facultatif)', up_required: '(obligatoire)', up_need: 'Importe tes images', up_need_hint1: 'Il te faut', up_need_hint2: 'image(s) — encore', up_need_hint3: 'à importer.', up_preview: 'Aperçu de ton poster',
     up_hint: 'Un emplacement par sticker — ajoute une image pour chacun. Le nombre suit la quantité.',
     up_slot: 'image', up_more_ig: 'Pour plus de 30 images, envoie le reste par message Instagram.',
     phup_title: 'Tes photos à imprimer', phup_optional: '(recommandé)',
@@ -548,7 +548,7 @@ const I18N = {
     co_summary: 'Your order', co_confirm: 'Confirm order', co_sending: 'Sending…',
     co_nopay: 'No online payment — you pay cash on delivery.',
     photos: 'photos',
-    up_title: 'Your files / designs', up_drop: 'Drop your file here', up_or: 'or click to choose', up_optional: '(optional)', up_preview: 'Your poster preview',
+    up_title: 'Your files / designs', up_drop: 'Drop your file here', up_or: 'or click to choose', up_optional: '(optional)', up_required: '(required)', up_need: 'Upload your images', up_need_hint1: 'You need', up_need_hint2: 'image(s) — still', up_need_hint3: 'to upload.', up_preview: 'Your poster preview',
     up_hint: 'One slot per sticker — add an image for each. The number follows the quantity.',
     up_slot: 'image', up_more_ig: 'For more than 30 images, send the rest by Instagram message.',
     phup_title: 'Your photos to print', phup_optional: '(recommended)',
@@ -1290,8 +1290,15 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   };
   const removePhoto = (i) => setFiles(prev => prev.filter((_, k) => k !== i));
 
+  // ── Validation des imports : il faut autant d'images que d'unités commandées ──
+  const uploadedCount = files.filter(Boolean).length;
+  const needUploads = product.upload ? slotCount : (photoUpload ? photoMax : 0);
+  const uploadsMissing = Math.max(0, needUploads - uploadedCount);
+  const uploadsOk = uploadsMissing === 0;
+
   const onAdd = () => {
     if (pickPerUnit && !selected.length) return;
+    if (!uploadsOk) return;
     const opt = {};
     if (product.tiers) opt.tier = activeTier;
     if (product.upload) { const fs = files.slice(0, slotCount).filter(Boolean); if (fs.length) opt.files = fs; }
@@ -1406,8 +1413,8 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
 
         photoUpload && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'phup_title'), ' ',
-            React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'phup_optional')),
-            React.createElement('span', { style: { color: 'var(--pink-deep)', fontWeight: 400, fontSize: 14 } }, ' · ' + files.length + ' / ' + photoMax)),
+            React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'up_required')),
+            React.createElement('span', { style: { color: uploadsOk ? '#2a7a3a' : 'var(--pink-deep)', fontWeight: 600, fontSize: 14 } }, ' · ' + files.length + ' / ' + photoMax)),
           React.createElement('p', { style: { fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 10px' } }, t(lang, 'phup_hint')),
           React.createElement('div', { className: 'photo-grid' },
             files.map((fl, i) => React.createElement(PhotoPreview, { key: i, file: fl, onRemove: () => removePhoto(i) })),
@@ -1426,7 +1433,8 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
 
         product.upload && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'up_title'), ' ',
-            React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'up_optional'))),
+            React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'up_required')),
+            React.createElement('span', { style: { color: uploadsOk ? '#2a7a3a' : 'var(--pink-deep)', fontWeight: 600, fontSize: 14 } }, ' · ' + uploadedCount + ' / ' + slotCount)),
           React.createElement('p', { style: { fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 10px' } }, t(lang, 'up_hint')),
           React.createElement('div', { className: 'filedrop-grid' },
             Array.from({ length: slotCount }).map((_, i) => {
@@ -1463,10 +1471,17 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
         ),
 
         React.createElement('div', { className: 'pdp-cta' },
-          React.createElement('button', { className: 'btn btn-pink', onClick: onAdd, disabled: pickPerUnit && !selected.length },
+          React.createElement('button', {
+            className: 'btn btn-pink', onClick: onAdd,
+            disabled: (pickPerUnit && !selected.length) || !uploadsOk,
+          },
             added ? t(lang, 'pdp_added')
-              : (pickPerUnit && !selected.length ? t(lang, 'model_pick_cta') : t(lang, 'pdp_add') + window.money(total))
-          )
+              : (pickPerUnit && !selected.length) ? t(lang, 'model_pick_cta')
+              : !uploadsOk ? (t(lang, 'up_need') + ' (' + uploadedCount + '/' + needUploads + ')')
+              : t(lang, 'pdp_add') + window.money(total)
+          ),
+          !uploadsOk && !(pickPerUnit && !selected.length) && React.createElement('p', { className: 'pdp-upload-warn' },
+            t(lang, 'up_need_hint1') + ' ' + needUploads + ' ' + t(lang, 'up_need_hint2') + ' ' + uploadsMissing + ' ' + t(lang, 'up_need_hint3'))
         ),
 
         React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, paddingTop: 18, borderTop: '1px solid var(--line)', fontSize: 13 } },
