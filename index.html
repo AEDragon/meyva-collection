@@ -1494,7 +1494,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           qty > 30 && React.createElement('p', { className: 'muted', style: { fontSize: 12, marginTop: 8 } }, t(lang, 'up_more_ig'))
         ),
 
-        !pickPerUnit && !product.tiers && React.createElement('div', { className: 'pdp-section' },
+        !pickPerUnit && !product.tiers && !product.slots && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'pdp_qty')),
           React.createElement('div', { className: 'qty-row' },
             React.createElement('div', { className: 'qty' },
