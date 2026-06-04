@@ -1306,12 +1306,13 @@ textarea.inp { resize: vertical; }
 .admin-kv-row dd { margin: 0; color: var(--ink); word-break: break-word; }
 .admin-art-list { display: flex; flex-direction: column; }
 .admin-art-row {
-  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start;
   font-size: 13.5px; padding: 8px 0; border-bottom: 1px dashed var(--line);
 }
 .admin-art-row:last-child { border-bottom: none; }
 .admin-art-qty { font-weight: 700; color: var(--pink-deep); min-width: 30px; }
 .admin-art-name { color: var(--ink); }
+.admin-art-picks { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 3px; line-height: 1.4; }
 .admin-art-price { font-weight: 600; color: var(--ink); white-space: nowrap; }
 .admin-order-files { padding: 0 18px 18px; }
 .admin-order-card .admin-files-groups { flex-direction: row; flex-wrap: wrap; min-width: 0; gap: 14px; }
