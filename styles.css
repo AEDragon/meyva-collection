@@ -1460,6 +1460,13 @@ textarea.inp { resize: vertical; }
 .model-img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--cream-deep); }
 .model-label { font-size: 11px; color: var(--ink-soft); padding: 2px 4px 6px; line-height: 1.2; }
 .model-card.active .model-label { color: var(--pink-deep); font-weight: 600; }
+/* multi-select sticker style picker (uses model-card grid) */
+.style-pick { position: relative; }
+.style-check {
+  position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--pink-deep); color: #fff; font-size: 13px; font-weight: 700;
+  display: grid; place-items: center; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {

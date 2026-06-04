@@ -130,7 +130,16 @@ const PRODUCTS = [
     gallery: G.stickers,
     desc: 'Packet de 30+ stickers ambiance douce et pastel. Mix sur mesure possible.',
     long: 'Une sélection de 30+ stickers thème mood doux, pastel et fleuri. Choisis les styles que tu veux dans ton mix ci-dessous.',
-    styleTags: ['Pastel', 'Floral', 'Cœurs', 'Lune & étoiles', 'Citations', 'Coquette', 'Cottagecore', 'Minimal'],
+    styleModels: [
+      { label: 'Cœur', img: 'assets/products/stickers/mood-coeur.jpg' },
+      { label: 'Fleur', img: 'assets/products/stickers/mood-fleur.jpg' },
+      { label: 'Papillon', img: 'assets/products/stickers/mood-papillon.jpg' },
+      { label: 'Lune & étoiles', img: 'assets/products/stickers/mood-lune.jpg' },
+      { label: 'Nuage', img: 'assets/products/stickers/mood-nuage.jpg' },
+      { label: 'Nœud', img: 'assets/products/stickers/mood-noeud.jpg' },
+      { label: 'Champignon', img: 'assets/products/stickers/mood-champignon.jpg' },
+      { label: 'Smiley', img: 'assets/products/stickers/mood-smiley.jpg' },
+    ],
     swatch: 'stickers-pink',
   },
   {
@@ -142,7 +151,16 @@ const PRODUCTS = [
     gallery: G.stickers,
     desc: 'Packet de 30+ stickers anime, manga, kawaii. Pour laptop, journal, carnet.',
     long: '30+ stickers thème anime et manga, vinyl résistant à l’eau. Choisis les séries que tu veux dans ton mix ci-dessous.',
-    styleTags: ['Demon Slayer', 'Naruto', 'One Piece', 'Jujutsu Kaisen', 'Death Note', 'Chibi kawaii', 'Studio Ghibli', 'Manga mix'],
+    styleModels: [
+      { label: 'Fille anime', img: 'assets/products/stickers/anime-fille.jpg' },
+      { label: 'Chibi', img: 'assets/products/stickers/anime-chibi.jpg' },
+      { label: 'Chat kawaii', img: 'assets/products/stickers/anime-chat.jpg' },
+      { label: 'Yeux manga', img: 'assets/products/stickers/anime-yeux.jpg' },
+      { label: 'Ramen', img: 'assets/products/stickers/anime-ramen.jpg' },
+      { label: 'Sakura', img: 'assets/products/stickers/anime-sakura.jpg' },
+      { label: 'Onigiri', img: 'assets/products/stickers/anime-onigiri.jpg' },
+      { label: 'Étoile filante', img: 'assets/products/stickers/anime-etoile.jpg' },
+    ],
     swatch: 'stickers-anime',
   },
   {
@@ -154,7 +172,16 @@ const PRODUCTS = [
     gallery: G.stickers,
     desc: 'Packet de 30+ stickers esthétique Y2K, holographique, fin des années 90.',
     long: '30+ stickers Y2K : papillons holographiques, étoiles, glitter, flammes. Choisis les styles que tu veux dans ton mix ci-dessous.',
-    styleTags: ['Papillons holo', 'Étoiles', 'Glitter', 'Flammes', 'Cœurs Y2K', 'Cyber', 'Strass', 'Smileys'],
+    styleModels: [
+      { label: 'Papillon holo', img: 'assets/products/stickers/y2k-papillon.jpg' },
+      { label: 'Étoile chrome', img: 'assets/products/stickers/y2k-etoile.jpg' },
+      { label: 'Cœur glitter', img: 'assets/products/stickers/y2k-coeur.jpg' },
+      { label: 'Flamme', img: 'assets/products/stickers/y2k-flamme.jpg' },
+      { label: 'Yin yang', img: 'assets/products/stickers/y2k-yinyang.jpg' },
+      { label: 'Fleur groovy', img: 'assets/products/stickers/y2k-fleur.jpg' },
+      { label: 'Smiley melty', img: 'assets/products/stickers/y2k-smiley.jpg' },
+      { label: 'Diamant', img: 'assets/products/stickers/y2k-diamant.jpg' },
+    ],
     swatch: 'stickers-y2k',
   },
   {
@@ -1235,7 +1262,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [selected, setSelected] = React.useState([]); // posters choisis (pickPerUnit)
   const [styles, setStyles] = React.useState([]); // styles choisis (packs stickers)
   const [compressing, setCompressing] = React.useState(false);
-  const styleTags = product.styleTags || [];
+  const styleTags = product.styleModels || [];
   const toggleStyle = (s) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : prev.concat([s]));
   React.useEffect(() => { setActiveImg(0); setSelected([]); setStyles([]); setFiles([]); setModel(hasModels ? product.models[0] : null); }, [product.id]);
   // Aperçu instantané : transforme les images uploadées en URLs locales (une par emplacement)
@@ -1394,12 +1421,16 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           React.createElement('h4', null, t(lang, 'styles_choose'),
             styles.length > 0 && React.createElement('span', { style: { color: 'var(--pink-deep)', fontWeight: 400, fontSize: 14 } }, ' (' + styles.length + ')')),
           React.createElement('p', { style: { fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 10px' } }, t(lang, 'styles_hint')),
-          React.createElement('div', { className: 'style-chips' },
-            styleTags.map((s, i) => React.createElement('button', {
+          React.createElement('div', { className: 'model-grid' },
+            styleTags.map((m, i) => React.createElement('button', {
               key: i, type: 'button',
-              className: 'style-chip' + (styles.includes(s) ? ' active' : ''),
-              onClick: () => toggleStyle(s),
-            }, s))
+              className: 'model-card style-pick' + (styles.includes(m.label) ? ' active' : ''),
+              onClick: () => toggleStyle(m.label), title: m.label,
+            },
+              React.createElement('img', { src: m.img, alt: m.label, className: 'model-img', loading: 'lazy' }),
+              React.createElement('span', { className: 'model-label' }, m.label),
+              styles.includes(m.label) && React.createElement('span', { className: 'style-check' }, '✓')
+            ))
           )
         ),
 
