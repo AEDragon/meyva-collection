@@ -457,7 +457,7 @@ const I18N = {
     shop_items: 'articles · livraison partout en Tunisie',
     sort_label: 'Trier :', sort_featured: 'Sélection', sort_asc: 'Prix croissant', sort_desc: 'Prix décroissant',
     pdp_choose: 'Choisis le nombre de photos', pdp_send: 'Envoie-nous tes photos par message Instagram après la commande.',
-    pdp_qty: 'Quantité', pdp_add: 'Ajouter — ', pdp_added: '✓ Ajouté au panier',
+    pdp_qty: 'Quantité', pdp_add: 'Ajouter — ', pdp_added: '✓ Ajouté au panier', soldout: 'Épuisé',
     qty_save: 'tu économises ', qty_unit: 'unité',
     pdp_delivery: 'Livraison', pdp_delivery_v: '8 DT · 2–4 j', pdp_payment: 'Paiement', pdp_payment_v: 'À la livraison',
     pdp_confirm: 'Confirmation', pdp_confirm_v: 'Par Instagram', pdp_related: 'Tu aimeras aussi',
@@ -500,6 +500,13 @@ const I18N = {
     styles_choose: 'Choisis tes styles', styles_hint: 'Clique sur les styles que tu veux dans ton pack — on adapte le mix.',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
     ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres', ad_other_files: 'Autres fichiers', ad_customer: 'Client',
+    ad_tab_orders: 'Commandes', ad_tab_products: 'Produits',
+    pm_intro: 'Gère ta boutique : modifie les prix, les noms, ajoute des produits ou marque-les épuisés. Clique « Enregistrer » pour publier.',
+    pm_add: 'Ajouter un produit', pm_save: 'Enregistrer', pm_saving: 'Enregistrement…', pm_saved: '✓ Publié !', pm_saved_ok: '✓ À jour', pm_err: 'Erreur', pm_loading: 'Chargement du catalogue…',
+    pm_uploading: 'Envoi de l’image…', pm_img_ok: '✓ Image ajoutée', pm_change_img: 'Changer la photo',
+    pm_name: 'Nom (FR)', pm_name_en: 'Nom (EN)', pm_cat: 'Catégorie', pm_price: 'Prix (DT)', pm_desc: 'Description (FR)', pm_desc_en: 'Description (EN)',
+    pm_soldout: 'Épuisé', pm_hide: 'Masquer de la boutique', pm_delete: 'Supprimer', pm_del_confirm: 'Supprimer ce produit définitivement ?',
+    pm_mine: 'Mes produits ajoutés', pm_shop: 'Produits de la boutique', pm_added_hint: 'Nouveau produit ajouté en bas — remplis ses infos puis Enregistrer.',
     ad_eyebrow: 'Espace boutique', ad_t1: 'Commandes ', ad_em: 'reçues',
     ad_loading: 'Chargement de l’espace sécurisé…',
     ad_error: 'Connexion sécurisée indisponible. Réessaie en rechargeant la page (le module de connexion ne fonctionne que sur le site en ligne).',
@@ -576,7 +583,7 @@ const I18N = {
     shop_items: 'items · delivery anywhere in Tunisia',
     sort_label: 'Sort:', sort_featured: 'Featured', sort_asc: 'Price: low to high', sort_desc: 'Price: high to low',
     pdp_choose: 'Choose the number of photos', pdp_send: 'Send us your photos by Instagram message after ordering.',
-    pdp_qty: 'Quantity', pdp_add: 'Add — ', pdp_added: '✓ Added to cart',
+    pdp_qty: 'Quantity', pdp_add: 'Add — ', pdp_added: '✓ Added to cart', soldout: 'Sold out',
     qty_save: 'you save ', qty_unit: 'unit',
     pdp_delivery: 'Delivery', pdp_delivery_v: '8 DT · 2–4 d', pdp_payment: 'Payment', pdp_payment_v: 'On delivery',
     pdp_confirm: 'Confirmation', pdp_confirm_v: 'By Instagram', pdp_related: 'You may also like',
@@ -619,6 +626,13 @@ const I18N = {
     styles_choose: 'Pick your styles', styles_hint: 'Tap the styles you want in your pack — we tailor the mix.',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
     ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more', ad_other_files: 'Other files', ad_customer: 'Customer',
+    ad_tab_orders: 'Orders', ad_tab_products: 'Products',
+    pm_intro: 'Manage your shop: edit prices, names, add products or mark them sold out. Click “Save” to publish.',
+    pm_add: 'Add a product', pm_save: 'Save', pm_saving: 'Saving…', pm_saved: '✓ Published!', pm_saved_ok: '✓ Up to date', pm_err: 'Error', pm_loading: 'Loading catalog…',
+    pm_uploading: 'Uploading image…', pm_img_ok: '✓ Image added', pm_change_img: 'Change photo',
+    pm_name: 'Name (FR)', pm_name_en: 'Name (EN)', pm_cat: 'Category', pm_price: 'Price (DT)', pm_desc: 'Description (FR)', pm_desc_en: 'Description (EN)',
+    pm_soldout: 'Sold out', pm_hide: 'Hide from shop', pm_delete: 'Delete', pm_del_confirm: 'Delete this product permanently?',
+    pm_mine: 'My added products', pm_shop: 'Shop products', pm_added_hint: 'New product added at the bottom — fill its info then Save.',
     ad_eyebrow: 'Shop admin', ad_t1: 'Orders ', ad_em: 'received',
     ad_loading: 'Loading secure area…',
     ad_error: 'Secure sign-in unavailable. Try reloading the page (the sign-in module only works on the live site).',
@@ -683,9 +697,35 @@ function tf(map, id, field, lang, fallback) {
   if (lang === 'en' && map[id] && map[id][field] != null) return map[id][field];
   return fallback;
 }
-function pField(p, field, lang) { return tf(PRODUCT_I18N, p.id, field, lang, p[field]); }
+function pField(p, field, lang) {
+  // Si le propriétaire a saisi une version EN (name_en, desc_en…), elle est prioritaire.
+  if (lang === 'en') {
+    const ek = field + '_en';
+    if (p && p[ek] != null && p[ek] !== '') return p[ek];
+  }
+  return tf(PRODUCT_I18N, p.id, field, lang, p[field]);
+}
 
-Object.assign(window, { LangContext, I18N, t, useLang, catLabel, pField, PROMO_I18N, CS_I18N, tf });
+// ── Fusion du catalogue : on applique par-dessus PRODUCTS les modifications du
+//    propriétaire (prix, noms, épuisé…), les produits ajoutés et les produits masqués. ──
+function applyCatalog(base, overlay) {
+  overlay = overlay || {};
+  const overrides = overlay.overrides || {};
+  const hidden = overlay.hidden || [];
+  const custom = Array.isArray(overlay.custom) ? overlay.custom : [];
+  const merged = base
+    .filter(p => hidden.indexOf(p.id) === -1)
+    .map(p => (overrides[p.id] ? Object.assign({}, p, overrides[p.id]) : p));
+  return merged.concat(custom);
+}
+function deriveCategories(list) {
+  const base = ['Tout', 'Packs', 'Photos', 'Stickers', 'Posters', 'Bougies', 'Cadeaux'];
+  const extra = [];
+  list.forEach(p => { if (p.cat && base.indexOf(p.cat) === -1 && extra.indexOf(p.cat) === -1) extra.push(p.cat); });
+  return base.concat(extra);
+}
+
+Object.assign(window, { LangContext, I18N, t, useLang, catLabel, pField, PROMO_I18N, CS_I18N, tf, applyCatalog, deriveCategories });
 
 // ── swatches.jsx ──────────────────────────────────────────────────────────────
 const SWATCHES = {
@@ -988,9 +1028,10 @@ function Nav({ page, setPage, cartCount, openCart, openSearch, goBack, goForward
 function ProductCard({ product, onOpen }) {
   const lang = useLang();
   const secondary = pField(product, 'secondary', lang);
-  return React.createElement('article', { className: 'product-card', onClick: () => onOpen(product) },
+  return React.createElement('article', { className: 'product-card' + (product.soldOut ? ' is-soldout' : ''), onClick: () => onOpen(product) },
     React.createElement('div', { className: 'product-thumb' },
-      product.badge && React.createElement('span', { className: 'product-badge' }, product.badge),
+      product.soldOut && React.createElement('span', { className: 'product-soldout' }, t(lang, 'soldout')),
+      product.badge && !product.soldOut && React.createElement('span', { className: 'product-badge' }, product.badge),
       React.createElement('div', { className: 'product-thumb-inner' },
         product.image
           ? React.createElement('img', { src: product.image, alt: pField(product, 'name', lang), className: 'product-photo', loading: 'lazy' })
@@ -1356,6 +1397,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const uploadsOk = uploadsMissing === 0;
 
   const onAdd = () => {
+    if (product.soldOut) return;
     if (pickPerUnit && !selected.length) return;
     if (!uploadsOk) return;
     const opt = {};
@@ -1544,9 +1586,10 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
         React.createElement('div', { className: 'pdp-cta' },
           React.createElement('button', {
             className: 'btn btn-pink', onClick: onAdd,
-            disabled: (pickPerUnit && !selected.length) || !uploadsOk,
+            disabled: product.soldOut || (pickPerUnit && !selected.length) || !uploadsOk,
           },
-            added ? t(lang, 'pdp_added')
+            product.soldOut ? t(lang, 'soldout')
+              : added ? t(lang, 'pdp_added')
               : (pickPerUnit && !selected.length) ? t(lang, 'model_pick_cta')
               : !uploadsOk ? (t(lang, 'up_need') + ' (' + uploadedCount + '/' + needUploads + ')')
               : t(lang, 'pdp_add') + window.money(total)
@@ -2102,8 +2145,176 @@ function AdminFileThumb({ file, adminKey, openFile }) {
   }, '📎 ' + t(lang, 'ad_file'));
 }
 
-function OrderAdmin() {
+// ── Gestionnaire de produits : la propriétaire gère son catalogue elle-même ──
+function ProductManager({ catalog, adminKey, reloadCatalog }) {
   const lang = useLang();
+  const base = (window.MEYVA_DATA && window.MEYVA_DATA.PRODUCTS) || [];
+  const [ov, setOv] = React.useState({ overrides: {}, custom: [], hidden: [], categories: [] });
+  const [loaded, setLoaded] = React.useState(false);
+  const [dirty, setDirty] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [msg, setMsg] = React.useState('');
+  const [busyImg, setBusyImg] = React.useState('');
+
+  React.useEffect(() => {
+    let alive = true;
+    fetch('/api/products', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+      if (!alive) return;
+      const c = (j && j.catalog) || {};
+      setOv({
+        overrides: c.overrides || {},
+        custom: Array.isArray(c.custom) ? c.custom : [],
+        hidden: Array.isArray(c.hidden) ? c.hidden : [],
+        categories: Array.isArray(c.categories) ? c.categories : [],
+      });
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+    return () => { alive = false; };
+  }, []);
+
+  const mark = () => setDirty(true);
+  const catList = window.deriveCategories(catalog || base);
+  const effBuiltin = (p) => Object.assign({}, p, ov.overrides[p.id] || {});
+  const isHidden = (id) => ov.hidden.indexOf(id) !== -1;
+
+  const setBuiltinField = (id, field, value) => {
+    setOv(prev => {
+      const overrides = Object.assign({}, prev.overrides);
+      overrides[id] = Object.assign({}, overrides[id], { [field]: value });
+      return Object.assign({}, prev, { overrides });
+    });
+    mark();
+  };
+  const toggleHidden = (id) => {
+    setOv(prev => {
+      const hidden = prev.hidden.slice();
+      const i = hidden.indexOf(id);
+      if (i === -1) hidden.push(id); else hidden.splice(i, 1);
+      return Object.assign({}, prev, { hidden });
+    });
+    mark();
+  };
+  const setCustomField = (id, field, value) => {
+    setOv(prev => ({ ...prev, custom: prev.custom.map(c => c.id === id ? Object.assign({}, c, { [field]: value }) : c) }));
+    mark();
+  };
+  const addCustom = () => {
+    const id = 'custom-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+    setOv(prev => ({ ...prev, custom: prev.custom.concat([{ id, custom: true, name: '', cat: (catList[1] || 'Autres'), price: 0, image: '', desc: '', soldOut: false }]) }));
+    mark();
+    setMsg(t(lang, 'pm_added_hint'));
+  };
+  const removeCustom = (id) => {
+    if (!window.confirm(t(lang, 'pm_del_confirm'))) return;
+    setOv(prev => ({ ...prev, custom: prev.custom.filter(c => c.id !== id) }));
+    mark();
+  };
+
+  const fileToB64 = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+  const uploadImage = async (rowId, file, apply) => {
+    if (!file) return;
+    setBusyImg(rowId); setMsg(t(lang, 'pm_uploading'));
+    try {
+      const small = await compressImage(file, 1400, 0.85);
+      const b64 = await fileToB64(small);
+      const r = await fetch('/api/products', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ op: 'image', name: small.name || 'image.jpg', type: small.type || 'image/jpeg', dataBase64: b64 }),
+      });
+      const j = await r.json();
+      if (r.ok && j && j.url) { apply(j.url); mark(); setMsg(t(lang, 'pm_img_ok')); }
+      else setMsg(t(lang, 'pm_err') + (j && j.error ? ' — ' + j.error : ''));
+    } catch (e) { setMsg(t(lang, 'pm_err')); }
+    setBusyImg('');
+  };
+
+  const save = async () => {
+    setSaving(true); setMsg(t(lang, 'pm_saving'));
+    try {
+      const r = await fetch('/api/products', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify(ov),
+      });
+      if (!r.ok) { setMsg(t(lang, 'pm_err') + ' (' + r.status + ')'); setSaving(false); return; }
+      setDirty(false); setMsg(t(lang, 'pm_saved'));
+      if (reloadCatalog) await reloadCatalog();
+    } catch (e) { setMsg(t(lang, 'pm_err')); }
+    setSaving(false);
+  };
+
+  if (!loaded) return React.createElement('p', { className: 'muted', style: { padding: '12px 2px' } }, t(lang, 'pm_loading'));
+
+  const renderRow = (row, isCustom) => {
+    const id = row.id;
+    const setF = isCustom ? (f, v) => setCustomField(id, f, v) : (f, v) => setBuiltinField(id, f, v);
+    const hidden = !isCustom && isHidden(id);
+    const field = (label, key, type) => React.createElement('label', { className: 'pm-field' },
+      React.createElement('span', null, label),
+      type === 'textarea'
+        ? React.createElement('textarea', { value: row[key] || '', onChange: e => setF(key, e.target.value), rows: 2 })
+        : React.createElement('input', { type: type || 'text', value: row[key] != null ? row[key] : '', onChange: e => setF(key, e.target.value) })
+    );
+    return React.createElement('div', { className: 'pm-card' + (hidden ? ' is-hidden' : '') + (row.soldOut ? ' is-sold' : ''), key: id },
+      React.createElement('div', { className: 'pm-card-img' },
+        row.image ? React.createElement('img', { src: row.image, alt: '' }) : React.createElement('div', { className: 'pm-noimg' }, '🖼️'),
+        React.createElement('label', { className: 'btn-file pm-imgbtn' },
+          React.createElement('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onChange: e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; uploadImage(id, f, (url) => setF('image', url)); } }),
+          busyImg === id ? '…' : ('🖼️ ' + t(lang, 'pm_change_img'))
+        )
+      ),
+      React.createElement('div', { className: 'pm-card-body' },
+        React.createElement('div', { className: 'pm-grid' },
+          field(t(lang, 'pm_name'), 'name'),
+          field(t(lang, 'pm_name_en'), 'name_en'),
+          React.createElement('label', { className: 'pm-field' },
+            React.createElement('span', null, t(lang, 'pm_cat')),
+            React.createElement('input', { list: 'pm-cats', value: row.cat || '', onChange: e => setF('cat', e.target.value) })
+          ),
+          field(t(lang, 'pm_price'), 'price', 'number')
+        ),
+        React.createElement('div', { className: 'pm-grid pm-grid-2' },
+          field(t(lang, 'pm_desc'), 'desc', 'textarea'),
+          field(t(lang, 'pm_desc_en'), 'desc_en', 'textarea')
+        ),
+        React.createElement('div', { className: 'pm-card-actions' },
+          React.createElement('label', { className: 'pm-check' + (row.soldOut ? ' on' : '') },
+            React.createElement('input', { type: 'checkbox', checked: !!row.soldOut, onChange: e => setF('soldOut', e.target.checked) }),
+            ' ', t(lang, 'pm_soldout')
+          ),
+          isCustom
+            ? React.createElement('button', { className: 'btn-delete', onClick: () => removeCustom(id) }, t(lang, 'pm_delete'))
+            : React.createElement('label', { className: 'pm-check' + (hidden ? ' on' : '') },
+                React.createElement('input', { type: 'checkbox', checked: hidden, onChange: () => toggleHidden(id) }),
+                ' ', t(lang, 'pm_hide')
+              )
+        )
+      )
+    );
+  };
+
+  return React.createElement('div', { className: 'pm' },
+    React.createElement('datalist', { id: 'pm-cats' }, catList.filter(c => c !== 'Tout').map((c, i) => React.createElement('option', { key: i, value: c }))),
+    React.createElement('div', { className: 'pm-bar' },
+      React.createElement('p', { className: 'muted', style: { margin: 0, fontSize: 13, flex: 1, minWidth: 180 } }, t(lang, 'pm_intro')),
+      msg && React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, msg),
+      React.createElement('button', { className: 'btn btn-outline', onClick: addCustom }, '＋ ' + t(lang, 'pm_add')),
+      React.createElement('button', { className: 'btn btn-pink', onClick: save, disabled: saving || !dirty }, saving ? t(lang, 'pm_saving') : (dirty ? t(lang, 'pm_save') : t(lang, 'pm_saved_ok')))
+    ),
+    ov.custom.length > 0 && React.createElement('div', { className: 'pm-section' },
+      React.createElement('h3', null, t(lang, 'pm_mine')),
+      ov.custom.map(c => renderRow(c, true))
+    ),
+    React.createElement('div', { className: 'pm-section' },
+      React.createElement('h3', null, t(lang, 'pm_shop')),
+      base.map(p => renderRow(effBuiltin(p), false))
+    )
+  );
+}
+window.ProductManager = ProductManager;
+
+function OrderAdmin({ catalog, reloadCatalog }) {
+  const lang = useLang();
+  const [tab, setTab] = React.useState('orders');
   const [orders, setOrders] = React.useState([]);
   const [status, setStatus] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -2297,7 +2508,12 @@ function OrderAdmin() {
       React.createElement('button', { className: 'btn btn-outline', onClick: () => { try { localStorage.removeItem('meyva_admin_key'); } catch (e) {} setKeyMode(false); setAdminKey(''); setOrders([]); } }, t(lang, 'ad_signout'))
     ),
     status && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, status),
-    orders.length > 0 && React.createElement('div', { className: 'admin-analytics' },
+    React.createElement('div', { className: 'admin-tabs' },
+      React.createElement('button', { className: 'admin-tab' + (tab === 'orders' ? ' active' : ''), onClick: () => setTab('orders') }, '📦 ' + t(lang, 'ad_tab_orders')),
+      React.createElement('button', { className: 'admin-tab' + (tab === 'products' ? ' active' : ''), onClick: () => setTab('products') }, '🏷️ ' + t(lang, 'ad_tab_products'))
+    ),
+    tab === 'products' && React.createElement(ProductManager, { catalog: catalog, adminKey: adminKey, reloadCatalog: reloadCatalog }),
+    tab === 'orders' && orders.length > 0 && React.createElement('div', { className: 'admin-analytics' },
       React.createElement('div', { className: 'an-cards' },
         React.createElement('div', { className: 'an-card' }, React.createElement('div', { className: 'an-card-val' }, orders.length), React.createElement('div', { className: 'an-card-lbl' }, t(lang, 'an_orders'))),
         React.createElement('div', { className: 'an-card' }, React.createElement('div', { className: 'an-card-val' }, clientCount), React.createElement('div', { className: 'an-card-lbl' }, t(lang, 'an_clients'))),
@@ -2345,7 +2561,7 @@ function OrderAdmin() {
         )
       )
     ),
-    React.createElement('div', { className: 'admin-bar' },
+    tab === 'orders' && React.createElement('div', { className: 'admin-bar' },
       React.createElement('div', { className: 'admin-stats' },
         React.createElement('span', null, React.createElement('strong', null, orders.length), ' ' + (orders.length > 1 ? t(lang, 'ad_orders') : t(lang, 'ad_order'))),
         React.createElement('span', null, t(lang, 'ad_total'), React.createElement('strong', null, window.money(revenue)))
@@ -2355,8 +2571,8 @@ function OrderAdmin() {
         React.createElement('button', { className: 'btn btn-outline', onClick: exportSubs }, t(lang, 'ad_subs_btn'))
       )
     ),
-    React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, t(lang, 'ad_csvnote')),
-    orders.length === 0
+    tab === 'orders' && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, t(lang, 'ad_csvnote')),
+    tab === 'orders' && (orders.length === 0
       ? React.createElement('div', { className: 'admin-empty' }, t(lang, 'ad_empty'))
       : React.createElement(React.Fragment, null,
         React.createElement('div', { className: 'admin-orders' },
@@ -2479,7 +2695,7 @@ function OrderAdmin() {
             }, t(lang, 'ad_next') + ' ›')
           );
         })()
-      )
+      ))
   );
 }
 
@@ -2555,6 +2771,22 @@ function App() {
     try { document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light'); } catch (e) {}
   }, [theme]);
 
+  // Catalogue effectif = PRODUCTS de base + modifications du propriétaire (API).
+  const [overlay, setOverlay] = useState(null);
+  const reloadCatalog = React.useCallback(() => {
+    return fetch('/api/products', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j && j.catalog) setOverlay(j.catalog); return j && j.catalog; })
+      .catch(() => null);
+  }, []);
+  React.useEffect(() => { reloadCatalog(); }, [reloadCatalog]);
+  const catalog = React.useMemo(() => window.applyCatalog(PRODUCTS, overlay), [overlay]);
+  const categories = React.useMemo(() => window.deriveCategories(catalog), [catalog]);
+  // Garde activeProduct à jour si ses infos ont changé (prix, épuisé…)
+  React.useEffect(() => {
+    setActiveProduct(prev => (prev ? (catalog.find(p => p.id === prev.id) || prev) : prev));
+  }, [catalog]);
+
   // Admin masqué pour les clients : accessible via le lien secret #admin (ou si
   // le code d'accès est déjà mémorisé sur cet appareil).
   const [showAdmin, setShowAdmin] = useState(() => {
@@ -2611,7 +2843,7 @@ function App() {
   };
   const canBack = histBack.current.length > 0;
   const canForward = histFwd.current.length > 0;
-  const navPage = (p) => navTo({ page: p, activeProduct: p === 'product' ? PRODUCTS[0] : activeProduct });
+  const navPage = (p) => navTo({ page: p, activeProduct: p === 'product' ? catalog[0] : activeProduct });
 
   const openProduct = (p) => navTo({ page: 'product', activeProduct: p });
   const goShop = (cat) => navTo({ page: 'shop', shopCat: cat || 'Tout' });
@@ -2630,13 +2862,13 @@ function App() {
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
   let content;
-  if (page === 'home') content = <Home products={PRODUCTS} setPage={navPage} openProduct={openProduct} />;
-  else if (page === 'shop') content = <Shop key={shopCat} products={PRODUCTS} categories={CATEGORIES} openProduct={openProduct} initialCat={shopCat} />;
-  else if (page === 'product') content = <ProductDetail product={activeProduct} products={PRODUCTS} addToCart={addToCart} openProduct={openProduct} setPage={navPage} />;
+  if (page === 'home') content = <Home products={catalog} setPage={navPage} openProduct={openProduct} />;
+  else if (page === 'shop') content = <Shop key={shopCat} products={catalog} categories={categories} openProduct={openProduct} initialCat={shopCat} />;
+  else if (page === 'product') content = <ProductDetail product={activeProduct} products={catalog} addToCart={addToCart} openProduct={openProduct} setPage={navPage} />;
   else if (page === 'about') content = <About setPage={navPage} />;
   else if (page === 'help') content = <Help section={helpSection} goShop={goShop} />;
   else if (page === 'checkout') content = <Checkout cart={cart} onPlaced={() => setCart([])} setPage={navPage} />;
-  else if (page === 'admin') content = <OrderAdmin />;
+  else if (page === 'admin') content = <OrderAdmin catalog={catalog} reloadCatalog={reloadCatalog} />;
 
   const goCheckout = () => { setCartOpen(false); navTo({ page: 'checkout' }); };
 
@@ -2645,9 +2877,9 @@ function App() {
       <UtilityBar lang={lang} setLang={setLang} theme={theme} toggleTheme={toggleTheme} />
       <Nav page={page} setPage={navPage} cartCount={cartCount} openCart={() => setCartOpen(true)} openSearch={() => setSearchOpen(true)} goBack={goBack} goForward={goForward} canBack={canBack} canForward={canForward} />
       <main data-screen-label={page}>{content}</main>
-      <Footer goShop={goShop} goHelp={goHelp} openProduct={openProduct} products={PRODUCTS} />
+      <Footer goShop={goShop} goHelp={goHelp} openProduct={openProduct} products={catalog} />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} updateQty={updateQty} removeItem={removeItem} onCheckout={goCheckout} />
-      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} products={PRODUCTS} openProduct={(p) => { setSearchOpen(false); openProduct(p); }} />
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} products={catalog} openProduct={(p) => { setSearchOpen(false); openProduct(p); }} />
 
       <div className="page-switcher" role="navigation" aria-label="Pages">
         {[

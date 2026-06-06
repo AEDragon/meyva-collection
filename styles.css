@@ -320,6 +320,13 @@ a { color: inherit; text-decoration: none; }
   z-index: 2;
   border: 1px solid var(--line);
 }
+.product-soldout {
+  position: absolute; top: 12px; left: 12px; z-index: 3;
+  background: var(--ink); color: var(--cream);
+  padding: 5px 11px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; border-radius: 999px;
+}
+.product-card.is-soldout .product-thumb-inner { opacity: 0.55; filter: grayscale(0.4); }
 .product-quick {
   position: absolute;
   bottom: 0;
@@ -1211,6 +1218,57 @@ textarea.inp { resize: vertical; }
 .admin-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
 .admin-pager .btn { padding: 8px 16px; }
 .admin-pager-info { font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+
+/* ── Onglets admin (Commandes / Produits) ── */
+.admin-tabs { display: flex; gap: 8px; margin: 18px 0 8px; border-bottom: 1px solid var(--line); }
+.admin-tab {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  padding: 10px 14px; font-size: 14px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
+  margin-bottom: -1px;
+}
+.admin-tab:hover { color: var(--ink); }
+.admin-tab.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+
+/* ── Gestionnaire de produits ── */
+.pm { margin-top: 8px; }
+.pm-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 14px 16px; background: var(--cream-deep); border: 1px solid var(--line);
+  border-radius: 14px; margin-bottom: 18px; position: sticky; top: 8px; z-index: 5;
+}
+.pm-section { margin-bottom: 26px; }
+.pm-section h3 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 0 0 12px; }
+.pm-card {
+  display: grid; grid-template-columns: 150px 1fr; gap: 16px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface);
+  padding: 14px; margin-bottom: 12px;
+}
+.pm-card.is-hidden { opacity: 0.6; }
+.pm-card.is-sold { border-color: var(--pink-deep); }
+.pm-card-img { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.pm-card-img img { width: 100%; height: 130px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.pm-noimg { width: 100%; height: 130px; display: grid; place-items: center; font-size: 32px; background: var(--cream-deep); border-radius: 10px; border: 1px dashed var(--line); }
+.pm-imgbtn { justify-content: center; text-align: center; }
+.pm-card-body { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pm-grid.pm-grid-2 { grid-template-columns: 1fr 1fr; }
+.pm-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-soft); min-width: 0; }
+.pm-field span { font-weight: 600; }
+.pm-field input, .pm-field textarea {
+  font: inherit; font-size: 13.5px; color: var(--ink); padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--surface); width: 100%;
+}
+.pm-field textarea { resize: vertical; }
+.pm-field input:focus, .pm-field textarea:focus { outline: none; border-color: var(--pink-deep); }
+.pm-card-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 4px; }
+.pm-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); cursor: pointer; }
+.pm-check.on { color: var(--pink-deep); font-weight: 600; }
+.pm-check input { width: 16px; height: 16px; accent-color: var(--pink-deep); }
+@media (max-width: 700px) {
+  .pm-card { grid-template-columns: 1fr; }
+  .pm-grid { grid-template-columns: 1fr; }
+  .pm-bar { position: static; }
+}
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
 .admin-table th {
   text-align: left; background: var(--pink-pale); color: var(--ink);
