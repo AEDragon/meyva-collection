@@ -92,9 +92,8 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const catalog = await readCatalog(token);
-      // Cache court côté CDN : le storefront récupère vite, mais les mises à jour
-      // se voient en quelques secondes.
-      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=15, stale-while-revalidate=60');
+      // Pas de cache : toute modification du propriétaire est visible immédiatement.
+      res.setHeader('Cache-Control', 'no-store');
       res.status(200).json({ catalog });
       return;
     }
