@@ -174,9 +174,12 @@ a { color: inherit; text-decoration: none; }
   display: grid;
   place-items: center;
 }
-/* brand heart logo (from the meyva collection logo) */
-.brand-heart { height: 34px; width: auto; display: block; }
-.footer .brand-heart { height: 40px; }
+/* brand logo (full meyva collection lockup, transparent) */
+.brand-logo { height: 52px; width: auto; display: block; }
+.footer .brand-logo { height: 64px; }
+.brand-logo-dark { display: none; }
+:root[data-theme="dark"] .brand-logo-light { display: none; }
+:root[data-theme="dark"] .brand-logo-dark { display: block; }
 .nav-logo-text {
   font-family: 'Fraunces', serif;
   font-weight: 500;
