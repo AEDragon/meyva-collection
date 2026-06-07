@@ -174,12 +174,9 @@ a { color: inherit; text-decoration: none; }
   display: grid;
   place-items: center;
 }
-/* brand logo (full meyva collection lockup, transparent) */
-.brand-logo { height: 52px; width: auto; display: block; }
-.footer .brand-logo { height: 64px; }
-.brand-logo-dark { display: none; }
-:root[data-theme="dark"] .brand-logo-light { display: none; }
-:root[data-theme="dark"] .brand-logo-dark { display: block; }
+/* petit cœur pixelisé de la marque (à côté du texte "meyva collection") */
+.brand-heart { height: 34px; width: auto; display: block; }
+.footer .brand-heart { height: 40px; }
 .nav-logo-text {
   font-family: 'Fraunces', serif;
   font-weight: 500;
