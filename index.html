@@ -518,9 +518,9 @@ const I18N = {
     an_orders: 'Commandes', an_clients: 'Clients', an_paid: 'Payées', an_revenue: 'Chiffre d’affaires', an_cashed: 'encaissé', an_top: 'Articles les plus commandés',
     an_byday: 'Commandes (14 derniers jours)', an_bymonth: 'Revenu par mois (DT)', an_bygov: 'Par gouvernorat',
     ad_order: 'commande', ad_orders: 'commandes', ad_total: 'Total : ',
-    ad_export: 'Exporter pour mescolis.tn (CSV)',
+    ad_export: 'Exporter le bon de livraison (Excel)',
     ad_prev: 'Précédent', ad_next: 'Suivant', ad_page: 'Page',
-    ad_csvnote: 'Le fichier CSV reprend exactement les colonnes du modèle mescolis.tn : destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
+    ad_csvnote: 'Le fichier Excel reprend exactement les colonnes du modèle de livraison : Nom client, Addresse, Governerat, Ville, Téléphone, Téléphone 2, Nbr article, Prix, Designation, Commentaire, Ouvrir colis, Colis Fragile.',
     ad_empty: 'Aucune commande pour le moment. Les nouvelles commandes passées sur le site apparaîtront ici automatiquement.',
     ad_h_date: 'Date', ad_h_name: 'Nom', ad_h_tel: 'Tél', ad_h_gov: 'Gouvernorat', ad_h_city: 'Ville', ad_h_addr: 'Adresse', ad_h_items: 'Articles', ad_h_note: 'Note', ad_h_total: 'Total', ad_h_action: 'Action',
     ad_delete: 'Supprimer', ad_deleting: 'Suppression…',
@@ -644,9 +644,9 @@ const I18N = {
     an_orders: 'Orders', an_clients: 'Customers', an_paid: 'Paid', an_revenue: 'Revenue', an_cashed: 'cashed', an_top: 'Most ordered items',
     an_byday: 'Orders (last 14 days)', an_bymonth: 'Revenue by month (DT)', an_bygov: 'By governorate',
     ad_order: 'order', ad_orders: 'orders', ad_total: 'Total: ',
-    ad_export: 'Export for mescolis.tn (CSV)',
+    ad_export: 'Export delivery sheet (Excel)',
     ad_prev: 'Previous', ad_next: 'Next', ad_page: 'Page',
-    ad_csvnote: 'The CSV uses exactly the mescolis.tn template columns: destinataire_nom, adresse, ville, gouvernerat, telephone, telephone2, nombre_de_colis, prix, designation.',
+    ad_csvnote: 'The Excel file uses exactly the delivery template columns: Nom client, Addresse, Governerat, Ville, Téléphone, Téléphone 2, Nbr article, Prix, Designation, Commentaire, Ouvrir colis, Colis Fragile.',
     ad_empty: 'No orders yet. New orders placed on the site will appear here automatically.',
     ad_h_date: 'Date', ad_h_name: 'Name', ad_h_tel: 'Phone', ad_h_gov: 'Governorate', ad_h_city: 'City', ad_h_addr: 'Address', ad_h_items: 'Items', ad_h_note: 'Note', ad_h_total: 'Total', ad_h_action: 'Action',
     ad_delete: 'Delete', ad_deleting: 'Deleting…',
@@ -1912,18 +1912,60 @@ function orderDesignation(o) {
   }).join(' + ');
 }
 function csvEscape(v) { v = (v == null ? '' : String(v)); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-// Colonnes EXACTES attendues par mescolis.tn (onglet import-modele)
-const MESCOLIS_COLS = ['destinataire_nom', 'adresse', 'ville', 'gouvernerat', 'telephone', 'telephone2', 'nombre_de_colis', 'prix', 'designation'];
-function orderToMescolisRow(o) {
-  return [o.nom, o.adresse, o.ville, o.gouvernorat, o.telephone, o.telephone2 || '', o.colis || 1, o.total, orderDesignation(o)];
+
+// ── Bon de livraison : colonnes EXACTES du modèle Excel fourni (modele_first_template) ──
+const DELIVERY_COLS = ['Nom client', 'Addresse', 'Governerat', 'Ville', 'Téléphone', 'Téléphone 2', 'Nbr article', 'Prix', 'Designation', 'Commentaire', 'Ouvrir colis', 'Colis Fragile'];
+// Indices des colonnes numériques : Nbr article (6) et Prix (7)
+const DELIVERY_NUM = { 6: true, 7: true };
+function orderArticleCount(o) {
+  const n = (o.items || []).reduce((s, i) => s + (Number(i.qty) || 1), 0);
+  return n || Number(o.colis) || 1;
 }
-function buildMescolisCSV(orders) {
-  const rows = [MESCOLIS_COLS.join(',')];
-  orders.forEach(o => rows.push(orderToMescolisRow(o).map(csvEscape).join(',')));
+function orderToDeliveryRow(o) {
+  return [
+    o.nom || '', o.adresse || '', o.gouvernorat || '', o.ville || '',
+    o.telephone || '', o.telephone2 || '', orderArticleCount(o), Number(o.total) || 0,
+    orderDesignation(o), o.note || '', 'NON', 'NON',
+  ];
+}
+function buildDeliveryCSV(orders) {
+  const rows = [DELIVERY_COLS.join(',')];
+  orders.forEach(o => rows.push(orderToDeliveryRow(o).map(csvEscape).join(',')));
   return '﻿' + rows.join('\r\n'); // BOM => Excel ouvre en UTF-8
 }
+// Rétro-compatibilité (ancien nom)
+function buildMescolisCSV(orders) { return buildDeliveryCSV(orders); }
+
+// Génère un vrai fichier .xlsx avec exactement les colonnes du modèle de livraison.
+function xmlEsc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function xlsxCol(i) { let s = ''; i += 1; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; }
+function xlsxCell(colIdx, rowNum, value, isNum) {
+  const ref = xlsxCol(colIdx) + rowNum;
+  if (isNum) return '<c r="' + ref + '" t="n"><v>' + (Number(value) || 0) + '</v></c>';
+  return '<c r="' + ref + '" t="inlineStr"><is><t xml:space="preserve">' + xmlEsc(value) + '</t></is></c>';
+}
+function buildDeliveryXlsx(orders) {
+  if (!window.JSZip) return null;
+  const zip = new window.JSZip();
+  const rowsXml = ['<row r="1">' + DELIVERY_COLS.map((h, c) => xlsxCell(c, 1, h, false)).join('') + '</row>'];
+  orders.forEach((o, ri) => {
+    const vals = orderToDeliveryRow(o);
+    const rn = ri + 2;
+    rowsXml.push('<row r="' + rn + '">' + vals.map((v, c) => xlsxCell(c, rn, v, !!DELIVERY_NUM[c])).join('') + '</row>');
+  });
+  const cols = '<cols><col min="1" max="1" width="20"/><col min="2" max="2" width="28"/><col min="9" max="9" width="40"/><col min="10" max="10" width="22"/></cols>';
+  const sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' + cols + '<sheetData>' + rowsXml.join('') + '</sheetData></worksheet>';
+  zip.file('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
+  zip.file('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  zip.file('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Commandes" sheetId="1" r:id="rId1"/></sheets></workbook>');
+  zip.file('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>');
+  zip.file('xl/worksheets/sheet1.xml', sheet);
+  return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
 function downloadFile(filename, content, type) {
-  const blob = new Blob([content], { type: type });
+  downloadBlob(filename, new Blob([content], { type: type }));
+}
+function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
@@ -2383,7 +2425,14 @@ function OrderAdmin({ catalog, reloadCatalog }) {
     if (ok) setKeyMode(true);
   };
 
-  const exportCSV = () => { if (!orders.length) return; downloadFile('commandes-mescolis-' + stamp() + '.csv', buildMescolisCSV(orders), 'text/csv;charset=utf-8'); };
+  const exportCSV = async () => {
+    if (!orders.length) return;
+    try {
+      const blob = await buildDeliveryXlsx(orders);
+      if (blob) { downloadBlob('bon-livraison-' + stamp() + '.xlsx', blob); return; }
+    } catch (e) { /* repli CSV ci-dessous */ }
+    downloadFile('bon-livraison-' + stamp() + '.csv', buildDeliveryCSV(orders), 'text/csv;charset=utf-8');
+  };
 
   const exportSubs = async () => {
     try {
