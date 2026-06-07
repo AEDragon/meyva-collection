@@ -978,9 +978,9 @@ function UtilityBar({ lang, setLang, theme, toggleTheme }) {
 }
 
 function Logo() {
-  return React.createElement(React.Fragment, null,
+  return React.createElement('div', { className: 'brand-lockup' },
     React.createElement('img', { src: 'assets/heart-logo.png', className: 'brand-heart', alt: '', loading: 'eager' }),
-    React.createElement('div', { className: 'nav-logo-text' }, 'meyva ', React.createElement('em', null, 'collection'))
+    React.createElement('img', { src: 'assets/wordmark.png', className: 'brand-wordmark', alt: 'meyva collection', loading: 'eager' })
   );
 }
 
