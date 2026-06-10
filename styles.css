@@ -1289,6 +1289,11 @@ textarea.inp { resize: vertical; }
 }
 .admin-savebar-label { font-size: 13px; }
 
+.admin-keyform { max-width: 420px; margin-top: 18px; }
+.admin-keyrow { display: flex; gap: 10px; }
+.admin-keyrow .inp { flex: 1; }
+.admin-or { margin: 22px 0 6px; font-size: 13px; }
+
 @media (max-width: 900px) {
   .news-grid { grid-template-columns: 1fr 1fr; }
 }

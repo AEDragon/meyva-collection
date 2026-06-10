@@ -51,6 +51,24 @@ function listOps(key, setDraft) {
   };
 }
 
+// Authentification admin : session Clerk si disponible, sinon le code
+// d'accès boutique (ADMIN_KEY) mémorisé sur l'appareil. Les trois APIs
+// (/api/orders, /api/content, /api/media) acceptent les deux.
+const ADMIN_KEY_STORE = 'meyva_admin_key';
+function getStoredKey() { try { return localStorage.getItem(ADMIN_KEY_STORE) || ''; } catch (e) { return ''; } }
+function setStoredKey(k) { try { localStorage.setItem(ADMIN_KEY_STORE, k); } catch (e) {} }
+function clearStoredKey() { try { localStorage.removeItem(ADMIN_KEY_STORE); } catch (e) {} }
+
+async function adminAuthHeaders() {
+  try {
+    const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
+    if (tok) return { Authorization: 'Bearer ' + tok };
+  } catch (e) { /* Clerk indisponible -> code boutique */ }
+  const key = getStoredKey();
+  if (key) return { 'x-admin-key': key };
+  return null;
+}
+
 // Upload d'une image de site (publique) via /api/media — renvoie son URL.
 async function uploadMedia(file) {
   const b64 = await new Promise((resolve, reject) => {
@@ -59,10 +77,10 @@ async function uploadMedia(file) {
     fr.onerror = reject;
     fr.readAsDataURL(file);
   });
-  const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
+  const auth = await adminAuthHeaders();
   const r = await fetch('/api/media', {
     method: 'POST',
-    headers: Object.assign({ 'Content-Type': 'application/json' }, tok ? { Authorization: 'Bearer ' + tok } : {}),
+    headers: Object.assign({ 'Content-Type': 'application/json' }, auth || {}),
     body: JSON.stringify({ name: file.name, type: file.type, dataBase64: b64 }),
   });
   if (!r.ok) {
@@ -174,9 +192,9 @@ function OrdersPanel() {
   const loadServer = async () => {
     setLoading(true); setStatus(t(lang, 'ad_st_loading'));
     try {
-      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
-      if (!tok) { setStatus(t(lang, 'ad_st_expired')); setLoading(false); return; }
-      const r = await fetch('/api/orders', { headers: { Authorization: 'Bearer ' + tok } });
+      const auth = await adminAuthHeaders();
+      if (!auth) { setStatus(t(lang, 'ad_st_expired')); setLoading(false); return; }
+      const r = await fetch('/api/orders', { headers: auth });
       if (r.status === 401) { setStatus(t(lang, 'ad_st_denied')); setLoading(false); return; }
       if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); setLoading(false); return; }
       const j = await r.json();
@@ -191,8 +209,8 @@ function OrdersPanel() {
     if (!window.confirm(t(lang, 'admin_delete_confirm'))) return;
     setDeleting(id);
     try {
-      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
-      const r = await fetch('/api/orders?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + tok } });
+      const auth = await adminAuthHeaders();
+      const r = await fetch('/api/orders?id=' + encodeURIComponent(id), { method: 'DELETE', headers: auth || {} });
       if (!r.ok) { setStatus(t(lang, 'admin_delete_fail') + ' (' + r.status + ').'); setDeleting(''); return; }
       setOrders(prev => prev.filter(o => o.id !== id));
       setStatus(t(lang, 'admin_deleted'));
@@ -202,8 +220,8 @@ function OrdersPanel() {
 
   const openFile = async (path) => {
     try {
-      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
-      const r = await fetch('/api/orders?file=' + encodeURIComponent(path), { headers: { Authorization: 'Bearer ' + tok } });
+      const auth = await adminAuthHeaders();
+      const r = await fetch('/api/orders?file=' + encodeURIComponent(path), { headers: auth || {} });
       if (!r.ok) { setStatus(t(lang, 'ad_st_srverr') + ' (' + r.status + ').'); return; }
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
@@ -606,33 +624,66 @@ function SettingsPanel({ draft, setDraft, notify }) {
 // ── le dashboard (porte d'entrée Clerk + onglets + brouillon + publication) ───
 function AdminDashboard() {
   const lang = useLang();
-  const [authState, setAuthState] = React.useState('loading'); // loading | signedOut | signedIn | error
+  // Connexion : code d'accès boutique (mémorisé sur l'appareil) en priorité,
+  // sinon session Clerk si elle est configurée.
+  const [authState, setAuthState] = React.useState(() => (getStoredKey() ? 'signedIn' : 'loading')); // loading | signedOut | signedIn | error
+  const [authMode, setAuthMode] = React.useState(() => (getStoredKey() ? 'key' : ''));
   const [userEmail, setUserEmail] = React.useState('');
   const signInRef = React.useRef(null);
+  const [keyInput, setKeyInput] = React.useState('');
+  const [keyBusy, setKeyBusy] = React.useState(false);
+  const [keyErr, setKeyErr] = React.useState('');
   const [tab, setTab] = React.useState('orders');
   const [draft, setDraft] = React.useState(null);
   const [savedJson, setSavedJson] = React.useState('');
   const [saving, setSaving] = React.useState(false);
   const [note, setNote] = React.useState('');
 
-  // Initialise Clerk and track sign-in state
+  // Initialise Clerk and track sign-in state (le code boutique reste prioritaire)
   React.useEffect(() => {
     let mounted = true, unsub = null;
     (window.__clerkReady || Promise.reject(new Error('no clerk'))).then((clerk) => {
       const sync = () => {
         if (!mounted) return;
         if (clerk.user) {
+          setAuthMode('clerk');
           setAuthState('signedIn');
           setUserEmail((clerk.user.primaryEmailAddress && clerk.user.primaryEmailAddress.emailAddress) || '');
-        } else {
+        } else if (!getStoredKey()) {
           setAuthState('signedOut');
         }
       };
       sync();
       unsub = clerk.addListener(sync);
-    }).catch(() => { if (mounted) setAuthState('error'); });
+    }).catch(() => { if (mounted && !getStoredKey()) setAuthState('error'); });
     return () => { mounted = false; if (typeof unsub === 'function') unsub(); };
   }, []);
+
+  // Vérifie le code d'accès contre l'API commandes, puis le mémorise.
+  const submitKey = async () => {
+    const k = keyInput.trim();
+    if (!k || keyBusy) return;
+    setKeyBusy(true); setKeyErr('');
+    try {
+      const r = await fetch('/api/orders', { headers: { 'x-admin-key': k } });
+      if (r.status === 401) { setKeyErr(t(lang, 'da_key_bad')); setKeyBusy(false); return; }
+      if (!r.ok) { setKeyErr(t(lang, 'ad_st_srverr') + ' (' + r.status + ')'); setKeyBusy(false); return; }
+      setStoredKey(k);
+      setKeyInput('');
+      setAuthMode('key');
+      setAuthState('signedIn');
+    } catch (e) { setKeyErr(t(lang, 'ad_st_unreach')); }
+    setKeyBusy(false);
+  };
+
+  const signOut = () => {
+    clearStoredKey();
+    try { if (window.Clerk && window.Clerk.user) window.Clerk.signOut(); } catch (e) {}
+    setAuthMode('');
+    setUserEmail('');
+    setDraft(null); setSavedJson(''); setNote('');
+    setAuthState('signedOut');
+  };
 
   // Mount Clerk's sign-in widget while signed out
   React.useEffect(() => {
@@ -666,11 +717,11 @@ function AdminDashboard() {
     if (draft.products.some(p => !String(p.name || '').trim())) { setNote(t(lang, 'da_val_name')); return; }
     setSaving(true); setNote('');
     try {
-      const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
-      if (!tok) { setNote(t(lang, 'ad_st_expired')); setSaving(false); return; }
+      const auth = await adminAuthHeaders();
+      if (!auth) { setNote(t(lang, 'ad_st_expired')); setSaving(false); return; }
       const r = await fetch('/api/content', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
+        headers: Object.assign({ 'Content-Type': 'application/json' }, auth),
         body: JSON.stringify(draft),
       });
       if (!r.ok) {
@@ -696,17 +747,38 @@ function AdminDashboard() {
   const Title = <h1 className="serif checkout-title">{t(lang, 'da_t1')}<em className="serif-italic">{t(lang, 'da_em')}</em></h1>;
   const Eyebrow = <div className="section-eyebrow">{t(lang, 'ad_eyebrow')}</div>;
 
+  const KeyForm = (
+    <div className="admin-keyform">
+      <p className="muted" style={{ marginBottom: 8 }}>{t(lang, 'da_key_label')}</p>
+      <div className="admin-keyrow">
+        <input
+          className="inp" type="password" autoComplete="current-password"
+          placeholder={t(lang, 'da_key_ph')} value={keyInput}
+          onChange={e => setKeyInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') submitKey(); }}
+        />
+        <button className="btn btn-pink" onClick={submitKey} disabled={keyBusy}>
+          {keyBusy ? t(lang, 'da_key_checking') : t(lang, 'da_key_btn')}
+        </button>
+      </div>
+      {keyErr && <p className="field-msg" style={{ marginTop: 8 }}>{keyErr}</p>}
+    </div>
+  );
+
   if (authState === 'loading') {
     return <section className="admin">{Eyebrow}{Title}<p className="muted">{t(lang, 'ad_loading')}</p></section>;
   }
   if (authState === 'error') {
-    return <section className="admin">{Eyebrow}{Title}<p className="muted">{t(lang, 'ad_error')}</p></section>;
+    // Clerk indisponible (ex. hors-ligne / non configuré) : le code marche quand même.
+    return <section className="admin">{Eyebrow}{Title}{KeyForm}</section>;
   }
   if (authState === 'signedOut') {
     return (
       <section className="admin">
         {Eyebrow}{Title}
         <p className="muted" style={{ marginBottom: 20 }}>{t(lang, 'ad_signin_sub')}</p>
+        {KeyForm}
+        <p className="muted admin-or">{t(lang, 'da_or')}</p>
         <div className="admin-signin" ref={signInRef} />
       </section>
     );
@@ -735,8 +807,10 @@ function AdminDashboard() {
       {Eyebrow}
       {Title}
       <div className="admin-userbar">
-        <span className="muted" style={{ fontSize: 13 }}>{t(lang, 'ad_connected') + (userEmail ? ' : ' + userEmail : '')}</span>
-        <button className="btn btn-outline" onClick={() => window.Clerk.signOut()}>{t(lang, 'ad_signout')}</button>
+        <span className="muted" style={{ fontSize: 13 }}>
+          {authMode === 'key' ? t(lang, 'da_key_mode') : t(lang, 'ad_connected') + (userEmail ? ' : ' + userEmail : '')}
+        </span>
+        <button className="btn btn-outline" onClick={signOut}>{t(lang, 'ad_signout')}</button>
       </div>
       <div className="cat-tabs admin-tabs">
         {TABS.map(tb => (
