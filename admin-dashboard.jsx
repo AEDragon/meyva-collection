@@ -660,6 +660,16 @@ function AdminDashboard() {
   }, []);
 
   // Vérifie le code d'accès contre l'API commandes, puis le mémorise.
+  // Un mauvais code sur le site en ligne -> 401 -> refusé. Si l'API n'existe
+  // pas (site servi en statique, ex. aperçu local), on laisse entrer pour
+  // explorer le dashboard : rien ne charge et rien ne peut être enregistré —
+  // la vraie vérification n'a lieu que sur le site en ligne.
+  const enterWithKey = (k) => {
+    setStoredKey(k);
+    setKeyInput('');
+    setAuthMode('key');
+    setAuthState('signedIn');
+  };
   const submitKey = async () => {
     const k = keyInput.trim();
     if (!k || keyBusy) return;
@@ -667,12 +677,14 @@ function AdminDashboard() {
     try {
       const r = await fetch('/api/orders', { headers: { 'x-admin-key': k } });
       if (r.status === 401) { setKeyErr(t(lang, 'da_key_bad')); setKeyBusy(false); return; }
+      if (r.status === 404) { enterWithKey(k); setNote(t(lang, 'ad_st_unreach')); setKeyBusy(false); return; }
       if (!r.ok) { setKeyErr(t(lang, 'ad_st_srverr') + ' (' + r.status + ')'); setKeyBusy(false); return; }
-      setStoredKey(k);
-      setKeyInput('');
-      setAuthMode('key');
-      setAuthState('signedIn');
-    } catch (e) { setKeyErr(t(lang, 'ad_st_unreach')); }
+      enterWithKey(k);
+    } catch (e) {
+      // fetch impossible (ex. index.html ouvert en direct) : mode aperçu aussi
+      enterWithKey(k);
+      setNote(t(lang, 'ad_st_unreach'));
+    }
     setKeyBusy(false);
   };
 
