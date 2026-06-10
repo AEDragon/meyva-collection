@@ -1,8 +1,12 @@
 /* global React, ProductCard, ProductSwatch, PolaroidCluster, Icon, ComingSoon */
 
 function Home({ products, setPage, openProduct }) {
-  const featured = products.filter(p => ['pack-polaroid-led', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id));
-  const more = products.filter(p => !['pack-polaroid-led', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id)).slice(0, 4);
+  // Mise en avant pilotée par le flag `featured` (modifiable depuis le
+  // dashboard) ; sans aucun flag, les 4 premiers produits font l'affaire.
+  const flagged = products.filter(p => p.featured);
+  const featured = (flagged.length ? flagged : products).slice(0, 4);
+  const featuredIds = featured.map(p => p.id);
+  const more = products.filter(p => !featuredIds.includes(p.id)).slice(0, 4);
 
   return React.createElement(React.Fragment, null,
     // HERO
@@ -93,6 +97,9 @@ function Home({ products, setPage, openProduct }) {
         more.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: openProduct }))
       )
     ),
+
+    // ANNONCES (« Quoi de neuf ? ») — contenu géré depuis le dashboard
+    React.createElement(window.NewsSection, null),
 
     // COMING SOON
     React.createElement(window.ComingSoon, null),

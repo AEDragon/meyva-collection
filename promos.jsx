@@ -8,7 +8,9 @@ function PromoCard({ promo, setPage }) {
   return React.createElement('article', { className: 'promo-card' },
     React.createElement('span', { className: 'promo-badge' }, promo.badge),
     React.createElement('div', { className: 'promo-art' },
-      React.createElement(ProductSwatch, { name: promo.swatch })
+      promo.image
+        ? React.createElement('img', { src: promo.image, alt: promo.title, className: 'promo-photo', loading: 'lazy' })
+        : React.createElement(ProductSwatch, { name: promo.swatch })
     ),
     React.createElement('div', { className: 'promo-eyebrow' }, promo.title),
     React.createElement('h3', { className: 'promo-highlight' }, promo.highlight),

@@ -24,7 +24,9 @@ function CartDrawer({ open, onClose, cart, updateQty, removeItem }) {
             )
           : items.map((item, idx) => React.createElement('div', { key: idx, className: 'cart-line' },
               React.createElement('div', { className: 'cart-line-thumb' },
-                React.createElement(ProductSwatch, { name: item.swatch })
+                item.image
+                  ? React.createElement('img', { src: item.image, alt: item.name, className: 'product-photo', loading: 'lazy' })
+                  : React.createElement(ProductSwatch, { name: item.swatch })
               ),
               React.createElement('div', null,
                 React.createElement('div', { className: 'cart-line-name' }, item.name),

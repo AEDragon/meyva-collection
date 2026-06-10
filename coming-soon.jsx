@@ -8,7 +8,9 @@ function ComingSoonCard({ product }) {
     React.createElement('div', { className: 'product-thumb' },
       React.createElement('span', { className: 'product-badge cs-badge' }, product.eta || 'Bientôt'),
       React.createElement('div', { className: 'product-thumb-inner cs-thumb-inner' },
-        React.createElement(ProductSwatch, { name: product.swatch })
+        product.image
+          ? React.createElement('img', { src: product.image, alt: product.name, className: 'product-photo', loading: 'lazy' })
+          : React.createElement(ProductSwatch, { name: product.swatch })
       ),
       React.createElement('div', { className: 'cs-veil' },
         React.createElement('span', { className: 'cs-veil-text' }, 'Bientôt disponible')
