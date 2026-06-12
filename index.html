@@ -448,6 +448,8 @@ const I18N = {
     feat2_t: 'Personnalisable', feat2_p: 'Tes photos, ton texte, ton mix',
     feat3_t: 'Commande sur Insta', feat3_p: 'Confirmation et paiement par DM',
     sel_eyebrow: 'Sélection', sel_t1: 'Les ', sel_em: 'préférés', sel_t2: ' de la maison', see_all: 'Tout voir →',
+    news_eyebrow: 'Quoi de neuf ?', news_title: 'Annonces', news_more: 'En savoir plus',
+    events_eyebrow: 'Retrouve-nous', events_title: 'Événements', events_more: 'Plus d’infos',
     story_t1: 'Imprime tes souvenirs,', story_t2: 'décore ta ', story_em: 'chambre.',
     story_p: 'Le pack signature : tes photos préférées en mini-format polaroïd, avec des pinces en bois et une guirlande LED. À toi de choisir combien de photos.',
     story_cta: 'Découvrir le pack',
@@ -500,7 +502,12 @@ const I18N = {
     styles_choose: 'Choisis tes styles', styles_hint: 'Clique sur les styles que tu veux dans ton pack — on adapte le mix.',
     up_attached: 'Fichier joint :', up_uploading: 'Envoi du fichier…', up_toobig: 'Fichier trop lourd (max 3 Mo).',
     ad_h_files: 'Fichiers', ad_file: 'Fichier', ad_zip: 'Photos (ZIP)', ad_zipping: 'Compression…', ad_more: 'autres', ad_other_files: 'Autres fichiers', ad_customer: 'Client',
-    ad_tab_orders: 'Commandes', ad_tab_products: 'Produits',
+    ad_tab_orders: 'Commandes', ad_tab_products: 'Produits', ad_tab_news: 'Annonces', ad_tab_events: 'Événements',
+    pm_news_intro: 'Publie des annonces (nouveautés, infos) affichées sur la page d’accueil. Enregistre pour publier.',
+    pm_events_intro: 'Annonce tes marchés, foires et pop-ups sur la page d’accueil. Enregistre pour publier.',
+    pm_add_news: 'Ajouter une annonce', pm_add_event: 'Ajouter un événement', pm_empty_list: 'Rien pour l’instant — clique « Ajouter ».',
+    pm_post_title: 'Titre (FR)', pm_post_title_en: 'Titre (EN)', pm_post_date: 'Date', pm_post_loc: 'Lieu', pm_post_link: 'Lien (optionnel)',
+    pm_post_body: 'Texte (FR)', pm_post_body_en: 'Texte (EN)',
     pm_intro: 'Gère ta boutique : modifie les prix, les noms, ajoute des produits ou marque-les épuisés. Clique « Enregistrer » pour publier.',
     pm_add: 'Ajouter un produit', pm_save: 'Enregistrer', pm_saving: 'Enregistrement…', pm_saved: '✓ Publié !', pm_saved_ok: '✓ À jour', pm_err: 'Erreur', pm_loading: 'Chargement du catalogue…',
     pm_uploading: 'Envoi de l’image…', pm_img_ok: '✓ Image ajoutée', pm_change_img: 'Changer la photo',
@@ -574,6 +581,8 @@ const I18N = {
     feat2_t: 'Customizable', feat2_p: 'Your photos, your text, your mix',
     feat3_t: 'Order on Insta', feat3_p: 'Confirmation and payment by DM',
     sel_eyebrow: 'Selection', sel_t1: 'House ', sel_em: 'favorites', sel_t2: '', see_all: 'See all →',
+    news_eyebrow: 'What’s new?', news_title: 'News', news_more: 'Learn more',
+    events_eyebrow: 'Find us', events_title: 'Events', events_more: 'More info',
     story_t1: 'Print your memories,', story_t2: 'decorate your ', story_em: 'room.',
     story_p: 'The signature pack: your favorite photos in mini polaroïd format, with wooden clips and an LED string light. You choose how many photos.',
     story_cta: 'Discover the pack',
@@ -626,7 +635,12 @@ const I18N = {
     styles_choose: 'Pick your styles', styles_hint: 'Tap the styles you want in your pack — we tailor the mix.',
     up_attached: 'Attached file:', up_uploading: 'Uploading file…', up_toobig: 'File too large (max 3 MB).',
     ad_h_files: 'Files', ad_file: 'File', ad_zip: 'Photos (ZIP)', ad_zipping: 'Zipping…', ad_more: 'more', ad_other_files: 'Other files', ad_customer: 'Customer',
-    ad_tab_orders: 'Orders', ad_tab_products: 'Products',
+    ad_tab_orders: 'Orders', ad_tab_products: 'Products', ad_tab_news: 'News', ad_tab_events: 'Events',
+    pm_news_intro: 'Post news (drops, updates) shown on the home page. Click Save to publish.',
+    pm_events_intro: 'Announce your markets, fairs and pop-ups on the home page. Click Save to publish.',
+    pm_add_news: 'Add a news post', pm_add_event: 'Add an event', pm_empty_list: 'Nothing yet — click “Add”.',
+    pm_post_title: 'Title (FR)', pm_post_title_en: 'Title (EN)', pm_post_date: 'Date', pm_post_loc: 'Location', pm_post_link: 'Link (optional)',
+    pm_post_body: 'Text (FR)', pm_post_body_en: 'Text (EN)',
     pm_intro: 'Manage your shop: edit prices, names, add products or mark them sold out. Click “Save” to publish.',
     pm_add: 'Add a product', pm_save: 'Save', pm_saving: 'Saving…', pm_saved: '✓ Published!', pm_saved_ok: '✓ Up to date', pm_err: 'Error', pm_loading: 'Loading catalog…',
     pm_uploading: 'Uploading image…', pm_img_ok: '✓ Image added', pm_change_img: 'Change photo',
@@ -1133,7 +1147,7 @@ function Footer({ goShop, goHelp, openProduct, products }) {
 Object.assign(window, { Nav, Footer, ProductCard, UtilityBar, Icon, Logo });
 
 // ── pages.jsx ─────────────────────────────────────────────────────────────────
-function Home({ products, setPage, openProduct }) {
+function Home({ products, setPage, openProduct, news, events }) {
   const lang = useLang();
   const featured = products.filter(p => ['pack-polaroid-kit', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id));
   const more = products.filter(p => !p.promoOnly && !['pack-polaroid-kit', 'stickers-mood', 'poster-aura', 'bougie-rose'].includes(p.id)).slice(0, 4);
@@ -1183,6 +1197,8 @@ function Home({ products, setPage, openProduct }) {
     ),
 
     React.createElement(Promos, { setPage: setPage, products: products, openProduct: openProduct }),
+
+    React.createElement(NewsEvents, { news: news, events: events }),
 
     React.createElement('section', { className: 'section' },
       React.createElement('div', { className: 'section-head' },
@@ -1889,6 +1905,59 @@ function Promos({ setPage, products, openProduct }) {
 window.Promos = Promos;
 window.PromoCard = PromoCard;
 
+// ── Annonces (news) + Événements — sections d'accueil gérées depuis l'admin ──
+function NewsEvents({ news, events }) {
+  const lang = useLang();
+  const f = (p, field) => (lang === 'en' && p[field + '_en']) ? p[field + '_en'] : p[field];
+  const hasNews = news && news.length;
+  const hasEvents = events && events.length;
+  if (!hasNews && !hasEvents) return null;
+  return React.createElement(React.Fragment, null,
+    hasNews && React.createElement('section', { className: 'section news-section' },
+      React.createElement('div', { className: 'section-head' },
+        React.createElement('div', null,
+          React.createElement('div', { className: 'section-eyebrow' }, t(lang, 'news_eyebrow')),
+          React.createElement('h2', { className: 'section-title' }, t(lang, 'news_title'))
+        )
+      ),
+      React.createElement('div', { className: 'news-grid' },
+        news.map((p, i) => React.createElement('article', { key: p.id || i, className: 'news-card' },
+          p.image && React.createElement('div', { className: 'news-card-img' }, React.createElement('img', { src: p.image, alt: '', loading: 'lazy' })),
+          React.createElement('div', { className: 'news-card-body' },
+            p.date && React.createElement('div', { className: 'news-date' }, p.date),
+            React.createElement('h3', null, f(p, 'title')),
+            f(p, 'body') && React.createElement('p', null, f(p, 'body')),
+            p.link && React.createElement('a', { href: p.link, target: '_blank', rel: 'noopener', className: 'news-link' }, t(lang, 'news_more') + ' →')
+          )
+        ))
+      )
+    ),
+    hasEvents && React.createElement('section', { className: 'section events-section' },
+      React.createElement('div', { className: 'section-head' },
+        React.createElement('div', null,
+          React.createElement('div', { className: 'section-eyebrow' }, t(lang, 'events_eyebrow')),
+          React.createElement('h2', { className: 'section-title' }, t(lang, 'events_title'))
+        )
+      ),
+      React.createElement('div', { className: 'events-list' },
+        events.map((p, i) => React.createElement('article', { key: p.id || i, className: 'event-card' },
+          p.image && React.createElement('div', { className: 'event-card-img' }, React.createElement('img', { src: p.image, alt: '', loading: 'lazy' })),
+          React.createElement('div', { className: 'event-card-body' },
+            React.createElement('div', { className: 'event-meta' },
+              p.date && React.createElement('span', { className: 'event-date' }, '🗓 ' + p.date),
+              f(p, 'location') && React.createElement('span', { className: 'event-loc' }, '📍 ' + f(p, 'location'))
+            ),
+            React.createElement('h3', null, f(p, 'title')),
+            f(p, 'body') && React.createElement('p', null, f(p, 'body')),
+            p.link && React.createElement('a', { href: p.link, target: '_blank', rel: 'noopener', className: 'news-link' }, t(lang, 'events_more') + ' →')
+          )
+        ))
+      )
+    )
+  );
+}
+window.NewsEvents = NewsEvents;
+
 // ── orders + mescolis export ──────────────────────────────────────────────────
 const ORDERS_KEY = 'meyva_orders_v1';
 function loadOrders() { try { return JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch (e) { return []; } }
@@ -2183,11 +2252,108 @@ function AdminFileThumb({ file, adminKey, openFile }) {
   }, '📎 ' + t(lang, 'ad_file'));
 }
 
+// ── Gestionnaire d'Annonces / Événements (même document que le catalogue) ──
+function PostManager({ kind, adminKey, reloadCatalog }) {
+  const lang = useLang();
+  const isEvent = kind === 'events';
+  const [doc, setDoc] = React.useState(null);
+  const [dirty, setDirty] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [msg, setMsg] = React.useState('');
+  const [busyImg, setBusyImg] = React.useState('');
+
+  React.useEffect(() => {
+    let alive = true;
+    fetch('/api/products', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+      if (!alive) return;
+      const c = (j && j.catalog) || {};
+      setDoc({
+        overrides: c.overrides || {}, custom: c.custom || [], hidden: c.hidden || [], categories: c.categories || [],
+        news: Array.isArray(c.news) ? c.news : [], events: Array.isArray(c.events) ? c.events : [],
+      });
+    }).catch(() => setDoc({ overrides: {}, custom: [], hidden: [], categories: [], news: [], events: [] }));
+    return () => { alive = false; };
+  }, []);
+
+  if (!doc) return React.createElement('p', { className: 'muted', style: { padding: '12px 2px' } }, t(lang, 'pm_loading'));
+  const list = doc[kind] || [];
+  const setList = (next) => { setDoc(prev => Object.assign({}, prev, { [kind]: next })); setDirty(true); };
+  const setField = (id, field, value) => setList(list.map(p => p.id === id ? Object.assign({}, p, { [field]: value }) : p));
+  const add = () => { const id = 'post-' + Date.now() + '-' + Math.floor(Math.random() * 1e6); setList(list.concat([{ id, title: '', title_en: '', date: '', location: '', body: '', body_en: '', image: '', link: '' }])); setMsg(t(lang, 'pm_added_hint')); };
+  const remove = (id) => { if (!window.confirm(t(lang, 'pm_del_confirm'))) return; setList(list.filter(p => p.id !== id)); };
+
+  const fileToB64 = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+  const uploadImage = async (id, file) => {
+    if (!file) return; setBusyImg(id); setMsg(t(lang, 'pm_uploading'));
+    try {
+      const small = await compressImage(file, 1400, 0.85);
+      const b64 = await fileToB64(small);
+      const r = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }, body: JSON.stringify({ op: 'image', name: small.name || 'image.jpg', type: small.type || 'image/jpeg', dataBase64: b64 }) });
+      const j = await r.json();
+      if (r.ok && j && j.url) { setField(id, 'image', j.url); setMsg(t(lang, 'pm_img_ok')); } else setMsg(t(lang, 'pm_err'));
+    } catch (e) { setMsg(t(lang, 'pm_err')); }
+    setBusyImg('');
+  };
+
+  const save = async () => {
+    setSaving(true); setMsg(t(lang, 'pm_saving'));
+    try {
+      const r = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }, body: JSON.stringify(doc) });
+      if (!r.ok) { setMsg(t(lang, 'pm_err') + ' (' + r.status + ')'); setSaving(false); return; }
+      setDirty(false); setMsg(t(lang, 'pm_saved'));
+      if (reloadCatalog) await reloadCatalog();
+    } catch (e) { setMsg(t(lang, 'pm_err')); }
+    setSaving(false);
+  };
+
+  const field = (p, label, key, ta) => React.createElement('label', { className: 'pm-field' },
+    React.createElement('span', null, label),
+    ta ? React.createElement('textarea', { value: p[key] || '', onChange: e => setField(p.id, key, e.target.value), rows: 2 })
+      : React.createElement('input', { value: p[key] || '', onChange: e => setField(p.id, key, e.target.value) })
+  );
+
+  return React.createElement('div', { className: 'pm' },
+    React.createElement('div', { className: 'pm-bar' },
+      React.createElement('p', { className: 'muted', style: { margin: 0, fontSize: 13, flex: 1, minWidth: 180 } }, t(lang, isEvent ? 'pm_events_intro' : 'pm_news_intro')),
+      msg && React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, msg),
+      React.createElement('button', { className: 'btn btn-outline', onClick: add }, '＋ ' + t(lang, isEvent ? 'pm_add_event' : 'pm_add_news')),
+      React.createElement('button', { className: 'btn btn-pink', onClick: save, disabled: saving || !dirty }, saving ? t(lang, 'pm_saving') : (dirty ? t(lang, 'pm_save') : t(lang, 'pm_saved_ok')))
+    ),
+    list.length === 0 && React.createElement('p', { className: 'muted', style: { padding: '8px 2px' } }, t(lang, 'pm_empty_list')),
+    list.map(p => React.createElement('div', { key: p.id, className: 'pm-card' },
+      React.createElement('div', { className: 'pm-card-img' },
+        p.image ? React.createElement('img', { src: p.image, alt: '' }) : React.createElement('div', { className: 'pm-noimg' }, '🖼️'),
+        React.createElement('label', { className: 'btn-file pm-imgbtn' },
+          React.createElement('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onChange: e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; uploadImage(p.id, f); } }),
+          busyImg === p.id ? '…' : ('🖼️ ' + t(lang, 'pm_change_img'))
+        )
+      ),
+      React.createElement('div', { className: 'pm-card-body' },
+        React.createElement('div', { className: 'pm-grid' },
+          field(p, t(lang, 'pm_post_title'), 'title'),
+          field(p, t(lang, 'pm_post_title_en'), 'title_en'),
+          field(p, t(lang, 'pm_post_date'), 'date'),
+          isEvent ? field(p, t(lang, 'pm_post_loc'), 'location') : field(p, t(lang, 'pm_post_link'), 'link')
+        ),
+        React.createElement('div', { className: 'pm-grid pm-grid-2' },
+          field(p, t(lang, 'pm_post_body'), 'body', true),
+          field(p, t(lang, 'pm_post_body_en'), 'body_en', true)
+        ),
+        isEvent && field(p, t(lang, 'pm_post_link'), 'link'),
+        React.createElement('div', { className: 'pm-card-actions' },
+          React.createElement('button', { className: 'btn-delete', onClick: () => remove(p.id) }, t(lang, 'pm_delete'))
+        )
+      )
+    ))
+  );
+}
+window.PostManager = PostManager;
+
 // ── Gestionnaire de produits : la propriétaire gère son catalogue elle-même ──
 function ProductManager({ catalog, adminKey, reloadCatalog }) {
   const lang = useLang();
   const base = (window.MEYVA_DATA && window.MEYVA_DATA.PRODUCTS) || [];
-  const [ov, setOv] = React.useState({ overrides: {}, custom: [], hidden: [], categories: [] });
+  const [ov, setOv] = React.useState({ overrides: {}, custom: [], hidden: [], categories: [], news: [], events: [] });
   const [loaded, setLoaded] = React.useState(false);
   const [dirty, setDirty] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
@@ -2204,6 +2370,9 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
         custom: Array.isArray(c.custom) ? c.custom : [],
         hidden: Array.isArray(c.hidden) ? c.hidden : [],
         categories: Array.isArray(c.categories) ? c.categories : [],
+        // Conservés tels quels (gérés dans les onglets Annonces / Événements)
+        news: Array.isArray(c.news) ? c.news : [],
+        events: Array.isArray(c.events) ? c.events : [],
       });
       setLoaded(true);
     }).catch(() => setLoaded(true));
@@ -2555,9 +2724,13 @@ function OrderAdmin({ catalog, reloadCatalog }) {
     status && React.createElement('p', { className: 'muted', style: { fontSize: 13 } }, status),
     React.createElement('div', { className: 'admin-tabs' },
       React.createElement('button', { className: 'admin-tab' + (tab === 'orders' ? ' active' : ''), onClick: () => setTab('orders') }, '📦 ' + t(lang, 'ad_tab_orders')),
-      React.createElement('button', { className: 'admin-tab' + (tab === 'products' ? ' active' : ''), onClick: () => setTab('products') }, '🏷️ ' + t(lang, 'ad_tab_products'))
+      React.createElement('button', { className: 'admin-tab' + (tab === 'products' ? ' active' : ''), onClick: () => setTab('products') }, '🏷️ ' + t(lang, 'ad_tab_products')),
+      React.createElement('button', { className: 'admin-tab' + (tab === 'news' ? ' active' : ''), onClick: () => setTab('news') }, '📣 ' + t(lang, 'ad_tab_news')),
+      React.createElement('button', { className: 'admin-tab' + (tab === 'events' ? ' active' : ''), onClick: () => setTab('events') }, '📅 ' + t(lang, 'ad_tab_events'))
     ),
     tab === 'products' && React.createElement(ProductManager, { catalog: catalog, adminKey: adminKey, reloadCatalog: reloadCatalog }),
+    tab === 'news' && React.createElement(PostManager, { kind: 'news', adminKey: adminKey, reloadCatalog: reloadCatalog }),
+    tab === 'events' && React.createElement(PostManager, { kind: 'events', adminKey: adminKey, reloadCatalog: reloadCatalog }),
     tab === 'orders' && orders.length > 0 && React.createElement('div', { className: 'admin-analytics' },
       React.createElement('div', { className: 'an-cards' },
         React.createElement('div', { className: 'an-card' }, React.createElement('div', { className: 'an-card-val' }, orders.length), React.createElement('div', { className: 'an-card-lbl' }, t(lang, 'an_orders'))),
@@ -2827,6 +3000,8 @@ function App() {
   React.useEffect(() => { reloadCatalog(); }, [reloadCatalog]);
   const catalog = React.useMemo(() => window.applyCatalog(PRODUCTS, overlay), [overlay]);
   const categories = React.useMemo(() => window.deriveCategories(catalog), [catalog]);
+  const news = (overlay && Array.isArray(overlay.news)) ? overlay.news : [];
+  const events = (overlay && Array.isArray(overlay.events)) ? overlay.events : [];
   // Garde activeProduct à jour si ses infos ont changé (prix, épuisé…)
   React.useEffect(() => {
     setActiveProduct(prev => (prev ? (catalog.find(p => p.id === prev.id) || prev) : prev));
@@ -2907,7 +3082,7 @@ function App() {
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
   let content;
-  if (page === 'home') content = <Home products={catalog} setPage={navPage} openProduct={openProduct} />;
+  if (page === 'home') content = <Home products={catalog} setPage={navPage} openProduct={openProduct} news={news} events={events} />;
   else if (page === 'shop') content = <Shop key={shopCat} products={catalog} categories={categories} openProduct={openProduct} initialCat={shopCat} />;
   else if (page === 'product') content = <ProductDetail product={activeProduct} products={catalog} addToCart={addToCart} openProduct={openProduct} setPage={navPage} />;
   else if (page === 'about') content = <About setPage={navPage} />;

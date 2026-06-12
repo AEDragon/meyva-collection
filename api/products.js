@@ -10,7 +10,7 @@
 import { put, list, get } from '@vercel/blob';
 
 const PATH = 'catalog/catalog.json';
-const EMPTY = { overrides: {}, custom: [], hidden: [], categories: [] };
+const EMPTY = { overrides: {}, custom: [], hidden: [], categories: [], news: [], events: [] };
 
 function isAdmin(req) {
   const key = String((req.query && req.query.key) || req.headers['x-admin-key'] || '').trim();
@@ -64,7 +64,22 @@ function cleanCatalog(body) {
   const categories = Array.isArray(body && body.categories)
     ? body.categories.slice(0, 40).map((x) => s(x, 60)).filter(Boolean)
     : [];
-  return { overrides, custom, hidden, categories };
+  const news = Array.isArray(body && body.news) ? body.news.slice(0, 60).map(cleanPost) : [];
+  const events = Array.isArray(body && body.events) ? body.events.slice(0, 60).map(cleanPost) : [];
+  return { overrides, custom, hidden, categories, news, events };
+}
+
+// Annonces (news) et Événements partagent la même structure de fiche.
+function cleanPost(p) {
+  p = p || {};
+  const id = /^post-[A-Za-z0-9_-]+$/.test(String(p.id || '')) ? String(p.id) : ('post-' + Date.now() + '-' + Math.floor(Math.random() * 1e6));
+  return {
+    id: id,
+    title: s(p.title, 160), title_en: s(p.title_en, 160),
+    body: s(p.body, 1200), body_en: s(p.body_en, 1200),
+    date: s(p.date, 40), location: s(p.location, 160), location_en: s(p.location_en, 160),
+    image: s(p.image, 600), link: s(p.link, 600),
+  };
 }
 
 async function readCatalog(token) {
@@ -79,6 +94,8 @@ async function readCatalog(token) {
       custom: Array.isArray(j && j.custom) ? j.custom : [],
       hidden: Array.isArray(j && j.hidden) ? j.hidden : [],
       categories: Array.isArray(j && j.categories) ? j.categories : [],
+      news: Array.isArray(j && j.news) ? j.news : [],
+      events: Array.isArray(j && j.events) ? j.events : [],
     };
   } catch (e) { return EMPTY; }
 }
