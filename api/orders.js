@@ -85,6 +85,44 @@ function cleanItem(it) {
   };
 }
 
+function esc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// Envoie un e-mail à la propriétaire à chaque nouvelle commande (via Resend).
+// Reste silencieux tant que RESEND_API_KEY n'est pas configuré.
+async function notifyOrder(order) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return;
+  const to = process.env.ORDER_NOTIFY_EMAIL || 'arfaouimaissa810@gmail.com';
+  const from = process.env.ORDER_NOTIFY_FROM || 'meyva collection <onboarding@resend.dev>';
+  const itemsTxt = (order.items || []).map((it) => '- ' + (it.qty || 1) + 'x ' + (it.name || '')).join('\n');
+  const itemsHtml = (order.items || []).map((it) => esc((it.qty || 1) + 'x ' + (it.name || ''))).join('<br>');
+  const text = [
+    'Nouvelle commande ' + order.id, '',
+    'Client : ' + order.nom,
+    'Telephone : ' + order.telephone + (order.telephone2 ? ' / ' + order.telephone2 : ''),
+    'Gouvernorat : ' + order.gouvernorat,
+    'Ville : ' + order.ville,
+    'Adresse : ' + order.adresse,
+    order.note ? 'Note : ' + order.note : '',
+    '', 'Articles :', itemsTxt, '',
+    'Total : ' + order.total + ' DT (livraison ' + order.shipping + ' DT incluse)',
+  ].filter((l) => l !== '').join('\n');
+  const html = '<h2 style="font-family:sans-serif">Nouvelle commande ' + esc(order.id) + '</h2>'
+    + '<p style="font-family:sans-serif"><b>Client :</b> ' + esc(order.nom) + '<br>'
+    + '<b>Téléphone :</b> ' + esc(order.telephone) + (order.telephone2 ? ' / ' + esc(order.telephone2) : '') + '<br>'
+    + '<b>Gouvernorat :</b> ' + esc(order.gouvernorat) + '<br><b>Ville :</b> ' + esc(order.ville) + '<br>'
+    + '<b>Adresse :</b> ' + esc(order.adresse) + (order.note ? '<br><b>Note :</b> ' + esc(order.note) : '') + '</p>'
+    + '<p style="font-family:sans-serif"><b>Articles :</b><br>' + itemsHtml + '</p>'
+    + '<p style="font-family:sans-serif"><b>Total : ' + esc(String(order.total)) + ' DT</b> (livraison ' + esc(String(order.shipping)) + ' DT)</p>';
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: from, to: [to], subject: 'Nouvelle commande — ' + order.nom + ' (' + order.total + ' DT)', text: text, html: html }),
+    });
+  } catch (e) { /* une notification ratée ne doit jamais bloquer la commande */ }
+}
+
 export default async function handler(req, res) {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) { res.status(500).json({ error: 'storage not configured' }); return; }
@@ -126,6 +164,7 @@ export default async function handler(req, res) {
       await put(PREFIX + id + '.json', JSON.stringify(order), {
         token, access: 'private', contentType: 'application/json',
       });
+      await notifyOrder(order); // e-mail à la propriétaire (si Resend configuré)
       res.status(200).json({ ok: true, id: id });
       return;
     }
