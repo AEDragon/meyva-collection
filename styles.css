@@ -1694,3 +1694,29 @@ textarea.inp { resize: vertical; }
   .event-card { grid-template-columns: 1fr; }
   .event-card-img { aspect-ratio: 16/9; }
 }
+
+/* ── Arabe / RTL (langue عربي) ── */
+[dir="rtl"] body,
+[dir="rtl"] .serif,
+[dir="rtl"] .serif-italic,
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select,
+[dir="rtl"] button {
+  font-family: 'Tajawal', 'Inter', -apple-system, system-ui, sans-serif;
+}
+[dir="rtl"] .serif-italic { font-style: normal; }
+[dir="rtl"] .hero-title em,
+[dir="rtl"] .section-title em,
+[dir="rtl"] .nav-logo-text em { font-style: normal; }
+[dir="rtl"] .hero-text,
+[dir="rtl"] .section-head,
+[dir="rtl"] .about-text,
+[dir="rtl"] .pdp-info { text-align: right; }
+[dir="rtl"] .hero-cta,
+[dir="rtl"] .pdp-cta { flex-direction: row-reverse; justify-content: flex-end; }
+[dir="rtl"] .lang-toggle { direction: ltr; }
+/* le mot-symbole « meyva collection » et la tagline restent en latin (gauche→droite) */
+[dir="rtl"] .brand-lockup,
+[dir="rtl"] .hero-tagline { direction: ltr; }
+[dir="rtl"] .hero-tagline { text-align: right; font-style: italic; }
