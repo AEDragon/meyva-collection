@@ -108,6 +108,20 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
+      // Image publique (produits / annonces / événements) : le store est privé,
+      // donc on relaie l'image via ce point d'accès (limité au préfixe "product/").
+      const imgPath = req.query && req.query.img;
+      if (imgPath) {
+        if (!/^product\/[A-Za-z0-9_.\-]+$/.test(String(imgPath))) { res.status(400).json({ error: 'chemin invalide' }); return; }
+        try {
+          const g = await get(String(imgPath), { token, access: 'private' });
+          const ab = await new Response(g.stream).arrayBuffer();
+          res.setHeader('Content-Type', (g && g.contentType) || 'image/jpeg');
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          res.status(200).send(Buffer.from(ab));
+        } catch (e) { res.status(404).end(); }
+        return;
+      }
       const catalog = await readCatalog(token);
       // Pas de cache : toute modification du propriétaire est visible immédiatement.
       res.setHeader('Cache-Control', 'no-store');
@@ -129,10 +143,12 @@ export default async function handler(req, res) {
         const buf = Buffer.from(String(dataBase64), 'base64');
         if (buf.length > 6 * 1024 * 1024) { res.status(413).json({ error: 'image trop lourde (max 6 Mo)' }); return; }
         const safe = name.replace(/[^A-Za-z0-9._-]/g, '_');
-        const blob = await put('product/' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '-' + safe, buf, {
-          token, access: 'public', contentType: type,
+        const pathname = 'product/' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '-' + safe;
+        const blob = await put(pathname, buf, {
+          token, access: 'private', contentType: type, addRandomSuffix: false,
         });
-        res.status(200).json({ ok: true, url: blob.url });
+        // Le store est privé : on renvoie l'URL du proxy public (GET ?img=).
+        res.status(200).json({ ok: true, url: '/api/products?img=' + encodeURIComponent(blob.pathname || pathname) });
         return;
       }
 
