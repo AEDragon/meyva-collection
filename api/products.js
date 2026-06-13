@@ -108,11 +108,14 @@ function cleanPost(p) {
   };
 }
 
-async function readCatalog(token) {
+// Brouillon : le tableau de bord édite ce document. La publication le copie vers PATH (site en direct).
+const DRAFT = 'catalog/draft.json';
+
+async function readDoc(pathname, token) {
   try {
-    const { blobs } = await list({ prefix: PATH, token });
-    if (!blobs.length) return EMPTY;
-    const g = await get(PATH, { token, access: 'private' });
+    const { blobs } = await list({ prefix: pathname, token });
+    if (!blobs.length) return null;
+    const g = await get(pathname, { token, access: 'private' });
     const txt = await new Response(g.stream).text();
     const j = JSON.parse(txt);
     return {
@@ -123,7 +126,13 @@ async function readCatalog(token) {
       news: Array.isArray(j && j.news) ? j.news : [],
       events: Array.isArray(j && j.events) ? j.events : [],
     };
-  } catch (e) { return EMPTY; }
+  } catch (e) { return null; }
+}
+async function readCatalog(token) { return (await readDoc(PATH, token)) || EMPTY; }
+// Le brouillon démarre à partir du site publié tant qu'aucune modification n'a été enregistrée.
+async function readDraft(token) { return (await readDoc(DRAFT, token)) || (await readCatalog(token)); }
+async function writeDoc(pathname, catalog, token) {
+  await put(pathname, JSON.stringify(catalog), { token, access: 'private', contentType: 'application/json', allowOverwrite: true });
 }
 
 export const config = { api: { bodyParser: { sizeLimit: '8mb' } } };
@@ -148,8 +157,18 @@ export default async function handler(req, res) {
         } catch (e) { res.status(404).end(); }
         return;
       }
+      // Brouillon (admin) : le tableau de bord lit/édite ce document, pas le site en direct.
+      if (req.query && req.query.draft) {
+        if (!isAdmin(req)) { res.status(401).json({ error: 'non autorisé' }); return; }
+        const draft = await readDraft(token);
+        const published = await readCatalog(token);
+        const dirty = JSON.stringify(draft) !== JSON.stringify(published);
+        res.setHeader('Cache-Control', 'no-store');
+        res.status(200).json({ catalog: draft, dirty: dirty });
+        return;
+      }
       const catalog = await readCatalog(token);
-      // Pas de cache : toute modification du propriétaire est visible immédiatement.
+      // Pas de cache : la version publiée est servie au client.
       res.setHeader('Cache-Control', 'no-store');
       res.status(200).json({ catalog });
       return;
@@ -178,12 +197,21 @@ export default async function handler(req, res) {
         return;
       }
 
-      // Sauvegarde du catalogue complet
+      // Publication : on copie le brouillon vers le site en direct.
+      if (body && body.op === 'publish') {
+        const catalog = cleanCatalog(await readDraft(token));
+        await writeDoc(PATH, catalog, token);   // site en direct
+        await writeDoc(DRAFT, catalog, token);  // brouillon = publié
+        res.status(200).json({ ok: true, published: true, catalog });
+        return;
+      }
+      // Sauvegarde : par défaut on écrit dans le BROUILLON (rien n'est encore en ligne).
+      // ?live=1 publie directement (utilisé en interne / scripts).
       const catalog = cleanCatalog(body);
-      await put(PATH, JSON.stringify(catalog), {
-        token, access: 'private', contentType: 'application/json', allowOverwrite: true,
-      });
-      res.status(200).json({ ok: true, catalog });
+      const live = req.query && req.query.live;
+      await writeDoc(live ? PATH : DRAFT, catalog, token);
+      if (live) await writeDoc(DRAFT, catalog, token);
+      res.status(200).json({ ok: true, catalog: catalog, draft: !live });
       return;
     }
 

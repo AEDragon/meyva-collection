@@ -112,6 +112,21 @@ const PRODUCTS = [
     kitNote: 'Photos imprimées seules (sans pinces ni ficelle).',
   },
   {
+    id: 'polaroid-pinces-ficelle',
+    name: 'Pinces + ficelle (sans photos)',
+    name_en: 'Wooden clips + string (no photos)',
+    cat: 'Packs',
+    price: 5,
+    image: 'assets/insta/pack-polaroid.jpg',
+    gallery: G.pack,
+    desc: 'Le kit pour accrocher : pinces en bois + ficelle. Sans photos ni LED.',
+    desc_en: 'The hanging kit: wooden clips + string. No photos, no LED.',
+    long: 'Juste les accessoires pour créer ton mur de souvenirs : des pinces en bois et une ficelle pour suspendre tes photos. Sans photos imprimées ni guirlande LED — parfait si tu as déjà tes tirages. Choisis la quantité ci-dessous.',
+    long_en: 'Just the accessories to build your memory wall: wooden clips and a string to hang your photos. No printed photos, no LED garland — perfect if you already have your prints. Pick your quantity below.',
+    swatch: 'pack',
+    kitNote: 'Inclut : pinces (clips en bois) + ficelle. Sans photos ni guirlande LED.',
+  },
+  {
     id: 'sticker-unite',
     name: 'Sticker à l’unité — perso',
     cat: 'Stickers',
@@ -514,7 +529,8 @@ const I18N = {
     pm_post_title: 'Titre (FR)', pm_post_title_en: 'Titre (EN)', pm_post_date: 'Date', pm_post_loc: 'Lieu', pm_post_link: 'Lien (optionnel)',
     pm_post_body: 'Texte (FR)', pm_post_body_en: 'Texte (EN)',
     pm_intro: 'Gère ta boutique : modifie les prix, les noms, ajoute des produits ou marque-les épuisés. Clique « Enregistrer » pour publier.',
-    pm_add: 'Ajouter un produit', pm_save: 'Enregistrer', pm_saving: 'Enregistrement…', pm_saved: '✓ Publié !', pm_saved_ok: '✓ À jour', pm_err: 'Erreur', pm_loading: 'Chargement du catalogue…',
+    pm_add: 'Ajouter un produit', pm_save: 'Enregistrer', pm_saving: 'Enregistrement…', pm_saved: '✓ Enregistré (brouillon)', pm_saved_ok: '✓ À jour', pm_err: 'Erreur', pm_loading: 'Chargement du catalogue…',
+    pub_dirty: 'Modifications non publiées', pub_clean: 'Tout est publié', pub_btn: '🚀 Publier sur le site', pub_publishing: 'Publication…', pub_done: '✓ Publié sur le site !', pub_err: 'Erreur de publication',
     pm_uploading: 'Envoi de l’image…', pm_img_ok: '✓ Image ajoutée', pm_change_img: 'Changer la photo',
     pm_add_photos: 'Ajouter des photos', pm_photos_n: 'photo(s)', pm_img_remove: 'Retirer cette photo', pm_img_main: 'Photo principale',
     pm_specs_title: 'Caractéristiques personnalisées', pm_specs_hint: 'Ajoute autant de lignes que tu veux (matière, taille, couleur…).', pm_add_field: '＋ Ajouter une caractéristique',
@@ -651,7 +667,8 @@ const I18N = {
     pm_post_title: 'Title (FR)', pm_post_title_en: 'Title (EN)', pm_post_date: 'Date', pm_post_loc: 'Location', pm_post_link: 'Link (optional)',
     pm_post_body: 'Text (FR)', pm_post_body_en: 'Text (EN)',
     pm_intro: 'Manage your shop: edit prices, names, add products or mark them sold out. Click “Save” to publish.',
-    pm_add: 'Add a product', pm_save: 'Save', pm_saving: 'Saving…', pm_saved: '✓ Published!', pm_saved_ok: '✓ Up to date', pm_err: 'Error', pm_loading: 'Loading catalog…',
+    pm_add: 'Add a product', pm_save: 'Save', pm_saving: 'Saving…', pm_saved: '✓ Saved (draft)', pm_saved_ok: '✓ Up to date', pm_err: 'Error', pm_loading: 'Loading catalog…',
+    pub_dirty: 'Unpublished changes', pub_clean: 'Everything is published', pub_btn: '🚀 Publish to the site', pub_publishing: 'Publishing…', pub_done: '✓ Published to the site!', pub_err: 'Publish error',
     pm_uploading: 'Uploading image…', pm_img_ok: '✓ Image added', pm_change_img: 'Change photo',
     pm_add_photos: 'Add photos', pm_photos_n: 'photo(s)', pm_img_remove: 'Remove this photo', pm_img_main: 'Main photo',
     pm_specs_title: 'Custom details', pm_specs_hint: 'Add as many rows as you want (material, size, colour…).', pm_add_field: '＋ Add a detail',
@@ -2420,7 +2437,7 @@ function AdminFileThumb({ file, adminKey, openFile }) {
 }
 
 // ── Gestionnaire d'Annonces / Événements (même document que le catalogue) ──
-function PostManager({ kind, adminKey, reloadCatalog }) {
+function PostManager({ kind, adminKey, reloadCatalog, onDirty }) {
   const lang = useLang();
   const isEvent = kind === 'events';
   const [doc, setDoc] = React.useState(null);
@@ -2431,7 +2448,7 @@ function PostManager({ kind, adminKey, reloadCatalog }) {
 
   React.useEffect(() => {
     let alive = true;
-    fetch('/api/products', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    fetch('/api/products?draft=1', { cache: 'no-store', headers: { 'x-admin-key': adminKey } }).then(r => r.ok ? r.json() : null).then(j => {
       if (!alive) return;
       const c = (j && j.catalog) || {};
       setDoc({
@@ -2468,6 +2485,7 @@ function PostManager({ kind, adminKey, reloadCatalog }) {
       const r = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }, body: JSON.stringify(doc) });
       if (!r.ok) { setMsg(t(lang, 'pm_err') + ' (' + r.status + ')'); setSaving(false); return; }
       setDirty(false); setMsg(t(lang, 'pm_saved'));
+      if (onDirty) onDirty();
       if (reloadCatalog) await reloadCatalog(doc);
     } catch (e) { setMsg(t(lang, 'pm_err')); }
     setSaving(false);
@@ -2517,7 +2535,7 @@ function PostManager({ kind, adminKey, reloadCatalog }) {
 window.PostManager = PostManager;
 
 // ── Gestionnaire de produits : la propriétaire gère son catalogue elle-même ──
-function ProductManager({ catalog, adminKey, reloadCatalog }) {
+function ProductManager({ catalog, adminKey, reloadCatalog, onDirty }) {
   const lang = useLang();
   const base = (window.MEYVA_DATA && window.MEYVA_DATA.PRODUCTS) || [];
   const [ov, setOv] = React.useState({ overrides: {}, custom: [], hidden: [], categories: [], news: [], events: [] });
@@ -2529,7 +2547,7 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
 
   React.useEffect(() => {
     let alive = true;
-    fetch('/api/products', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    fetch('/api/products?draft=1', { cache: 'no-store', headers: { 'x-admin-key': adminKey } }).then(r => r.ok ? r.json() : null).then(j => {
       if (!alive) return;
       const c = (j && j.catalog) || {};
       setOv({
@@ -2643,6 +2661,7 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
       });
       if (!r.ok) { setMsg(t(lang, 'pm_err') + ' (' + r.status + ')'); setSaving(false); return; }
       setDirty(false); setMsg(t(lang, 'pm_saved'));
+      if (onDirty) onDirty();
       if (reloadCatalog) await reloadCatalog(ov);
     } catch (e) { setMsg(t(lang, 'pm_err')); }
     setSaving(false);
@@ -2783,6 +2802,10 @@ function OrderAdmin({ catalog, reloadCatalog }) {
   const [adminKey, setAdminKey] = React.useState(() => { try { return localStorage.getItem('meyva_admin_key') || ''; } catch (e) { return ''; } });
   const [keyMode, setKeyMode] = React.useState(false);
   const [pageNum, setPageNum] = React.useState(1);
+  // Brouillon / publication : les modifications du catalogue restent en brouillon jusqu'à « Publier ».
+  const [contentDirty, setContentDirty] = React.useState(false);
+  const [publishing, setPublishing] = React.useState(false);
+  const [publishMsg, setPublishMsg] = React.useState('');
   const PER_PAGE = 25;
   const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
   const signedIn = keyMode;
@@ -2839,7 +2862,26 @@ function OrderAdmin({ catalog, reloadCatalog }) {
     if (!k) return;
     try { localStorage.setItem('meyva_admin_key', k); } catch (e) {}
     const ok = await loadServer();
-    if (ok) setKeyMode(true);
+    if (ok) { setKeyMode(true); checkDirty(); }
+  };
+
+  // Y a-t-il des modifications du catalogue non encore publiées ?
+  const checkDirty = async () => {
+    try {
+      const r = await fetch('/api/products?draft=1', { cache: 'no-store', headers: { 'x-admin-key': adminKey } });
+      if (r.ok) { const j = await r.json(); setContentDirty(!!j.dirty); }
+    } catch (e) {}
+  };
+  const publishContent = async () => {
+    setPublishing(true); setPublishMsg(t(lang, 'pub_publishing'));
+    try {
+      const r = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }, body: JSON.stringify({ op: 'publish' }) });
+      if (!r.ok) { setPublishMsg(t(lang, 'pub_err') + ' (' + r.status + ')'); setPublishing(false); return; }
+      const j = await r.json();
+      setContentDirty(false); setPublishMsg(t(lang, 'pub_done'));
+      if (reloadCatalog && j && j.catalog) await reloadCatalog(j.catalog);
+    } catch (e) { setPublishMsg(t(lang, 'pub_err')); }
+    setPublishing(false);
   };
 
   const exportCSV = async () => {
@@ -2980,9 +3022,14 @@ function OrderAdmin({ catalog, reloadCatalog }) {
       React.createElement('button', { className: 'admin-tab' + (tab === 'news' ? ' active' : ''), onClick: () => setTab('news') }, '📣 ' + t(lang, 'ad_tab_news')),
       React.createElement('button', { className: 'admin-tab' + (tab === 'events' ? ' active' : ''), onClick: () => setTab('events') }, '📅 ' + t(lang, 'ad_tab_events'))
     ),
-    tab === 'products' && React.createElement(ProductManager, { catalog: catalog, adminKey: adminKey, reloadCatalog: reloadCatalog }),
-    tab === 'news' && React.createElement(PostManager, { kind: 'news', adminKey: adminKey, reloadCatalog: reloadCatalog }),
-    tab === 'events' && React.createElement(PostManager, { kind: 'events', adminKey: adminKey, reloadCatalog: reloadCatalog }),
+    (tab === 'products' || tab === 'news' || tab === 'events') && React.createElement('div', { className: 'publish-bar' + (contentDirty ? ' dirty' : '') },
+      React.createElement('span', { className: 'publish-status' }, contentDirty ? '● ' + t(lang, 'pub_dirty') : '✓ ' + t(lang, 'pub_clean')),
+      publishMsg && React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, publishMsg),
+      React.createElement('button', { className: 'btn btn-pink', onClick: publishContent, disabled: publishing || !contentDirty }, publishing ? t(lang, 'pub_publishing') : t(lang, 'pub_btn'))
+    ),
+    tab === 'products' && React.createElement(ProductManager, { catalog: catalog, adminKey: adminKey, reloadCatalog: reloadCatalog, onDirty: () => { setContentDirty(true); setPublishMsg(''); } }),
+    tab === 'news' && React.createElement(PostManager, { kind: 'news', adminKey: adminKey, reloadCatalog: reloadCatalog, onDirty: () => { setContentDirty(true); setPublishMsg(''); } }),
+    tab === 'events' && React.createElement(PostManager, { kind: 'events', adminKey: adminKey, reloadCatalog: reloadCatalog, onDirty: () => { setContentDirty(true); setPublishMsg(''); } }),
     tab === 'orders' && orders.length > 0 && React.createElement('div', { className: 'admin-analytics' },
       React.createElement('div', { className: 'an-cards' },
         React.createElement('div', { className: 'an-card' }, React.createElement('div', { className: 'an-card-val' }, orders.length), React.createElement('div', { className: 'an-card-lbl' }, t(lang, 'an_orders'))),
