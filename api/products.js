@@ -41,6 +41,15 @@ function cleanSpecs(v) {
     : [];
 }
 
+// Paliers de prix : liste de { qty, price } (ex. 1 -> 10 DT, 2 -> 14 DT).
+function cleanTiers(v) {
+  if (!Array.isArray(v)) return [];
+  return v.slice(0, 24)
+    .map((t) => ({ qty: Math.max(1, Math.round(num(t && t.qty))), price: num(t && t.price) }))
+    .filter((t) => t.qty > 0)
+    .sort((a, b) => a.qty - b.qty);
+}
+
 function cleanFields(o) {
   o = o || {};
   const out = {};
@@ -50,6 +59,7 @@ function cleanFields(o) {
   if (o.soldOut != null) out.soldOut = !!o.soldOut;
   if (o.images != null) out.images = cleanImages(o.images);
   if (o.fields != null) out.fields = cleanSpecs(o.fields);
+  if (o.priceTiers != null) out.priceTiers = cleanTiers(o.priceTiers);
   return out;
 }
 

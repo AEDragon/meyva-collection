@@ -329,6 +329,7 @@ const PHOTO_TIERS_KIT = [
 
 // Grille tarifaire selon le produit (pack avec accessoires ou photos seules)
 function tiersFor(product) {
+  if (product && Array.isArray(product.priceTiers) && product.priceTiers.length) return product.priceTiers;
   return product && product.tierSet === 'kit' ? PHOTO_TIERS_KIT : PHOTO_TIERS;
 }
 
@@ -459,7 +460,8 @@ const I18N = {
     shop_items: 'articles · livraison partout en Tunisie',
     sort_label: 'Trier :', sort_featured: 'Sélection', sort_asc: 'Prix croissant', sort_desc: 'Prix décroissant',
     pdp_choose: 'Choisis le nombre de photos', pdp_send: 'Envoie-nous tes photos par message Instagram après la commande.',
-    pdp_qty: 'Quantité', pdp_add: 'Ajouter — ', pdp_added: '✓ Ajouté au panier', soldout: 'Épuisé',
+    pdp_qty: 'Quantité', pdp_add: 'Ajouter — ', pdp_added: '✓ Ajouté au panier', soldout: 'Épuisé', pieces: 'pièces',
+    pm_tiers: 'Paliers de prix (quantité → prix)', pm_tiers_hint: 'Définis le prix par quantité (1 → 10 DT, 2 → 14 DT…). Laisse vide pour un prix simple × quantité.', pm_add_tier: '＋ palier', pm_tier_qty: 'Qté', pm_tier_price: 'Prix',
     qty_save: 'tu économises ', qty_unit: 'unité',
     pdp_delivery: 'Livraison', pdp_delivery_v: '8 DT · 2–4 j', pdp_payment: 'Paiement', pdp_payment_v: 'À la livraison',
     pdp_confirm: 'Confirmation', pdp_confirm_v: 'Par Instagram', pdp_related: 'Tu aimeras aussi',
@@ -595,7 +597,8 @@ const I18N = {
     shop_items: 'items · delivery anywhere in Tunisia',
     sort_label: 'Sort:', sort_featured: 'Featured', sort_asc: 'Price: low to high', sort_desc: 'Price: high to low',
     pdp_choose: 'Choose the number of photos', pdp_send: 'Send us your photos by Instagram message after ordering.',
-    pdp_qty: 'Quantity', pdp_add: 'Add — ', pdp_added: '✓ Added to cart', soldout: 'Sold out',
+    pdp_qty: 'Quantity', pdp_add: 'Add — ', pdp_added: '✓ Added to cart', soldout: 'Sold out', pieces: 'pcs',
+    pm_tiers: 'Price tiers (quantity → price)', pm_tiers_hint: 'Set the price per quantity (1 → 10 DT, 2 → 14 DT…). Leave empty for a simple price × quantity.', pm_add_tier: '＋ tier', pm_tier_qty: 'Qty', pm_tier_price: 'Price',
     qty_save: 'you save ', qty_unit: 'unit',
     pdp_delivery: 'Delivery', pdp_delivery_v: '8 DT · 2–4 d', pdp_payment: 'Payment', pdp_payment_v: 'On delivery',
     pdp_confirm: 'Confirmation', pdp_confirm_v: 'By Instagram', pdp_related: 'You may also like',
@@ -677,6 +680,103 @@ const I18N = {
     ad_st_srverr: 'Server error', ad_st_loaded1: 'order(s) loaded from the server.',
     ad_st_unreach: 'Could not reach the server (available only on the live site).',
   },
+  ar: {
+    ub_delivery: 'سعر التوصيل: 8 د.ت في كامل تونس',
+    theme_dark: 'الوضع الليلي', theme_light: 'الوضع النهاري',
+    nav_home: 'الرئيسية', nav_shop: 'المتجر', nav_pack: 'باك بولارويد', nav_about: 'من نحن', nav_back: 'السابق', nav_fwd: 'التالي',
+    nav_product: 'منتج', nav_admin: 'الإدارة', nav_cart: 'السلة',
+    aria_search: 'بحث', aria_cart: 'السلة', aria_close: 'إغلاق',
+    product_see: 'عرض المنتج', price_from: 'ابتداءً من',
+    footer_desc: 'أشياء صغيرة لطيفة، صور بولارويد وهدايا مخصّصة. التوصيل في كامل تونس 🇹🇳',
+    footer_shop: 'المتجر', footer_help: 'المساعدة',
+    f_link_pack: 'باك بولارويد + ملاقط + إضاءة LED', f_link_stickers: 'ستيكرز', f_link_posters: 'بوسترات', f_link_candles: 'شموع', f_link_certs: 'شهادات',
+    f_contact: 'اتصل بنا', f_delivery: 'التوصيل', f_howto: 'كيفية الطلب', f_faq: 'الأسئلة الشائعة',
+    help_eyebrow: 'مساعدة ومعلومات', help_t1: 'كيف ', help_em: 'يعمل',
+    help_sub: 'كل ما تحتاج معرفته حول الطلب والتوصيل والدفع.',
+    howto_title: 'كيفية الطلب', howto_intro: 'الطلب من meyva بسيط وبدون دفع عبر الإنترنت. إليك الخطوات:',
+    howto_s1_t: 'اختر منتجك', howto_s1_p: 'تصفّح المتجر وافتح المنتج الذي يعجبك: باك بولارويد، ستيكرز، بوسترات، شموع أو شهادات.',
+    howto_s2_t: 'خصّصه', howto_s2_p: 'اختر الموديل والكمية، ثم أضِف صورك أو تصميمك مباشرة في صفحة المنتج عند توفّر ذلك.',
+    howto_s3_t: 'أضِف إلى السلة', howto_s3_p: 'اضغط على «أضِف إلى السلة». يمكنك وضع عدة منتجات في نفس الطلب.',
+    howto_s4_t: 'املأ معلومات التوصيل', howto_s4_p: 'في السلة، اضغط على «إتمام الطلب» وأدخل اسمك ورقم هاتفك والولاية والعنوان.',
+    howto_s5_t: 'أكّد', howto_s5_p: 'أكّد طلبك. لا دفع عبر الإنترنت — تدفع نقدًا عند الاستلام.',
+    howto_s6_t: 'نتّصل بك', howto_s6_p: 'نؤكّد عبر رسالة إنستغرام أو الهاتف، ثم نجهّز ونرسل إلى كامل تونس.',
+    delivery_title: 'التوصيل', delivery_fee_label: 'سعر التوصيل:',
+    delivery_p1: 'نوصّل إلى كامل تونس 🇹🇳 في جميع الولايات عبر شركة التوصيل الشريكة.',
+    delivery_p2: 'المدة المعتادة: من 2 إلى 5 أيام عمل بعد تأكيد طلبك.',
+    delivery_p3: 'الدفع عند الاستلام نقدًا — لا شيء يُدفع عبر الإنترنت.',
+    faq_title: 'الأسئلة الشائعة',
+    faq_q1: 'كيف أدفع؟', faq_a1: 'نقدًا عند التوصيل (الدفع عند الاستلام). لا يُطلب أي دفع عبر الإنترنت.',
+    faq_q2: 'أين توصّلون؟', faq_a2: 'إلى كامل تونس، في جميع الولايات.',
+    faq_q3: 'في كم من الوقت أستلم طلبي؟', faq_a3: 'عادةً من 2 إلى 5 أيام عمل بعد التأكيد.',
+    faq_q4: 'كيف أرسل صوري؟', faq_a4: 'يمكنك رفعها مباشرة في صفحة المنتج عند الطلب، أو إرسالها لنا عبر رسالة إنستغرام لاحقًا.',
+    faq_q5: 'هل يمكنني التخصيص؟', faq_a5: 'نعم! صور البولارويد والستيكرز والبوسترات والشهادات قابلة للتخصيص: اختر موديلك أو ارفع تصميمك.',
+    faq_q6: 'كيف أتواصل معكم؟', faq_a6: 'الأسهل: عبر رسالة على إنستغرام ‎@meyva__collection. نردّ بسرعة.',
+    contact_title: 'اتصل بنا', contact_p: 'لديك سؤال حول طلب أو تخصيص أو التوصيل؟ راسلنا على إنستغرام ونردّ عليك بسرعة 💌',
+    contact_cta: 'راسلنا على إنستغرام', help_cta_shop: 'عرض المتجر',
+    f_news_title: 'ابقَ على اطّلاع', f_news_sub: 'الجديد والعروض، مرّة في الشهر.', f_subscribe: 'اشترك', f_email_ph: 'بريدك@الإلكتروني.com',
+    f_sub_ok: 'شكرًا! تم تسجيلك 💌', f_sub_bad: 'أدخل بريدًا إلكترونيًا صحيحًا.',
+    search_ph: 'ابحث عن منتج…', search_none: 'لا توجد نتائج.',
+    hero_eyebrow: 'متجر افتراضي', hero_t1: 'أشياء صغيرة تجلب ', hero_em: 'البهجة',
+    hero_sub: 'صور بولارويد، ستيكرز، بوسترات وشموع — لغرفتك، لتهديها، أو لتدلّل نفسك.',
+    hero_cta: 'عرض المتجر',
+    feat1_t: 'توصيل بـ 8 د.ت', feat1_p: 'في كامل تونس خلال 2–4 أيام',
+    feat2_t: 'قابل للتخصيص', feat2_p: 'صورك، نصّك، مزيجك الخاص',
+    feat3_t: 'اطلب عبر إنستغرام', feat3_p: 'التأكيد والدفع عبر الرسائل',
+    sel_eyebrow: 'مختارات', sel_t1: 'الأكثر ', sel_em: 'تفضيلًا', sel_t2: ' لدى المتجر', see_all: 'عرض الكل →',
+    news_eyebrow: 'ما الجديد؟', news_title: 'إعلانات', news_more: 'اقرأ المزيد',
+    events_eyebrow: 'تجدنا هنا', events_title: 'فعاليات', events_more: 'مزيد من المعلومات',
+    story_t1: 'اطبع ذكرياتك،', story_t2: 'زيّن ', story_em: 'غرفتك.',
+    story_p: 'الباك المميّز: صورك المفضّلة بحجم بولارويد صغير، مع ملاقط خشبية وسلسلة إضاءة LED. أنت تختار عدد الصور.',
+    story_cta: 'اكتشف الباك',
+    also_eyebrow: 'أيضًا في المتجر', also_title: 'كل ما تبقّى.',
+    insta_title1: 'على ', insta_em: 'إنستغرام', insta_follow: 'تابعنا →',
+    shop_eyebrow: 'المتجر', shop_t1: 'كل ', shop_em: 'المجموعة',
+    shop_items: 'منتجات · التوصيل في كامل تونس',
+    sort_label: 'ترتيب:', sort_featured: 'المختارات', sort_asc: 'السعر تصاعديًا', sort_desc: 'السعر تنازليًا',
+    pdp_choose: 'اختر عدد الصور', pdp_send: 'أرسل لنا صورك عبر رسالة إنستغرام بعد الطلب.',
+    pdp_qty: 'الكمية', pdp_add: 'أضِف — ', pdp_added: '✓ أُضيف إلى السلة', soldout: 'نفد', pieces: 'قطع',
+    qty_save: 'توفّر ', qty_unit: 'وحدة',
+    pdp_delivery: 'التوصيل', pdp_delivery_v: '8 د.ت · 2–4 أيام', pdp_payment: 'الدفع', pdp_payment_v: 'عند التوصيل',
+    pdp_confirm: 'التأكيد', pdp_confirm_v: 'عبر إنستغرام', pdp_related: 'قد يعجبك أيضًا',
+    about_eyebrow: 'من نحن', about_t1: 'أشياء صغيرة،', about_em: 'بحبّ كبير.',
+    about_p1: 'meyva collection متجر تونسي صغير يصنع أشياء لتزيين غرفتك، لتهديها لصديقاتك، أو ببساطة لتدلّل نفسك. صور بولارويد، ستيكرز، بوسترات، شموع، وشهادات مخصّصة — كل ذلك بأسعار صغيرة ويُوصَّل إلى كامل تونس.',
+    about_p2: 'كل شيء يتمّ عبر إنستغرام: تختار منتجك، ترسل لنا رسالة بصورك أو نصّك، ونتكفّل نحن بالباقي. الدفع عند التوصيل.',
+    about_cta: '‎@meyva__collection على إنستغرام',
+    cart_title: 'سلّتك', cart_empty: 'سلّتك فارغة', cart_empty_sub: 'أضِف بعض الأشياء اللطيفة.',
+    cart_remove: 'إزالة', subtotal: 'المجموع الفرعي', shipping: 'التوصيل', total: 'المجموع',
+    cart_note: 'الدفع نقدًا عند التوصيل. املأ معلوماتك في الخطوة التالية.',
+    cart_checkout: 'إتمام الطلب', cart_insta: 'الطلب عبر إنستغرام',
+    cs_eyebrow: 'قيد التحضير', cs_t1: 'قريبًا ', cs_em: 'متوفّر', cs_notify: 'أعلِمني →',
+    cs_soon: 'قريبًا', cs_veil: 'متوفّر قريبًا',
+    cs_note: 'هذه المنتجات الجديدة ليست معروضة للبيع بعد. راسلنا على إنستغرام لحجزها أو لتُعلَم بموعد الإطلاق.',
+    promo_eyebrow: 'عروض محدودة', promo_t1: 'تخفيضات ', promo_em: 'خاصة كبيرة', promo_t2: ' !',
+    promo_foot: 'عروض محدودة — استفد الآن!', promo_cta: 'أستفيد',
+    co_done: 'تم تسجيل الطلب!', co_thanks1: 'شكرًا ', co_thanks2: '. طلبك ', co_thanks3: ' مسجّل بنجاح.',
+    co_pay1: 'الدفع نقدًا عند التوصيل · المبلغ الإجمالي: ', co_pay2: ' (التوصيل مشمول).',
+    co_contact: 'سنتواصل معك عبر إنستغرام للتأكيد. يمكنك أيضًا مراسلتنا برقم طلبك.',
+    co_continue: 'مواصلة التسوّق',
+    co_empty: 'سلّتك فارغة', co_empty_sub: 'أضِف منتجات قبل إتمام الطلب.', co_empty_cta: 'عرض المتجر',
+    val_nom: 'أدخل اسمك ولقبك.', val_tel: 'رقم هاتف صحيح مطلوب.', val_gov: 'اختر ولايتك.',
+    val_ville: 'أدخل مدينتك.', val_adr: 'أدخل عنوان التوصيل.',
+    co_eyebrow: 'الطلب', co_t1: 'معلوماتك ', co_em: 'الشخصية',
+    co_sub: 'الدفع نقدًا عند التوصيل. التوصيل في كامل تونس خلال 2–4 أيام.',
+    f_nom: 'الاسم واللقب', f_tel: 'الهاتف', f_tel2: 'هاتف ثانوي', f_gov: 'الولاية', f_choose: '— اختر —',
+    f_ville: 'المدينة / المعتمدية', f_adr: 'عنوان التوصيل', f_note: 'ملاحظة (اختياري)',
+    co_summary: 'طلبك', co_confirm: 'تأكيد الطلب', co_sending: 'جارٍ الإرسال…',
+    co_nopay: 'لا دفع عبر الإنترنت — تدفع نقدًا عند الاستلام.',
+    photos: 'صور',
+    up_title: 'ملفّاتك / تصاميمك', up_drop: 'أفلِت ملفّك هنا', up_or: 'أو اضغط للاختيار', up_optional: '(اختياري)', up_required: '(إلزامي)', up_need: 'ارفع صورك', up_need_hint1: 'تحتاج إلى', up_need_hint2: 'صورة — بقيت', up_need_hint3: 'للرفع.', up_preview: 'معاينة بوسترك',
+    up_hint: 'مكان لكل ستيكر — أضِف صورة لكل واحد. العدد يتبع الكمية.',
+    up_slot: 'صورة', up_more_ig: 'لأكثر من 30 صورة، أرسل البقية عبر رسالة إنستغرام.',
+    phup_title: 'صورك للطباعة', phup_optional: '(مستحسن)',
+    phup_hint: 'أضِف صورك هنا — بعدد النسخ. تُضغط ثم تُرسل مع طلبك.',
+    phup_add: 'أضِف صورًا', phup_count: 'مُضافة', phup_max: 'بلغت الحدّ لهذه الكمية.',
+    phup_compress: 'جارٍ تحسين الصور…',
+    model_choose: 'اختر موديلك',
+    model_pick_multi: 'اختر موديلاتك', model_pick_hint: 'اضغط على الموديلات لإضافتها (واحد لكل قطعة).', model_pick_deal: ' عرض: 3 بـ 10 د.ت!', model_pick_cta: 'اختر موديلًا واحدًا على الأقل',
+    styles_choose: 'اختر أنماطك', styles_hint: 'اضغط على الأنماط التي تريدها في الباك — نعدّل المزيج.',
+    up_attached: 'ملف مرفق:', up_uploading: 'جارٍ إرسال الملف…', up_toobig: 'الملف ثقيل جدًا (الحد 3 ميغا).',
+  },
 };
 
 function t(lang, key) {
@@ -687,7 +787,12 @@ function useLang() { return React.useContext(LangContext); }
 
 // Catégories : la valeur reste en français (clé de filtre), seul l’affichage change
 const CAT_I18N = { 'Tout': 'All', 'Packs': 'Packs', 'Photos': 'Photos', 'Stickers': 'Stickers', 'Posters': 'Posters', 'Bougies': 'Candles', 'Cadeaux': 'Gifts', 'Bientôt': 'Soon' };
-function catLabel(cat, lang) { return (lang === 'en' && CAT_I18N[cat]) ? CAT_I18N[cat] : cat; }
+const CAT_I18N_AR = { 'Tout': 'الكل', 'Packs': 'باكات', 'Photos': 'صور', 'Stickers': 'ستيكرز', 'Posters': 'بوسترات', 'Bougies': 'شموع', 'Cadeaux': 'هدايا', 'Bientôt': 'قريبًا' };
+function catLabel(cat, lang) {
+  if (lang === 'en' && CAT_I18N[cat]) return CAT_I18N[cat];
+  if (lang === 'ar' && CAT_I18N_AR[cat]) return CAT_I18N_AR[cat];
+  return cat;
+}
 
 // Traductions EN des données produits / promos / à venir
 const PRODUCT_I18N = {
@@ -717,11 +822,32 @@ function tf(map, id, field, lang, fallback) {
   if (lang === 'en' && map[id] && map[id][field] != null) return map[id][field];
   return fallback;
 }
+// Traductions arabes des produits (nom + description courte). Le reste retombe en FR.
+const PRODUCT_I18N_AR = {
+  'pack-polaroid-kit': { name: 'باك بولارويد + ملاقط + LED', desc: 'صورك مطبوعة بحجم بولارويد، مع ملاقط خشبية وسلسلة إضاءة LED طولها 10 أمتار لتعليقها.' },
+  'polaroid-prints': { name: 'بولارويد — صور فقط', desc: 'صورك مطبوعة بحجم بولارويد، بدون إكسسوارات. اختر الكمية.' },
+  'sticker-unite': { name: 'ستيكر بالوحدة — مخصّص', desc: 'ستيكر واحد = 1 د.ت. اختر الكمية وارفع تصميمك.' },
+  'stickers-mood': { name: 'ستيكرز Mood — بالوحدة', desc: 'اختر ستيكرز Mood الناعمة بألوان الباستيل. 1 د.ت للستيكر.' },
+  'stickers-anime': { name: 'ستيكرز أنمي — بالوحدة', desc: 'اختر ستيكرز الأنمي والمانغا والكاواي. 1 د.ت للستيكر.' },
+  'stickers-y2k': { name: 'ستيكرز Y2K — بالوحدة', desc: 'اختر ستيكرز Y2K الهولوغرافية والكروم. 1 د.ت للستيكر.' },
+  'poster-vintage': { name: 'بوستر A4 — حسب اختيارك', secondary: '3 بـ 10 د.ت', desc: 'بوستر A4 على ورق مطفي. ارفع صورتك أو تصميمك الخاص.' },
+  'poster-aura': { name: 'بوستر A4 — إصدار المشاهير', secondary: '3 بـ 10 د.ت', desc: 'بوستر A4 على ورق مطفي. اختر الموديل من تصاميمنا.' },
+  'bougie-rose': { name: 'شمعة معطّرة — وردة', desc: 'شمعة على شكل وردة من شمع الصويا المعطّر. عدة ألوان متوفّرة.' },
+  'certificat': { name: 'شهادة مخصّصة', desc: 'دبلوم مطبوع للإهداء. اختر التصاميم التي تريدها.' },
+  'promo-stickers-pack': { name: 'عرض ستيكرز — 5 + 3 مجانًا', desc: '8 ستيكرز بسعر 5! (5 + 3 مجانًا) — 5 د.ت للمجموعة.' },
+  'promo-posters-pack': { name: 'عرض بوسترات — 3 بـ 10 د.ت', desc: '3 بوسترات حسب اختيارك بـ 10 د.ت (بدل 12 د.ت).' },
+};
 function pField(p, field, lang) {
-  // Si le propriétaire a saisi une version EN (name_en, desc_en…), elle est prioritaire.
+  // Le propriétaire peut saisir une version EN (name_en…), prioritaire.
   if (lang === 'en') {
     const ek = field + '_en';
     if (p && p[ek] != null && p[ek] !== '') return p[ek];
+  }
+  if (lang === 'ar') {
+    const ek = field + '_ar';
+    if (p && p[ek] != null && p[ek] !== '') return p[ek];
+    if (PRODUCT_I18N_AR[p.id] && PRODUCT_I18N_AR[p.id][field] != null) return PRODUCT_I18N_AR[p.id][field];
+    return p[field];
   }
   return tf(PRODUCT_I18N, p.id, field, lang, p[field]);
 }
@@ -913,7 +1039,7 @@ function PolaroidCluster() {
 window.PolaroidCluster = PolaroidCluster;
 
 // ── price-ladder.jsx ──────────────────────────────────────────────────────────
-function PriceLadder({ activeQty, onPick, tiers }) {
+function PriceLadder({ activeQty, onPick, tiers, unit }) {
   const list = tiers || window.MEYVA_DATA.PHOTO_TIERS;
   return React.createElement('div', { className: 'ladder' },
     list.map(t =>
@@ -924,7 +1050,7 @@ function PriceLadder({ activeQty, onPick, tiers }) {
       },
         React.createElement('div', null,
           React.createElement('span', { className: 'ladder-qty' }, t.qty),
-          React.createElement('span', { className: 'ladder-label' }, 'photos')
+          React.createElement('span', { className: 'ladder-label' }, unit || 'photos')
         ),
         React.createElement('span', { className: 'ladder-arrow' }, '→'),
         React.createElement('span', { className: 'ladder-price' },
@@ -1067,7 +1193,9 @@ function ProductCard({ product, onOpen }) {
       React.createElement('div', { className: 'product-meta' },
         React.createElement('h3', { className: 'product-name' }, pField(product, 'name', lang)),
         React.createElement('span', { className: 'product-price' },
-          product.tiers ? t(lang, 'price_from') + ' ' + window.money(product.fromPrice) : window.money(product.price)
+          product.tiers ? t(lang, 'price_from') + ' ' + window.money(product.fromPrice)
+            : (Array.isArray(product.priceTiers) && product.priceTiers.length) ? t(lang, 'price_from') + ' ' + window.money(Math.min.apply(null, product.priceTiers.map(tt => tt.price)))
+            : window.money(product.price)
         )
       ),
       secondary && React.createElement('div', { style: { fontSize: 12, color: 'var(--pink-deep)', marginTop: 4 } }, secondary)
@@ -1349,7 +1477,7 @@ function PhotoPreview({ file, onRemove }) {
 function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const lang = useLang();
   const [qty, setQty] = React.useState(1);
-  const [tier, setTier] = React.useState(product.tiers ? 10 : null);
+  const [tier, setTier] = React.useState(product.tiers ? 10 : (Array.isArray(product.priceTiers) && product.priceTiers.length ? product.priceTiers[0].qty : null));
   const [added, setAdded] = React.useState(false);
   const [files, setFiles] = React.useState([]); // un emplacement par unité
   const [activeImg, setActiveImg] = React.useState(0);
@@ -1361,7 +1489,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const [compressing, setCompressing] = React.useState(false);
   const styleTags = product.styleModels || [];
   const toggleStyle = (s) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : prev.concat([s]));
-  React.useEffect(() => { setActiveImg(0); setSelected([]); setStyles([]); setFiles([]); setModel(hasModels ? product.models[0] : null); }, [product.id]);
+  React.useEffect(() => { setActiveImg(0); setSelected([]); setStyles([]); setFiles([]); setModel(hasModels ? product.models[0] : null); setTier(product.tiers ? 10 : (Array.isArray(product.priceTiers) && product.priceTiers.length ? product.priceTiers[0].qty : null)); }, [product.id]);
   // Aperçu instantané : transforme les images uploadées en URLs locales (une par emplacement)
   const [slotPreviews, setSlotPreviews] = React.useState([]);
   React.useEffect(() => {
@@ -1383,12 +1511,14 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   const addSelected = (m) => { setModel(m); if (selected.length < 30) setSelected(prev => prev.concat([m])); };
   const removeSelected = (i) => setSelected(prev => prev.filter((_, k) => k !== i));
   const mainImg = showUpload ? uploadedPreviews[upIdx] : (hasModels && model ? model.img : gallery[Math.min(activeImg, gallery.length - 1)]);
+  // Paliers de prix définis par la propriétaire (1 -> 10 DT, 2 -> 14 DT…)
+  const customTiers = (Array.isArray(product.priceTiers) && product.priceTiers.length) ? product.priceTiers : null;
   const tiers = window.MEYVA_DATA.tiersFor(product);
-  const activeTier = tiers.find(t => t.qty === tier);
-  const unitPrice = product.tiers ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
+  const activeTier = tiers.find(t => t.qty === tier) || (customTiers ? customTiers[0] : null);
+  const unitPrice = (product.tiers || customTiers) ? (activeTier ? activeTier.price : product.fromPrice) : product.price;
   const bundlePrice = (n) => { const b = product.bundle; if (!b || !n) return product.price * n; return Math.floor(n / b.n) * b.price + (n % b.n) * product.price; };
-  const count = pickPerUnit ? selected.length : qty;
-  const total = pickPerUnit ? bundlePrice(selected.length) : (product.bundle ? bundlePrice(qty) : unitPrice * qty);
+  const count = pickPerUnit ? selected.length : (customTiers ? (activeTier ? activeTier.qty : 1) : qty);
+  const total = customTiers ? (activeTier ? activeTier.price : 0) : (pickPerUnit ? bundlePrice(selected.length) : (product.bundle ? bundlePrice(qty) : unitPrice * qty));
   const related = products.filter(p => p.id !== product.id && p.cat === product.cat && !p.promoOnly).slice(0, 4);
 
   // Une case d'import par unité (max 30) — ou un nombre fixe pour les lots (product.slots)
@@ -1431,8 +1561,8 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
     if (pickPerUnit) opt.posters = selected.map(m => ({ label: m.label, img: m.img }));
     else if (product.models && model) opt.model = { label: model.label, img: model.img };
     if (styleTags.length && styles.length) opt.styles = styles.slice();
-    const q = pickPerUnit ? selected.length : qty;
-    if (product.bundle && q > 0) opt.unitPrice = total / q; // applique l'offre (ex. 3 pour 10)
+    const q = pickPerUnit ? selected.length : (customTiers ? (activeTier ? activeTier.qty : 1) : qty);
+    if ((customTiers || product.bundle) && q > 0) opt.unitPrice = total / q; // palier de prix / offre (ex. 3 pour 10)
     addToCart(product, q, Object.keys(opt).length ? opt : null);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -1482,9 +1612,10 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
         React.createElement('div', { className: 'pdp-cat' }, catLabel(product.cat, lang)),
         React.createElement('h1', { className: 'pdp-name' }, pField(product, 'name', lang)),
         React.createElement('div', { className: 'pdp-price' },
-          window.money(product.tiers ? unitPrice : product.price),
+          window.money((product.tiers || customTiers) ? unitPrice : product.price),
           product.tiers && React.createElement('small', null, '· ' + t(lang, 'price_from') + ' ' + window.money(product.fromPrice)),
-          pField(product, 'secondary', lang) && !product.tiers && React.createElement('small', null, '· ' + pField(product, 'secondary', lang))
+          customTiers && customTiers.length > 1 && React.createElement('small', null, '· ' + t(lang, 'price_from') + ' ' + window.money(Math.min.apply(null, customTiers.map(tt => tt.price)))),
+          pField(product, 'secondary', lang) && !product.tiers && !customTiers && React.createElement('small', null, '· ' + pField(product, 'secondary', lang))
         ),
         React.createElement('p', { className: 'pdp-desc' }, pField(product, 'long', lang) || pField(product, 'desc', lang)),
 
@@ -1554,6 +1685,11 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
             t(lang, 'pdp_send'))
         ),
 
+        customTiers && React.createElement('div', { className: 'pdp-section' },
+          React.createElement('h4', null, t(lang, 'pdp_qty')),
+          React.createElement(PriceLadder, { activeQty: tier, onPick: t => setTier(t.qty), tiers: customTiers, unit: t(lang, 'pieces') })
+        ),
+
         photoUpload && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'phup_title'), ' ',
             React.createElement('span', { style: { color: 'var(--ink-soft)', fontWeight: 400, fontSize: 13 } }, t(lang, 'up_required')),
@@ -1604,7 +1740,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           qty > 30 && React.createElement('p', { className: 'muted', style: { fontSize: 12, marginTop: 8 } }, t(lang, 'up_more_ig'))
         ),
 
-        !pickPerUnit && !product.tiers && !product.slots && React.createElement('div', { className: 'pdp-section' },
+        !pickPerUnit && !product.tiers && !product.slots && !customTiers && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, 'pdp_qty')),
           React.createElement('div', { className: 'qty-row' },
             React.createElement('div', { className: 'qty' },
@@ -2553,6 +2689,28 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
           field(t(lang, 'pm_desc'), 'desc', 'textarea'),
           field(t(lang, 'pm_desc_en'), 'desc_en', 'textarea')
         ),
+        // ── Paliers de prix (1 → 10 DT, 2 → 14 DT…) ──
+        isCustom && (function () {
+          const tiersArr = Array.isArray(row.priceTiers) ? row.priceTiers : [];
+          const setTierRow = (i, k, v) => setF('priceTiers', tiersArr.map((tr, j) => j === i ? Object.assign({}, tr, { [k]: k === 'qty' ? Math.max(1, parseInt(v, 10) || 1) : (parseFloat(v) || 0) }) : tr));
+          const addTierRow = () => setF('priceTiers', tiersArr.concat([{ qty: (tiersArr.length ? tiersArr[tiersArr.length - 1].qty + 1 : 1), price: 0 }]));
+          const removeTierRow = (i) => setF('priceTiers', tiersArr.filter((_, j) => j !== i));
+          return React.createElement('div', { className: 'pm-tiers-edit' },
+            React.createElement('div', { className: 'pm-specs-head' },
+              React.createElement('span', { className: 'pm-specs-title' }, t(lang, 'pm_tiers')),
+              React.createElement('button', { type: 'button', className: 'btn btn-outline btn-sm', onClick: addTierRow }, t(lang, 'pm_add_tier'))
+            ),
+            tiersArr.length === 0
+              ? React.createElement('p', { className: 'muted', style: { margin: '4px 0 0', fontSize: 12 } }, t(lang, 'pm_tiers_hint'))
+              : tiersArr.map((tr, i) => React.createElement('div', { key: i, className: 'pm-tier-row' },
+                  React.createElement('input', { type: 'number', min: '1', className: 'pm-tier-input', placeholder: t(lang, 'pm_tier_qty'), value: tr.qty, onChange: e => setTierRow(i, 'qty', e.target.value) }),
+                  React.createElement('span', { className: 'pm-tier-arrow' }, '→'),
+                  React.createElement('input', { type: 'number', min: '0', step: '0.5', className: 'pm-tier-input', placeholder: t(lang, 'pm_tier_price'), value: tr.price, onChange: e => setTierRow(i, 'price', e.target.value) }),
+                  React.createElement('span', { className: 'pm-tier-dt' }, 'DT'),
+                  React.createElement('button', { type: 'button', className: 'pm-spec-del', onClick: () => removeTierRow(i) }, '×')
+                ))
+          );
+        })(),
         // ── Caractéristiques personnalisées (autant de lignes que voulu) ──
         (function () {
           const specs = specsOf(row);

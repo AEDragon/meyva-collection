@@ -1287,6 +1287,13 @@ textarea.inp { resize: vertical; }
 .pm-spec-x { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--pink-deep); font-size: 16px; line-height: 1; cursor: pointer; }
 .pm-spec-x:hover { border-color: var(--pink-deep); }
 @media (max-width: 700px) { .pm-spec-row { grid-template-columns: 1fr 1fr auto; } }
+/* Paliers de prix (éditeur admin) */
+.pm-tiers-edit { margin-top: 10px; }
+.pm-tier-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.pm-tier-input { font: inherit; font-size: 13px; color: var(--ink); padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); width: 90px; }
+.pm-tier-input:focus { outline: none; border-color: var(--pink-deep); }
+.pm-tier-arrow { color: var(--ink-soft); }
+.pm-tier-dt { font-size: 12px; color: var(--ink-soft); }
 /* Caractéristiques produit (boutique) */
 .pdp-specs { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .pdp-spec-row { display: grid; grid-template-columns: 38% 1fr; gap: 0; }
