@@ -27,6 +27,20 @@ const TEXT_FIELDS = {
   secondary: 120, secondary_en: 120, cat: 60, image: 600, badge: 60,
 };
 
+// Galerie : jusqu'à 24 photos par produit (URLs d'images déjà téléversées).
+function cleanImages(v) {
+  return Array.isArray(v) ? v.slice(0, 24).map((x) => s(x, 600)).filter(Boolean) : [];
+}
+// Champs personnalisés : liste de { libellé, valeur } (+ versions EN facultatives).
+function cleanSpecs(v) {
+  return Array.isArray(v)
+    ? v.slice(0, 24).map((f) => ({
+        label: s(f && f.label, 80), value: s(f && f.value, 400),
+        label_en: s(f && f.label_en, 80), value_en: s(f && f.value_en, 400),
+      })).filter((x) => x.label || x.value)
+    : [];
+}
+
 function cleanFields(o) {
   o = o || {};
   const out = {};
@@ -34,6 +48,8 @@ function cleanFields(o) {
   if (o.price != null) out.price = num(o.price);
   if (o.fromPrice != null) out.fromPrice = num(o.fromPrice);
   if (o.soldOut != null) out.soldOut = !!o.soldOut;
+  if (o.images != null) out.images = cleanImages(o.images);
+  if (o.fields != null) out.fields = cleanSpecs(o.fields);
   return out;
 }
 

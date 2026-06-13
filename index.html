@@ -511,6 +511,9 @@ const I18N = {
     pm_intro: 'Gère ta boutique : modifie les prix, les noms, ajoute des produits ou marque-les épuisés. Clique « Enregistrer » pour publier.',
     pm_add: 'Ajouter un produit', pm_save: 'Enregistrer', pm_saving: 'Enregistrement…', pm_saved: '✓ Publié !', pm_saved_ok: '✓ À jour', pm_err: 'Erreur', pm_loading: 'Chargement du catalogue…',
     pm_uploading: 'Envoi de l’image…', pm_img_ok: '✓ Image ajoutée', pm_change_img: 'Changer la photo',
+    pm_add_photos: 'Ajouter des photos', pm_photos_n: 'photo(s)', pm_img_remove: 'Retirer cette photo', pm_img_main: 'Photo principale',
+    pm_specs_title: 'Caractéristiques personnalisées', pm_specs_hint: 'Ajoute autant de lignes que tu veux (matière, taille, couleur…).', pm_add_field: '＋ Ajouter une caractéristique',
+    pm_field_label: 'Titre (ex. Taille)', pm_field_value: 'Valeur (ex. A4)', pm_field_label_en: 'Titre (EN)', pm_field_value_en: 'Valeur (EN)', pm_field_remove: 'Retirer',
     pm_name: 'Nom (FR)', pm_name_en: 'Nom (EN)', pm_cat: 'Catégorie', pm_price: 'Prix (DT)', pm_desc: 'Description (FR)', pm_desc_en: 'Description (EN)',
     pm_soldout: 'Épuisé', pm_hide: 'Masquer de la boutique', pm_delete: 'Supprimer', pm_del_confirm: 'Supprimer ce produit définitivement ?',
     pm_mine: 'Mes produits ajoutés', pm_shop: 'Produits de la boutique', pm_added_hint: 'Nouveau produit ajouté en bas — remplis ses infos puis Enregistrer.',
@@ -644,6 +647,9 @@ const I18N = {
     pm_intro: 'Manage your shop: edit prices, names, add products or mark them sold out. Click “Save” to publish.',
     pm_add: 'Add a product', pm_save: 'Save', pm_saving: 'Saving…', pm_saved: '✓ Published!', pm_saved_ok: '✓ Up to date', pm_err: 'Error', pm_loading: 'Loading catalog…',
     pm_uploading: 'Uploading image…', pm_img_ok: '✓ Image added', pm_change_img: 'Change photo',
+    pm_add_photos: 'Add photos', pm_photos_n: 'photo(s)', pm_img_remove: 'Remove this photo', pm_img_main: 'Main photo',
+    pm_specs_title: 'Custom details', pm_specs_hint: 'Add as many rows as you want (material, size, colour…).', pm_add_field: '＋ Add a detail',
+    pm_field_label: 'Title (e.g. Size)', pm_field_value: 'Value (e.g. A4)', pm_field_label_en: 'Title (EN)', pm_field_value_en: 'Value (EN)', pm_field_remove: 'Remove',
     pm_name: 'Name (FR)', pm_name_en: 'Name (EN)', pm_cat: 'Category', pm_price: 'Price (DT)', pm_desc: 'Description (FR)', pm_desc_en: 'Description (EN)',
     pm_soldout: 'Sold out', pm_hide: 'Hide from shop', pm_delete: 'Delete', pm_del_confirm: 'Delete this product permanently?',
     pm_mine: 'My added products', pm_shop: 'Shop products', pm_added_hint: 'New product added at the bottom — fill its info then Save.',
@@ -1045,8 +1051,8 @@ function ProductCard({ product, onOpen }) {
       product.soldOut && React.createElement('span', { className: 'product-soldout' }, t(lang, 'soldout')),
       product.badge && !product.soldOut && React.createElement('span', { className: 'product-badge' }, product.badge),
       React.createElement('div', { className: 'product-thumb-inner' },
-        product.image
-          ? React.createElement('img', { src: product.image, alt: pField(product, 'name', lang), className: 'product-photo', loading: 'lazy' })
+        (product.image || (product.images && product.images[0]))
+          ? React.createElement('img', { src: product.image || product.images[0], alt: pField(product, 'name', lang), className: 'product-photo', loading: 'lazy' })
           : React.createElement(ProductSwatch, { name: product.swatch })
       ),
       React.createElement('div', { className: 'product-quick' }, t(lang, 'product_see'))
@@ -1364,7 +1370,7 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
   React.useEffect(() => { setPreviewIdx(0); }, [product.id]);
   const upIdx = Math.min(previewIdx, Math.max(0, uploadedPreviews.length - 1));
   const stepPreview = (d) => { const n = uploadedPreviews.length; if (n) setPreviewIdx((upIdx + d + n) % n); };
-  const gallery = (product.gallery && product.gallery.length) ? product.gallery : (product.image ? [product.image] : []);
+  const gallery = (product.images && product.images.length) ? product.images : (product.gallery && product.gallery.length) ? product.gallery : (product.image ? [product.image] : []);
   // Avec modèles : l'image principale suit le modèle prévisualisé + flèches
   const modelIdx = hasModels && model ? product.models.findIndex(m => m.label === model.label) : -1;
   const stepModel = (d) => { if (!hasModels) return; const n = product.models.length; const cur = modelIdx < 0 ? 0 : modelIdx; setModel(product.models[(cur + d + n) % n]); };
@@ -1475,6 +1481,20 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
           pField(product, 'secondary', lang) && !product.tiers && React.createElement('small', null, '· ' + pField(product, 'secondary', lang))
         ),
         React.createElement('p', { className: 'pdp-desc' }, pField(product, 'long', lang) || pField(product, 'desc', lang)),
+
+        // Champs personnalisés ajoutés par la propriétaire (caractéristiques libres)
+        (Array.isArray(product.fields) && product.fields.filter(f => (f && (f.label || f.value))).length > 0) && React.createElement('div', { className: 'pdp-section' },
+          React.createElement('dl', { className: 'pdp-specs' },
+            product.fields.filter(f => f && (f.label || f.value)).map((f, i) => {
+              const label = (lang === 'en' && f.label_en) ? f.label_en : f.label;
+              const value = (lang === 'en' && f.value_en) ? f.value_en : f.value;
+              return React.createElement('div', { key: i, className: 'pdp-spec-row' },
+                label && React.createElement('dt', null, label),
+                React.createElement('dd', null, value || '')
+              );
+            })
+          )
+        ),
 
         (product.models && product.models.length) && React.createElement('div', { className: 'pdp-section' },
           React.createElement('h4', null, t(lang, pickPerUnit ? 'model_pick_multi' : 'model_choose'),
@@ -2435,6 +2455,38 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
     setBusyImg('');
   };
 
+  // ── Galerie : plusieurs photos par produit (autant que voulu, max 24) ──
+  const galleryOf = (row) => (Array.isArray(row.images) && row.images.length) ? row.images : (row.image ? [row.image] : []);
+  const applyGallery = (setF, urls) => { const list = urls.slice(0, 24); setF('images', list); setF('image', list[0] || ''); };
+  const uploadGallery = async (rowId, fileList, setF, current) => {
+    const files = Array.from(fileList || []).filter(f => /^image\//.test(f.type));
+    if (!files.length) return;
+    setBusyImg(rowId); setMsg(t(lang, 'pm_uploading'));
+    try {
+      const urls = current.slice();
+      for (const f of files) {
+        if (urls.length >= 24) break;
+        const small = await compressImage(f, 1400, 0.85);
+        const b64 = await fileToB64(small);
+        const r = await fetch('/api/products', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ op: 'image', name: small.name || 'image.jpg', type: small.type || 'image/jpeg', dataBase64: b64 }),
+        });
+        const j = await r.json();
+        if (r.ok && j && j.url) urls.push(j.url); else { setMsg(t(lang, 'pm_err') + (j && j.error ? ' — ' + j.error : '')); }
+      }
+      applyGallery(setF, urls); mark(); setMsg(t(lang, 'pm_img_ok'));
+    } catch (e) { setMsg(t(lang, 'pm_err')); }
+    setBusyImg('');
+  };
+  const removeImageAt = (setF, current, idx) => { const next = current.slice(); next.splice(idx, 1); applyGallery(setF, next); mark(); };
+
+  // ── Champs personnalisés : { label, value, label_en, value_en } ──
+  const specsOf = (row) => Array.isArray(row.fields) ? row.fields : [];
+  const addSpec = (setF, current) => { setF('fields', current.concat([{ label: '', value: '', label_en: '', value_en: '' }])); mark(); };
+  const setSpec = (setF, current, i, k, v) => { setF('fields', current.map((f, idx) => idx === i ? Object.assign({}, f, { [k]: v }) : f)); mark(); };
+  const removeSpec = (setF, current, i) => { setF('fields', current.filter((_, idx) => idx !== i)); mark(); };
+
   const save = async () => {
     setSaving(true); setMsg(t(lang, 'pm_saving'));
     try {
@@ -2462,13 +2514,25 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
         : React.createElement('input', { type: type || 'text', value: row[key] != null ? row[key] : '', onChange: e => setF(key, e.target.value) })
     );
     return React.createElement('div', { className: 'pm-card' + (hidden ? ' is-hidden' : '') + (row.soldOut ? ' is-sold' : ''), key: id },
-      React.createElement('div', { className: 'pm-card-img' },
-        row.image ? React.createElement('img', { src: row.image, alt: '' }) : React.createElement('div', { className: 'pm-noimg' }, '🖼️'),
-        React.createElement('label', { className: 'btn-file pm-imgbtn' },
-          React.createElement('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onChange: e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; uploadImage(id, f, (url) => setF('image', url)); } }),
-          busyImg === id ? '…' : ('🖼️ ' + t(lang, 'pm_change_img'))
-        )
-      ),
+      (function () {
+        const imgs = galleryOf(row);
+        return React.createElement('div', { className: 'pm-card-img' },
+          imgs.length
+            ? React.createElement('div', { className: 'pm-gallery' },
+                imgs.map((src, i) => React.createElement('div', { key: i, className: 'pm-gthumb' + (i === 0 ? ' is-main' : '') },
+                  React.createElement('img', { src: src, alt: '' }),
+                  i === 0 && React.createElement('span', { className: 'pm-gthumb-main', title: t(lang, 'pm_img_main') }, '★'),
+                  React.createElement('button', { type: 'button', className: 'pm-gthumb-x', title: t(lang, 'pm_img_remove'), onClick: () => removeImageAt(setF, imgs, i) }, '×')
+                ))
+              )
+            : React.createElement('div', { className: 'pm-noimg' }, '🖼️'),
+          React.createElement('div', { className: 'pm-gcount muted' }, imgs.length + ' ' + t(lang, 'pm_photos_n')),
+          React.createElement('label', { className: 'btn-file pm-imgbtn' },
+            React.createElement('input', { type: 'file', accept: 'image/*', multiple: true, style: { display: 'none' }, onChange: e => { const fl = e.target.files; e.target.value = ''; uploadGallery(id, fl, setF, galleryOf(row)); } }),
+            busyImg === id ? '…' : ('🖼️ ' + t(lang, 'pm_add_photos'))
+          )
+        );
+      })(),
       React.createElement('div', { className: 'pm-card-body' },
         React.createElement('div', { className: 'pm-grid' },
           field(t(lang, 'pm_name'), 'name'),
@@ -2483,6 +2547,25 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
           field(t(lang, 'pm_desc'), 'desc', 'textarea'),
           field(t(lang, 'pm_desc_en'), 'desc_en', 'textarea')
         ),
+        // ── Caractéristiques personnalisées (autant de lignes que voulu) ──
+        (function () {
+          const specs = specsOf(row);
+          return React.createElement('div', { className: 'pm-specs-edit' },
+            React.createElement('div', { className: 'pm-specs-head' },
+              React.createElement('span', { className: 'pm-specs-title' }, t(lang, 'pm_specs_title')),
+              React.createElement('button', { type: 'button', className: 'btn btn-outline btn-sm', onClick: () => addSpec(setF, specs) }, t(lang, 'pm_add_field'))
+            ),
+            specs.length === 0
+              ? React.createElement('p', { className: 'muted', style: { margin: '4px 0 0', fontSize: 12 } }, t(lang, 'pm_specs_hint'))
+              : specs.map((f, i) => React.createElement('div', { key: i, className: 'pm-spec-row' },
+                  React.createElement('input', { className: 'pm-spec-input', placeholder: t(lang, 'pm_field_label'), value: f.label || '', onChange: e => setSpec(setF, specs, i, 'label', e.target.value) }),
+                  React.createElement('input', { className: 'pm-spec-input', placeholder: t(lang, 'pm_field_value'), value: f.value || '', onChange: e => setSpec(setF, specs, i, 'value', e.target.value) }),
+                  React.createElement('input', { className: 'pm-spec-input pm-spec-en', placeholder: t(lang, 'pm_field_label_en'), value: f.label_en || '', onChange: e => setSpec(setF, specs, i, 'label_en', e.target.value) }),
+                  React.createElement('input', { className: 'pm-spec-input pm-spec-en', placeholder: t(lang, 'pm_field_value_en'), value: f.value_en || '', onChange: e => setSpec(setF, specs, i, 'value_en', e.target.value) }),
+                  React.createElement('button', { type: 'button', className: 'pm-spec-x', title: t(lang, 'pm_field_remove'), onClick: () => removeSpec(setF, specs, i) }, '×')
+                ))
+          );
+        })(),
         React.createElement('div', { className: 'pm-card-actions' },
           React.createElement('label', { className: 'pm-check' + (row.soldOut ? ' on' : '') },
             React.createElement('input', { type: 'checkbox', checked: !!row.soldOut, onChange: e => setF('soldOut', e.target.checked) }),
