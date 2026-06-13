@@ -79,6 +79,12 @@ function cleanSpecs(v) {
       })).filter((x) => x.label || x.value)
     : [];
 }
+function cleanTiers(v) {
+  if (!Array.isArray(v)) return [];
+  return v.slice(0, 24)
+    .map((tr) => ({ qty: Math.max(1, Math.round(num(tr && tr.qty))), price: num(tr && tr.price) }))
+    .filter((tr) => tr.qty > 0).sort((a, b) => a.qty - b.qty);
+}
 function cleanFields(o) {
   o = o || {};
   const out = {};
@@ -88,6 +94,7 @@ function cleanFields(o) {
   if (o.soldOut != null) out.soldOut = !!o.soldOut;
   if (o.images != null) out.images = cleanImages(o.images);
   if (o.fields != null) out.fields = cleanSpecs(o.fields);
+  if (o.priceTiers != null) out.priceTiers = cleanTiers(o.priceTiers);
   return out;
 }
 function cleanCustom(c) {
@@ -125,6 +132,15 @@ function readCatalog() {
 
 // ── Commandes : nettoyage (miroir de api/orders.js) ─────────────────────────
 const cl = (v, max) => String(v == null ? '' : v).slice(0, max);
+function cleanProductImage(v) {
+  const x = String(v == null ? '' : v).slice(0, 600);
+  return (
+    /^assets\/[A-Za-z0-9_./-]+$/.test(x) ||
+    /^\/api\/products\?img=[A-Za-z0-9_.%\-/]+$/.test(x) ||
+    /^\/blob\/[A-Za-z0-9_.\-]+$/.test(x) ||
+    /^https:\/\/[\w.\-/%]+$/.test(x)
+  ) ? x : '';
+}
 function cleanItem(it) {
   it = it || {};
   const opt = it.option; let option = null;
@@ -135,18 +151,29 @@ function cleanItem(it) {
     if (Array.isArray(opt.posters)) option.posters = opt.posters.slice(0, 30).map((p) => (p && typeof p === 'object') ? Object.assign({ label: cl(p.label, 80) }, p.img ? { img: cl(p.img, 600) } : {}) : { label: cl(p, 80) });
     if (Array.isArray(opt.styles)) option.styles = opt.styles.slice(0, 20).map((x) => cl(x, 40)).filter(Boolean);
   }
-  return { name: cl(it.name, 120), qty: Number(it.qty) || 1, unitPrice: Number(it.unitPrice) || 0, cat: cl(it.cat, 40), option };
+  return { name: cl(it.name, 120), qty: Number(it.qty) || 1, unitPrice: Number(it.unitPrice) || 0, cat: cl(it.cat, 40), image: cleanProductImage(it.image), option };
 }
 
 // ── Routeur API ─────────────────────────────────────────────────────────────
 async function handleApi(req, res, urlPath, query) {
   // ----- /api/products -----
   if (urlPath === '/api/products') {
-    if (req.method === 'GET') return sendJSON(res, 200, { catalog: readCatalog() });
+    if (req.method === 'GET') {
+      // Proxy d'image produit privée (miroir de prod : /api/products?img=product/<nom>)
+      if (query && query.img) {
+        const ip = String(query.img);
+        if (!/^product\/[A-Za-z0-9_.\-]+$/.test(ip)) return sendJSON(res, 400, { error: 'chemin invalide' });
+        const local = path.join(DIR.public, path.basename(ip));
+        if (!fs.existsSync(local)) return sendJSON(res, 404, { error: 'introuvable' });
+        res.writeHead(200, { 'Content-Type': mimeFor(local), 'Cache-Control': 'public, max-age=31536000, immutable' });
+        return res.end(fs.readFileSync(local));
+      }
+      return sendJSON(res, 200, { catalog: readCatalog() });
+    }
     if (req.method === 'POST') {
       if (!isAdmin(req, query)) return sendJSON(res, 401, { error: 'non autorisé' });
       const body = await readBody(req);
-      // Upload d'une image produit (publique → /blob/<nom>)
+      // Upload d'une image produit → renvoie l'URL du proxy (comme en prod)
       if ((query && query.image) || (body && body.op === 'image')) {
         const buf = Buffer.from(String(body.dataBase64 || ''), 'base64');
         if (!buf.length) return sendJSON(res, 400, { error: 'image manquante' });
@@ -154,7 +181,7 @@ async function handleApi(req, res, urlPath, query) {
         const safe = s(body.name || 'image', 120).replace(/[^A-Za-z0-9._-]/g, '_');
         const fn = Date.now() + '-' + Math.floor(Math.random() * 1e6) + '-' + safe;
         fs.writeFileSync(path.join(DIR.public, fn), buf);
-        return sendJSON(res, 200, { ok: true, url: '/blob/' + fn });
+        return sendJSON(res, 200, { ok: true, url: '/api/products?img=product/' + fn });
       }
       const catalog = cleanCatalog(body);
       fs.writeFileSync(CATALOG_FILE, JSON.stringify(catalog, null, 2));

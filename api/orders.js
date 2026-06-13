@@ -37,6 +37,17 @@ function cleanAsset(v) {
   const s = String(v == null ? '' : v);
   return /^assets\/[A-Za-z0-9_./-]+$/.test(s) ? s : '';
 }
+// Image produit dans une commande : asset du site, proxy d'image privée
+// (/api/products?img=product/…), image téléversée (/blob/…) ou URL https du store Blob.
+function cleanProductImage(v) {
+  const s = String(v == null ? '' : v).slice(0, 600);
+  return (
+    /^assets\/[A-Za-z0-9_./-]+$/.test(s) ||
+    /^\/api\/products\?img=[A-Za-z0-9_.%\-/]+$/.test(s) ||
+    /^\/blob\/[A-Za-z0-9_.\-]+$/.test(s) ||
+    /^https:\/\/[\w.\-/%]+$/.test(s)
+  ) ? s : '';
+}
 function cleanItem(it) {
   it = it || {};
   const opt = it.option;
@@ -69,6 +80,7 @@ function cleanItem(it) {
     qty: Number(it.qty) || 1,
     unitPrice: Number(it.unitPrice) || 0,
     cat: clean(it.cat, 40),
+    image: cleanProductImage(it.image),
     option: option,
   };
 }
