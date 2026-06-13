@@ -2301,7 +2301,7 @@ function PostManager({ kind, adminKey, reloadCatalog }) {
       const r = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }, body: JSON.stringify(doc) });
       if (!r.ok) { setMsg(t(lang, 'pm_err') + ' (' + r.status + ')'); setSaving(false); return; }
       setDirty(false); setMsg(t(lang, 'pm_saved'));
-      if (reloadCatalog) await reloadCatalog();
+      if (reloadCatalog) await reloadCatalog(doc);
     } catch (e) { setMsg(t(lang, 'pm_err')); }
     setSaving(false);
   };
@@ -2444,7 +2444,7 @@ function ProductManager({ catalog, adminKey, reloadCatalog }) {
       });
       if (!r.ok) { setMsg(t(lang, 'pm_err') + ' (' + r.status + ')'); setSaving(false); return; }
       setDirty(false); setMsg(t(lang, 'pm_saved'));
-      if (reloadCatalog) await reloadCatalog();
+      if (reloadCatalog) await reloadCatalog(ov);
     } catch (e) { setMsg(t(lang, 'pm_err')); }
     setSaving(false);
   };
@@ -2991,7 +2991,11 @@ function App() {
 
   // Catalogue effectif = PRODUCTS de base + modifications du propriétaire (API).
   const [overlay, setOverlay] = useState(null);
-  const reloadCatalog = React.useCallback(() => {
+  const reloadCatalog = React.useCallback((optimistic) => {
+    // Après une sauvegarde, on applique directement les données enregistrées
+    // (faisant autorité) au lieu d'attendre la lecture du blob, qui peut être
+    // en retard de quelques secondes (read-after-write).
+    if (optimistic) { setOverlay(optimistic); return Promise.resolve(optimistic); }
     return fetch('/api/products', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(j => { if (j && j.catalog) setOverlay(j.catalog); return j && j.catalog; })
