@@ -7,7 +7,7 @@
 // The overlay is merged on top of the built-in PRODUCTS list in the storefront,
 // so the base catalog keeps working even if this blob is missing/empty.
 
-import { put, list, get } from '@vercel/blob';
+import { put, list, get, del } from '@vercel/blob';
 
 const PATH = 'catalog/catalog.json';
 const EMPTY = { overrides: {}, custom: [], hidden: [], categories: [], news: [], events: [] };
@@ -161,8 +161,9 @@ export default async function handler(req, res) {
       if (req.query && req.query.draft) {
         if (!isAdmin(req)) { res.status(401).json({ error: 'non autorisé' }); return; }
         const draft = await readDraft(token);
-        const published = await readCatalog(token);
-        const dirty = JSON.stringify(draft) !== JSON.stringify(published);
+        // « Modifications non publiées » = il existe un brouillon non encore publié.
+        let dirty = false;
+        try { const { blobs } = await list({ prefix: DRAFT, token }); dirty = blobs.length > 0; } catch (e) {}
         res.setHeader('Cache-Control', 'no-store');
         res.status(200).json({ catalog: draft, dirty: dirty });
         return;
@@ -197,11 +198,12 @@ export default async function handler(req, res) {
         return;
       }
 
-      // Publication : on copie le brouillon vers le site en direct.
+      // Publication : on copie le brouillon vers le site en direct, puis on supprime
+      // le brouillon (plus de « modifications non publiées »).
       if (body && body.op === 'publish') {
         const catalog = cleanCatalog(await readDraft(token));
-        await writeDoc(PATH, catalog, token);   // site en direct
-        await writeDoc(DRAFT, catalog, token);  // brouillon = publié
+        await writeDoc(PATH, catalog, token);
+        try { await del(DRAFT, { token }); } catch (e) {}
         res.status(200).json({ ok: true, published: true, catalog });
         return;
       }
