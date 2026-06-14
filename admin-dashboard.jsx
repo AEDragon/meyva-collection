@@ -59,6 +59,18 @@ function getStoredKey() { try { return localStorage.getItem(ADMIN_KEY_STORE) || 
 function setStoredKey(k) { try { localStorage.setItem(ADMIN_KEY_STORE, k); } catch (e) {} }
 function clearStoredKey() { try { localStorage.removeItem(ADMIN_KEY_STORE); } catch (e) {} }
 
+// Persistance « aperçu » (local) : quand aucune API n'est joignable (site servi
+// en statique, ex. aperçu local), les enregistrements sont gardés dans le
+// navigateur pour qu'on puisse essayer le dashboard de bout en bout. Sur le
+// site en ligne l'API répond, donc ce mode ne s'active jamais.
+const CONTENT_DEMO_STORE = 'meyva_content_demo';
+function loadDemoContent() {
+  try { const v = localStorage.getItem(CONTENT_DEMO_STORE); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+}
+function saveDemoContent(doc) {
+  try { localStorage.setItem(CONTENT_DEMO_STORE, JSON.stringify(doc)); } catch (e) {}
+}
+
 async function adminAuthHeaders() {
   try {
     const tok = window.Clerk && window.Clerk.session ? await window.Clerk.session.getToken() : null;
@@ -335,7 +347,7 @@ function ProductsPanel({ draft, setDraft, notify }) {
             <div className="adm-row">
               <div className="adm-row-main">
                 <span className="adm-row-name">{(p.featured ? '⭐ ' : '') + (p.name || '')}{!p.name && <em className="muted">{t(lang, 'da_new_product')}</em>}</span>
-                <span className="adm-row-meta">{p.cat} · {p.tiers ? t(lang, 'price_from') + ' ' + window.money(p.fromPrice || 0) : window.money(p.price || 0)}</span>
+                <span className="adm-row-meta">{p.cat} · {p.tiers ? t(lang, 'price_from') + ' ' + window.money(p.fromPrice || 0) : window.money(p.price || 0)}{p.soldOut ? ' · ' + t(lang, 'sold_out') : ''}</span>
               </div>
               <RowBtns
                 editing={openId === p.id}
@@ -368,6 +380,7 @@ function ProductsPanel({ draft, setDraft, notify }) {
                 {!p.image && <AdmSel label={t(lang, 'da_f_swatch')} value={p.swatch || 'stickers-pink'} onChange={v => ops.upd(i, { swatch: v })} options={SWATCH_OPTIONS} />}
                 <div className="adm-chks">
                   <AdmChk label={t(lang, 'da_f_featured')} checked={p.featured} onChange={v => ops.upd(i, { featured: v })} />
+                  <AdmChk label={t(lang, 'da_f_soldout')} checked={p.soldOut} onChange={v => ops.upd(i, { soldOut: v })} />
                   <AdmChk label={t(lang, 'da_f_upload')} checked={p.upload} onChange={v => ops.upd(i, { upload: v })} />
                 </div>
               </div>
@@ -708,17 +721,23 @@ function AdminDashboard() {
 
   // Charge le contenu publié dans le brouillon une fois connecté
   const loadContent = async () => {
+    // Sans contenu serveur, on reprend un éventuel enregistrement local (aperçu),
+    // sinon les valeurs par défaut.
+    const fallback = () => {
+      const demo = loadDemoContent();
+      if (demo) { const d = normalizeDraft(demo); setDraft(d); setSavedJson(JSON.stringify(d)); setNote(t(lang, 'da_saved_demo')); }
+      else { const d = defaultDraft(); setDraft(d); setSavedJson(JSON.stringify(d)); setNote(t(lang, 'da_using_defaults')); }
+    };
     try {
       const r = await fetch('/api/content?fresh=1', { cache: 'no-store' });
       const j = r.ok ? await r.json() : null;
-      const d = j && j.content ? normalizeDraft(j.content) : defaultDraft();
-      setDraft(d); setSavedJson(JSON.stringify(d));
-      if (!(j && j.content)) setNote(t(lang, 'da_using_defaults'));
-    } catch (e) {
-      const d = defaultDraft();
-      setDraft(d); setSavedJson(JSON.stringify(d));
-      setNote(t(lang, 'da_using_defaults'));
-    }
+      if (j && j.content) {
+        const d = normalizeDraft(j.content);
+        setDraft(d); setSavedJson(JSON.stringify(d));
+      } else {
+        fallback();
+      }
+    } catch (e) { fallback(); }
   };
   React.useEffect(() => { if (authState === 'signedIn') loadContent(); }, [authState]);
 
@@ -728,6 +747,15 @@ function AdminDashboard() {
     if (!draft || saving) return;
     if (draft.products.some(p => !String(p.name || '').trim())) { setNote(t(lang, 'da_val_name')); return; }
     setSaving(true); setNote('');
+    // Enregistrement local (aperçu) : applique au storefront + mémorise dans le
+    // navigateur, et marque le brouillon comme sauvegardé.
+    const persistDemo = () => {
+      const snapshot = JSON.parse(JSON.stringify(draft));
+      saveDemoContent(snapshot);
+      setSavedJson(JSON.stringify(draft));
+      setNote(t(lang, 'da_saved_demo'));
+      if (window.__meyvaApplyContent) window.__meyvaApplyContent(snapshot);
+    };
     try {
       const auth = await adminAuthHeaders();
       if (!auth) { setNote(t(lang, 'ad_st_expired')); setSaving(false); return; }
@@ -736,6 +764,7 @@ function AdminDashboard() {
         headers: Object.assign({ 'Content-Type': 'application/json' }, auth),
         body: JSON.stringify(draft),
       });
+      if (r.status === 404) { persistDemo(); setSaving(false); return; } // pas d'API -> mode aperçu
       if (!r.ok) {
         let msg = ''; try { const j = await r.json(); msg = j.error || ''; } catch (e) {}
         setNote(t(lang, 'da_save_fail') + ' (' + r.status + (msg ? ' · ' + msg : '') + ')');
@@ -745,7 +774,7 @@ function AdminDashboard() {
       setNote(t(lang, 'da_saved'));
       // Met aussi à jour le storefront ouvert dans cet onglet, sans rechargement.
       if (window.__meyvaApplyContent) window.__meyvaApplyContent(JSON.parse(JSON.stringify(draft)));
-    } catch (e) { setNote(t(lang, 'da_save_fail') + '.'); }
+    } catch (e) { persistDemo(); } // fetch impossible (statique) -> mode aperçu
     setSaving(false);
   };
 

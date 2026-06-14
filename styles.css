@@ -1294,6 +1294,12 @@ textarea.inp { resize: vertical; }
 .admin-keyrow .inp { flex: 1; }
 .admin-or { margin: 22px 0 6px; font-size: 13px; }
 
+/* ── épuisé / sold out ─────────────────────────────────────────────────────── */
+.sold-out-badge { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.product-card.is-soldout .product-thumb-inner { filter: grayscale(0.5) opacity(0.65); }
+.product-card.is-soldout .product-name { color: var(--ink-soft); }
+.pdp-cta .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
 @media (max-width: 900px) {
   .news-grid { grid-template-columns: 1fr 1fr; }
 }

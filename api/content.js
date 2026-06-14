@@ -80,6 +80,7 @@ function sanitizeProduct(p, i) {
     kitNote: str(p.kitNote, 300) || undefined,
     upload: bool(p.upload) || undefined,
     featured: bool(p.featured) || undefined,
+    soldOut: bool(p.soldOut) || undefined,
   };
 }
 

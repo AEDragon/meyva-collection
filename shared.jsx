@@ -87,9 +87,11 @@ function Nav({ page, setPage, cartCount, openCart }) {
 }
 
 function ProductCard({ product, onOpen }) {
-  return React.createElement('article', { className: 'product-card', onClick: () => onOpen(product) },
+  return React.createElement('article', { className: 'product-card' + (product.soldOut ? ' is-soldout' : ''), onClick: () => onOpen(product) },
     React.createElement('div', { className: 'product-thumb' },
-      product.badge && React.createElement('span', { className: 'product-badge' }, product.badge),
+      product.soldOut
+        ? React.createElement('span', { className: 'product-badge sold-out-badge' }, 'Épuisé')
+        : product.badge && React.createElement('span', { className: 'product-badge' }, product.badge),
       React.createElement('div', { className: 'product-thumb-inner' },
         React.createElement(ProductSwatch, { name: product.swatch })
       ),

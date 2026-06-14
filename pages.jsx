@@ -233,9 +233,17 @@ function ProductDetail({ product, products, addToCart, openProduct, setPage }) {
         ),
 
         React.createElement('div', { className: 'pdp-cta' },
-          React.createElement('button', { className: 'btn btn-pink', onClick: onAdd },
-            added ? '✓ Ajouté au panier' : 'Ajouter — ' + total + ' DT'
-          )
+          product.soldOut
+            ? React.createElement(React.Fragment, null,
+                React.createElement('button', { className: 'btn btn-pink', disabled: true }, 'Épuisé — bientôt de retour'),
+                React.createElement('a', {
+                  className: 'btn btn-outline', style: { marginTop: 10 },
+                  href: 'https://instagram.com/meyva__collection', target: '_blank', rel: 'noopener',
+                }, React.createElement(Icon.insta), 'Réserver sur Instagram')
+              )
+            : React.createElement('button', { className: 'btn btn-pink', onClick: onAdd },
+                added ? '✓ Ajouté au panier' : 'Ajouter — ' + total + ' DT'
+              )
         ),
 
         React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, paddingTop: 18, borderTop: '1px solid var(--line)', fontSize: 13 } },

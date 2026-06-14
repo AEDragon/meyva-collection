@@ -53,12 +53,15 @@ only works on the deployed site (or `vercel dev`).
 ## Admin dashboard
 
 The shop owner manages the whole site from **`/admin`** (also reachable via the
-"Admin" button in the bottom page switcher), behind the existing Clerk sign-in:
+"Admin" button in the bottom page switcher). Sign in with the **shop access code**
+(`ADMIN_KEY`) — Clerk sign-in still works too when configured.
 
 - **Commandes** — orders list, customer files, delete, mescolis.tn CSV export.
 - **Produits** — add / edit / reorder / delete products, fixed price or photo-tier
-  pricing, badge, photos (upload or URL), featured flag, customer-upload flag,
+  pricing, badge, photos (upload or URL), featured flag, **sold-out / out-of-stock
+  flag** (shows an "Épuisé" badge and disables add-to-cart), customer-upload flag,
   plus the "Bientôt disponible" list with a one-click **launch** into the shop.
+  Typing a new category name on a product creates a new "collection" tab in the shop.
 - **Promos** — the "Grande promotion spéciale" cards (empty list hides the section).
 - **Annonces** — short news posts shown on the home page ("Quoi de neuf ?").
 - **Événements** — markets / fairs / pop-ups shown on the home page.
@@ -72,13 +75,19 @@ Blob store (`content/site.json`), and each save keeps the prior version in
 `GET /api/content` on load (edge-cached ~60 s) and merges it over the hardcoded
 defaults in `data.jsx` — so the site still renders fine if the API is down.
 
+**Local preview mode:** when served statically (no API, e.g. `npx serve`), the
+dashboard lets you in with any code and saves to `localStorage` instead of the
+server, applying changes to the open storefront. This is only a try-it-out mode —
+on the deployed site the API responds, so real saves go to Blob storage and the
+access code is verified server-side.
+
 ### Required Vercel env vars
 
 | Var | Used for |
 | --- | --- |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage (orders, uploads, content, media). |
-| `CLERK_SECRET_KEY` | Server-side verification of the admin's Clerk session. |
-| `ADMIN_KEY` | Legacy fallback access key (`?key=` / `x-admin-key`). |
+| `CLERK_SECRET_KEY` | Server-side verification of the admin's Clerk session (optional). |
+| `ADMIN_KEY` | Shop access code (`?key=` / `x-admin-key`) — primary admin login. |
 
 ## Coming Soon section
 
